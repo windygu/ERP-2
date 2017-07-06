@@ -1,0 +1,48 @@
+﻿@model ERP.Models.Packs.VMFilterPacks
+@using ERP.Models.CustomEnums;
+@using ERP.Models.CustomEnums.PageElementsPrivileges;
+@{
+    ViewBag.Title = "待审核的标签资料";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts{
+    <script type="text/javascript">
+        var ControllerURL="href='@(Url.Content("~/Packs/"))";
+
+        var showView = @(Model.PageElementPrivileges & (int)PacksElementsPrivileges.View);
+        var showEdit = @(Model.PageElementPrivileges & (int)PacksElementsPrivileges.Edit);
+        var showCheck = @(Model.PageElementPrivileges & (int)PacksElementsPrivileges.Check);
+        var statusPendingCheck=@((int)PurchasePacksStatusEnum.PendingCheck);
+        var statusPacks=@((int)PurchasePacksStatusEnum.PendingMaintenance);
+
+        function operationFormatter(val, row, index) {
+            var ops="";
+            //编辑过包装资料后才能查看
+            if (showView>0) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Packs/Edit/"))?ContractID=" + val + "&Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if (showEdit>0&&row.PacksStatusID!=statusPendingCheck) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Packs/Edit"))?ContractID=" + val + "' style='margin: 0 5px;'>编辑</a>";
+            }
+            //
+            if (showCheck>0&&row.PacksStatusID==statusPendingCheck&&row.IsCanAudit) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Packs/Edit"))?ContractID=" + val + "&Type=Approval' style='margin: 0 5px;'>审核</a>";
+            }
+
+            return ops;
+        }
+
+        //列表数据加载成功时，使单元格鼠标移动呈现title
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ID","PurchaseContractID"]);
+
+        }
+    </script>
+}

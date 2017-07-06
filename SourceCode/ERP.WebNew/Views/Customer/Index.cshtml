@@ -1,0 +1,211 @@
+﻿@model ERP.Models.Customer.VMCustomerSearchModel
+
+@{
+    ViewBag.Title = "客户信息管理";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <form class="form-inline frmFind" role="form" runat="server" method="get">
+        <div class="search_Condition box_1k">
+            <ul>
+                <li>
+                    <label class="col-xs-2">Company Code</label><div class="col-sm-10">
+                        @Html.TextBoxFor(u => u.CustomerCode, new { @class = "form-control" })
+                    </div>
+                </li>
+                <li>
+                    <label class="col-xs-2">Company Name</label><div class="col-sm-10">
+                        @Html.TextBoxFor(u => u.CustomerName, new { @class = "form-control" })
+                    </div>
+                </li>
+                <li>
+                    <label class="col-xs-2">Country</label><div class="col-sm-10">
+                        @if (!string.IsNullOrEmpty(Request.QueryString["Country"]))
+                        {
+                            @InlineHelpers.GetSelectionForCountries(ViewData["Countries"] as IEnumerable<System.Web.Mvc.SelectListItem>, "Country", true, ERP.Tools.Utils.StrToInt(Request.QueryString["Country"], 0), null)
+                        }
+                        else
+                        {
+                            @InlineHelpers.GetSelectionForCountries(ViewData["Countries"] as IEnumerable<System.Web.Mvc.SelectListItem>, "Country", true, null, null)
+                        }
+                    </div>
+                </li>
+                <li>
+                    <label class="col-xs-2">Province</label><div class="col-sm-10">
+                        @if (ViewData["Provinces"] != null)
+                        {
+                            @InlineHelpers.GetSelectionForProvinces(ViewData["Provinces"] as IEnumerable<System.Web.Mvc.SelectListItem>, "Province", true, ERP.Tools.Utils.StrToInt(Request.QueryString["Province"], 0), null)
+                        }
+                        else
+                        {
+                            @InlineHelpers.GetSelectionForProvinces(Enumerable.Empty<System.Web.Mvc.SelectListItem>(), "Province", true, null, null)
+                        }
+                    </div>
+                </li>
+                <li class="search">
+                    <button id="bntFind" type="submit" onclick="return OA.s(this)" class="btn btn-info">查询</button>
+                    <button id="bntClearAll" type="button" class="btn btn-info">清空所有</button>
+                </li>
+            </ul>
+        </div>
+        <div class="Control">
+            @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CustomerListElementPrivileges.CreateCustomer) > 0)
+            {
+                <button id="bntSearch" wintype="idialog" type="button" winsize="1200,800,yes" onclick="return OA.i(this);" href="@Url.Content("~/Customer/Edit/0")" class="btn btn-danger">新建客户</button>
+            }
+            @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CustomerListElementPrivileges.BatchDelete) > 0)
+            {
+                <button id="bntDelete" type="button" onclick="deleteSelected()" class="btn btn-default">批量删除</button>
+            }
+        </div>
+    </form>
+
+    <table id="MyGrid" class="easyui-datagrid"
+           data-options="resizeHandle:'right',singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/Customer/GetAll")?@HttpContext.Current.Request.QueryString',method:'get',onLoadSuccess:onLoadSuccess,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+        <thead data-options="frozen:true">
+            <tr>
+                <!--基本信息-->
+                <th data-options="field:'ck',checkbox:true"></th>
+                <th data-options="field:'CustomerCode',width:80,sortable:true">Company Code</th>
+                <th data-options="field:'CustomerName',width:100,sortable:true">Company Name</th>
+                <th data-options="field:'OCID',align:'center',formatter:operationFormatter">操作</th>
+            </tr>
+        </thead>
+        <thead>
+            <tr>
+                <th data-options="field:'ContactName',width:100,align:'center',title:'Name'">Contact Person</th>
+                <th data-options="field:'Duty',width:100">Title</th>
+                <th data-options="field:'MobilePhone',width:100,align:'center'">Cell Phone#</th>
+                <th data-options="field:'Telephone',width:100,align:'center'">Tel.#</th>
+                <th data-options="field:'Fax',width:100,align:'center'">Fax.#</th>
+                <th data-options="field:'Email',width:150,align:'center'">Email Address</th>
+                <th data-options="field:'CustomerAddress',width:200,align:'center'">Company Address</th>
+                <th data-options="field:'SelectCustomer',width:100,align:'center'">唛头、单证客户</th>
+                <th data-options="field:'QuoteTemplateFileName',width:100,align:'center'">报价单模板</th>
+                <th data-options="field:'CreateDate',align:'center',sortable:true,formatter:formateDate">Create Date</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+        $(function () {
+            //清空所有
+            $("#bntClearAll").click(function () {
+                $("#CustomerCode").val("");
+                $("#CustomerName").val("");
+                $("#Country").val("");
+                $("#Province").val("");
+            });
+
+            bindProvince("Country", "Province");
+        })
+
+        function bindProvince(countrySelectorID, provinceSelectorID) {
+            $("#" + countrySelectorID).on("change", function () {
+                var countryID = $(this).val();
+
+                $.ajax({
+                    url: '@Url.Content("~/Customer/Provinces/")' + countryID,
+                    type: 'GET',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (data) {
+                        $("#" + provinceSelectorID).html("");
+                        $("#" + provinceSelectorID).append('<option value=""></option>');
+                        $.each(data, function (key, province) {
+                            $("#" + provinceSelectorID).append(
+                                    '<option value="' + province.ARID + '">'
+                                    + province.AreaName +
+                                    '</option>');
+                        });
+                    }
+                });
+            });
+        }
+
+        var showEdit = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CustomerListElementPrivileges.EditCustomer);
+        var showView = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CustomerListElementPrivileges.ViewCustomer);
+        var showDelete = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CustomerListElementPrivileges.DeleteCustomer);
+        function operationFormatter(val, row, index) {
+            var ops = "";
+            if(showEdit > 0){
+                ops += "<button winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Customer/Edit/"))" + val + "'>编辑</button>";
+            }
+            if(showView > 0){
+                ops += "<button winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Customer/Edit/"))" + val + "?isview=true'>查看</button>";
+            }
+            if(showDelete > 0){
+                ops += "<button class='btn btn-danger btn-xs w_auto' onclick='deleteCustomer(" + val + ")'>删除</button>";
+            }
+            return ops;
+        }
+
+        function deleteCustomer(cid) {
+            $.messager.confirm('Confirm','是否删除选中的客户?',function(r){
+                if (r){
+                    $.post('@Url.Content("~/Customer/Delete")', { idList: cid },
+                       function (result) {
+                           switch (result) {
+                               case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect) :
+                                   $.messager.alert("提示","没有可以删除删除的记录");
+                                   break;
+                               case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success) :
+                                   $.messager.alert("提示","删除成功");
+                                   parentGridReload();
+                                   break;
+                               default:
+                                   break;
+                           }
+                       }, "json");
+                }
+            });
+        }
+
+        //删除选中
+        function deleteSelected() {
+            var idArray = getAllSelections();
+            if (idArray.length <= 0) {
+                $.messager.alert("未选中数据","请选中要删除的客户！");
+                return;
+            }
+
+            $.messager.confirm('Confirm','是否删除选中的客户?',function(r){
+                if (r){
+                    $.post("@Url.Content("~/Customer/Delete")", { idList: idArray.join(',') },
+                        function (result) {
+                            switch (result) {
+                                case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect) :
+                                    $.messager.alert("提示","没有可以删除删除的记录");
+                                    break;
+                                case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success) :
+                                    $.messager.alert("提示","删除成功");
+                                    parentGridReload();
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }, "json");
+                }
+            });
+        }
+
+        function getAllSelections(){
+            var idArray = [];
+            var rows = $('#MyGrid').datagrid('getSelections');
+            for(var i=0; i<rows.length; i++){
+                idArray.push(rows[i].OCID);
+            }
+            return idArray;
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["CreateDate","OCID"]);
+        }
+    </script>
+}

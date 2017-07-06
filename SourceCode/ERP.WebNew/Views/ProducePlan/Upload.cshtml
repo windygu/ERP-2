@@ -1,0 +1,219 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+@using ERP.Models.CustomEnums
+@model ERP.Models.ProducePlan.DTOProducePlan
+
+<link href="@Url.Content("~/Content/Quotation.css")" rel="stylesheet" />
+
+<style>
+    label.control-label, .control-label, label {
+        margin-top: 2px;
+        text-align: right;
+        font-weight: normal;
+    }
+</style>
+@using (Ajax.BeginForm("Upload", "ProducePlan", null, new AjaxOptions() { HttpMethod = "Post", OnBegin = "OnBegin", OnSuccess = "OnSuccess" }, new { id = "frmEdit" }))
+{
+    @Html.HiddenFor(p => p.ID)
+    <input type="hidden" value="@ViewBag.title" id="Value" />
+    <div id="inline">
+        @Html.Partial("_PartialPurchaseContract", Model.PurchaseContract)
+
+        <h3 class="popTitle">
+            附件信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent" style="overflow: inherit;">
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">上传：</label>
+                <div class="col-sm-8 control-label">
+                    <div class="uploadify">
+                        <input type="file" name="uploadify" id="uploadify" />
+                        <a class="a_upload" onclick="UpLoadFile()">上传</a>
+                        <div class="fileQueue">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h3 class="popTitle">
+            已上传的附件信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <div class="history_box">
+                <table id="fileListTable" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr class="t_bg">
+                            <td width="50%">附件名称</td>
+                            <td width="20%">上传时间</td>
+                            <td width="30%">操作</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.list_UpLoadFile != null)
+                        {
+                            int index = 0;
+                            foreach (var item in Model.list_UpLoadFile.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                                <tr>
+                                    <td class="hide">
+                                        <input name="list_UpLoadFile[@(index)].ID" type="hidden" value="@item.ID" />
+                                        <input class="IsDelete" name="list_UpLoadFile[@(index)].IsDelete" type="text" value="@item.IsDelete" />
+                                    </td>
+                                    <td>@item.DisplayFileName</td>
+                                    <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+
+                                        <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                    </td>
+                                </tr>
+                                ++index;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="popBtns">
+
+            <button name="ButtonNum" type="submit" class="btn btn-primary" value="@((int)ERP.Models.CustomEnums.ProducePlanStatusEnum.PendingSubmit)">保存</button>
+            <button name="ButtonNum" type="submit" class="btn btn-danger" value="@((int)ERP.Models.CustomEnums.ProducePlanStatusEnum.PendingCheck)">保存并提交</button>
+
+            <button type="button" class="btn btn-default" id="three" onclick="OA.CloseMe()">取消</button>
+            <button type="button" class="btn btn-default" id="four" onclick="OA.CloseMe()">关闭</button>
+        </div>
+
+        <h3 class="popTitle">
+            历史记录
+            <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+        </h3>
+        <div class="popContent" style="display:none;">
+            <div class="history_box">
+                <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr class="t_bg">
+                            <td width="20%">日期</td>
+                            <td width="20%">操作者</td>
+                            <td width="30%">状态</td>
+                            <td width="30%">意见/备注</td>
+                        </tr>
+                        @foreach (var item_history in Model.list_history.OrderByDescending(d => d.ProduceDate))
+                        {
+                            <tr>
+                                <td>@item_history.ProduceDate</td>
+                                <td>@item_history.ProducePeople</td>
+                                <td>@item_history.ProduceResultName</td>
+                                <td>@item_history.HistorySomeThing</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+@section scripts{
+    <script>
+
+        $(function () {
+            var file = $("#Value").val();
+            if (file == "查看上传生产计划信息") {
+                $("#three").hide();
+            }
+            else {
+                $("#four").hide();
+            }
+
+            uploadifyInitial();
+
+        });
+
+        function uploadifyInitial() {
+            $("#uploadify").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@((short)UploadFileType.ProducePlan)&id=@Model.ID', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+                fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                //uploadLimit: 10, //同时上传多小个文件
+                sizeLimit: 100000000, //限制上传大小10M
+                //queueSizeLimit: 10, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) { }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) { }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    var count = $("#fileListTable tr:not(:first)").length;
+                    var serverFileName = $.parseJSON(response).data.NewFilePath;
+                    var displayFileName = $.parseJSON(response).data.OldFileName;
+                    var fileListStr = '<tr>';
+                    fileListStr += '<td class="hide"><input name="list_UpLoadFile[' + count + '].DisplayFileName" type="hidden" value="' + displayFileName + '" /><input name="list_UpLoadFile[' + count + '].ServerFileName" type="hidden" value="' + serverFileName + '" /><input name="list_UpLoadFile[' + count + '].DT_CREATEDATE" type="hidden" value="' + formateDate2(new Date()) + '" /><input class="IsDelete" name="list_UpLoadFile[' + count + '].IsDelete" type="hidden" /></td>';
+                    fileListStr += '<td>' + displayFileName + '</td>';
+                    fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                    fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button><button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+                    fileListStr += '</tr>';
+                    $("#fileListTable").prepend(fileListStr);
+                }  //当单个文件上传成功后激发的事件
+            });
+        }
+
+        //上传
+        function UpLoadFile() {
+            $('#uploadify').uploadifyUpload('*');
+        }
+        function UpLoadFile2() {
+            $('#uploadify2').uploadifyUpload('*');
+        }
+        function UpLoadFile3() {
+            $('#uploadify3').uploadifyUpload('*');
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+
+        //删除
+        function DeleteFile(e, path) {
+            $(e).closest("tr").find(".IsDelete").val(true);
+            $(e).closest("tr").hide();
+        }
+
+        var checkSubmit = false;//防止重复提交
+        function OnBegin() {
+            if (checkSubmit) {
+                $.messager.alert("提示", "请勿重复提交！");
+                return false;
+            }
+            checkSubmit = true;
+            loading();
+            return true;
+        }
+
+        function OnSuccess(data) {
+            if (!data.IsSuccess) {
+                $.messager.alert("提示", data.Msg);
+                completeLoading();
+                checkSubmit = false;
+            } else {
+                parentGridReload();
+                OA.CloseMe(true);
+            }
+        }
+    </script>
+}

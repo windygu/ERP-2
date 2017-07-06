@@ -1,0 +1,525 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@using ERP.Models.CustomEnums
+@model ERP.Models.Order.VMOrderEdit
+
+@section styles{
+
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+    <style type="text/css">
+        .glyphicon {
+            right: 20px;
+        }
+
+        .box_1k {
+            margin-top: 0;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+    </style>
+}
+
+@using (Ajax.BeginForm("Edit", "Order", null, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit" }))
+{
+    @Html.HiddenFor(d => d.OrderID)
+    @Html.HiddenFor(d => d.PageType)
+    @Html.HiddenFor(d => d.Finance_StatusID)
+    @Html.HiddenFor(d => d.QuotID)
+
+    <input id="SelectCustomer" type="hidden" />
+    <input id="Commission" type="hidden" />
+    <input id="Agent" type="hidden" />
+    <input id="Allowance" type="hidden" />
+
+    <h3 class="popTitle">
+        销售订单信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+
+    <div class="row popContent" style="overflow: inherit;">
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">销售核算单号：</label>
+            <div class="col-sm-8 control-label">
+                @Model.OrderNumber
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">客户：</label>
+            <div class="col-sm-8 control-label">
+                @Model.CustomerNo
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">客户下单日期：</label>
+            <div class="col-sm-8 control-label">
+                @Model.CustomerDate
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">客户要求船期：</label>
+            <div class="col-sm-8 control-label">
+                @(Model.OrderDateStart + " ~ " + Model.OrderDateEnd)
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">@ERP.Tools.Keys.CustomerPO：</label>
+            <div class="col-sm-8 control-label">
+                @Model.POID
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">订单总金额：</label>
+            <div class="col-sm-8 control-label">
+                @Model.OrderAmount
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        产品信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="popContent select_table row chanpin">
+
+        <div class="table-responsive">
+
+            <table id="MyPopGrid" class="easyui-datagrid" style="width:100%;overflow:auto;">
+                <thead data-options="frozen:true">
+                    <tr>
+                        <!--隐藏列-->
+                        <th data-options="field:'ID',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'OrderProductID',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'CurrencySign',width:100,align:'center',hidden:true"></th>
+                        <th data-options="field:'ProductID',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'Image',width:80,align:'center',hidden:true"></th>
+
+                        <th data-options="field:'OrderNumber',width:80,align:'center'">核算表编号</th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <th data-options="field:'ShippingDateFormatter',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("ShippingDateFormatter") ? "false" : "true")">实际船期</th>
+                        <th data-options="field:'CustomerCode',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CustomerCode") ? "false" : "true")">客户代号</th>
+                        <th data-options="field:'POID',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("POID") ? "false" : "true")">PO号码</th>
+                        <th data-options="field:'FactoryAbbreviation',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("FactoryAbbreviation") ? "false" : "true")">工厂</th>
+                        <th data-options="field:'PurchaseNumber',width:80,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PurchaseNumber") ? "false" : "true")">采购合同号码</th>
+                        <th data-options="field:'FactoryDateFormatter',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("FactoryDateFormatter") ? "false" : "true")">实际工厂交货期</th>
+                        <th data-options="field:'No',width:100,align:'left',formatter:productNoFormatter,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("No") ? "false" : "true")">货号</th>
+                        <th data-options="field:'Name',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Name") ? "false" : "true")">品名</th>
+                        <th data-options="field:'AllAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("AllAmount") ? "false" : "true"),formatter:formatPriceWithCurrency">采购合同金额</th>
+                        <th data-options="field:'SettlementPeriod',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("SettlementPeriod") ? "false" : "true")">结算期（待定）</th>
+                        <th data-options="field:'InvoicedAmount',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InvoicedAmount") ? "false" : "true"),formatter:formatPriceWithCurrency">实际开票金额</th>
+                        <th data-options="field:'PaymentDateFormatter',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PaymentDateFormatter") ? "false" : "true")">付款日</th>
+                        <th data-options="field:'PaymentAmount',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PaymentAmount") ? "false" : "true"),formatter:formatPriceWithCurrency">付款金额</th>
+                        <th data-options="field:'DocumentIndexUpLoadDate',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("DocumentIndexUpLoadDate") ? "false" : "true")">单证索引上传日期（待定）</th>
+                        <!--7 工厂-->
+                        <th data-options="field:'AllOutContractAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("AllOutContractAmount") ? "false" : "true")">代印及快递费(￥)</th>
+                        <th data-options="field:'InspectionAuditFee_ForFactory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionAuditFee_ForFactory") ? "false" : "true")">验厂费(￥)</th>
+                        <th data-options="field:'InspectionSamplingFee_ForFactory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionSamplingFee_ForFactory") ? "false" : "true")">重抽检费(￥)</th>
+                        <th data-options="field:'InspectionVerificationFee_ForFactory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionVerificationFee_ForFactory") ? "false" : "true")">重验货费(￥)</th>
+                        <th data-options="field:'InspectionDetectFee_ForFactory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionDetectFee_ForFactory") ? "false" : "true")">重检测费(￥)</th>
+                        <th data-options="field:'RegisterFees',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("RegisterFees") ? "false" : "true")">拖柜费(￥)</th>
+
+                        <th data-options="field:'OtherExpensesDeduction',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OtherExpensesDeduction") ? "false" : "true")">其他应扣费用(￥)</th>
+                        <th data-options="field:'AllAmount_Factory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("AllAmount_Factory") ? "false" : "true")">合计应扣工厂费用(￥)</th>
+                        <th data-options="field:'FactoryFees',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("FactoryFees") ? "false" : "true")">应补工厂费用(￥)</th>
+                        <th data-options="field:'Comment',width:100,align:'center',editor:{type:'validatebox'},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Comment") ? "false" : "true")">备注</th>
+                    </tr>
+                </thead>
+
+                <tbody data-bind="foreach: Order().list_FinanceProduct">
+                    <tr>
+                        <!--隐藏列-->
+                        <td data-bind="text:ID"></td>
+                        <td data-bind="text:OrderProductID"></td>
+                        <td data-bind="text:CurrencySign"></td>
+                        <td data-bind="text:ProductID"></td>
+                        <td data-bind="text:Image"></td>
+                        
+                        <td data-bind="text:OrderNumber"></td>
+
+                        <td data-bind="text:ShippingDateFormatter"></td>
+                        <td data-bind="text:CustomerCode"></td>
+                        <td data-bind="text:POID"></td>
+                        <td data-bind="text:FactoryAbbreviation"></td>
+                        <td data-bind="text:PurchaseNumber"></td>
+                        <td data-bind="text:FactoryDateFormatter"></td>
+                        <td data-bind="text:No"></td>
+                        <td data-bind="text:Name"></td>
+                        <td data-bind="text:AllAmount"></td>
+                        <td data-bind="text:SettlementPeriod"></td>
+                        <td data-bind="text:InvoicedAmount"></td>
+                        <td data-bind="text:PaymentDateFormatter"></td>
+                        <td data-bind="text:PaymentAmount"></td>
+                        <td data-bind="text:DocumentIndexUpLoadDate"></td>
+                        <!--7 工厂-->
+                        <td data-bind="text:AllOutContractAmount"></td>
+                        <td data-bind="text:InspectionAuditFee_ForFactory"></td>
+                        <td data-bind="text:InspectionSamplingFee_ForFactory"></td>
+                        <td data-bind="text:InspectionVerificationFee_ForFactory"></td>
+                        <td data-bind="text:InspectionDetectFee_ForFactory"></td>
+                        <td data-bind="text:RegisterFees"></td>
+
+                        <td data-bind="text:OtherExpensesDeduction"></td>
+                        <td data-bind="text:AllAmount_Factory"></td>
+                        <td data-bind="text:FactoryFees"></td>
+                        <td data-bind="text:Comment"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="popBtns">
+        @switch (Model.PageType)
+        {
+            case PageTypeEnum.Details:
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">关闭</button>
+                break;
+
+        }
+    </div>
+
+}
+
+<script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+<script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+<script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+<script src="@Url.Content("~/Scripts/jquery.easyui.datagrid-groupview.js")"></script>
+
+@section scripts{
+    <script>
+        $(function () {
+            $("#frmEdit").attr("disabled", "disabled");
+
+            $("#MyPopGrid").datagrid({
+                checkOnSelect:true,
+                onBeforeEdit:onBeforeEdit,
+                onAfterEdit:onAfterEdit,
+                onCancelEdit:onCancelEdit,
+                onLoadSuccess:onLoadSuccess,
+                onClickCell: @(Model.PageType == PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+                showFooter: false,
+                onBeginEdit:onBeginEdit,
+                onHeaderContextMenu:onHeaderContextMenu,
+            });
+            
+        });
+
+        function onHeaderContextMenu(e, field){
+            e.preventDefault();
+            jav.initGridColumnVisibilityMenus("MyPopGrid", @(ERP.WebNew.Service.CurrentUserServices.Me.UserID), @((int)ERP.Models.CustomEnums.DatagridCustomColumnVisibilityModules.FinanceManagement_Factory), e.pageX, e.pageY, @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ColumnsVisible))));
+        }
+
+        function myformatter(date){
+            var y = date.getFullYear();
+            var m = date.getMonth()+1;
+            var d = date.getDate();
+            return y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
+        }
+
+        function myparser(s){
+            if (!s) return new Date();
+            var ss = (s.split('-'));
+            var y = parseInt(ss[0],10);
+            var m = parseInt(ss[1],10);
+            var d = parseInt(ss[2],10);
+            if (!isNaN(y) && !isNaN(m) && !isNaN(d)){
+                return new Date(y,m-1,d);
+            } else {
+                return new Date();
+            }
+        }
+        
+        function formatPriceWithCurrency(value,row,index){
+            if (value == "" || value == null) {
+                return null;
+            }
+            return row.CurrencySign + value;
+        }
+
+        function formatPriceFactory(value,row,index){
+            return row.CurrencySign + row.PriceFactory;
+        }
+
+        function formatPreRecordedStatus(value,row,index){
+
+            var temp = @((int)PreRecordedStatusEnum.Yes);
+            if (value==0) {
+                return "&nbsp;";
+            }
+            else if (value==temp) {
+                return "是";
+            }
+            else {
+                return "否";
+            }
+        }
+
+        function onBeginEdit(index,row){
+            $(".datagrid-editable-input,.textbox-text,.validatebox-text").on("keypress",function(e){
+                if(e.keyCode == 13){
+                    acceptInfo(row);
+                }
+            });
+        }
+
+        function KOModel() {
+            var self = this;
+
+            self.Finance_StatusID = ko.observable();
+
+            self.OrderID = ko.observable();
+            self.OrderOrigin = ko.observable();
+            self.OrderDateStart = ko.observable();
+            self.OrderDateEnd = ko.observable();
+            self.CustomerDate = ko.observable();
+
+            self.IsThirdVerification = ko.observable();
+            self.IsThirdAudits = ko.observable();
+            self.IsThirdTest = ko.observable();
+
+            self.CustomerID = ko.observable();
+            self.PortID = ko.observable();
+            self.DestinationPortID = ko.observable();
+            self.POID = ko.observable();
+            self.EHIPO = ko.observable();
+
+            self.CheckSuggest = ko.observable();
+
+            self.ShippingType = ko.observable();
+            self.CabinetRemark = ko.observable();
+
+            self.OrderRate = ko.observable();
+            self.OrderRate_En = ko.observable();
+            self.OrderAmount = ko.observable();
+
+            self.ST_CREATEUSER = ko.observable("@(Model.ST_CREATEUSER)");
+            self.ApproverIndex = ko.observable("@(Model.ApproverIndex)");
+
+            self.QuotID = ko.observable();
+            self.CurrencyExchange = ko.observable();
+            self.Additional = ko.observable();
+
+            self.list_FinanceProduct = ko.observableArray();
+
+        }
+
+        function KOViewModel() {
+            var self = this;
+
+            self.Order = ko.observableArray();
+            self.Order(new KOModel());
+
+            self.Order().list_FinanceProduct(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_FinanceProduct != null ? Model.list_FinanceProduct : null))));
+
+
+        };
+        var viewModel = new KOViewModel()
+        ko.applyBindings(viewModel);
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndex = undefined;
+        function onBeforeEdit(index, row) {
+            row.editing = true;
+            updateActionsInfo(index);
+        }
+
+        function onAfterEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function onCancelEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function endEditingInfo() {
+            //var isView = ((bool)ViewData["IsView"] ? 1 : 0);
+            //if(isView === 1){
+            //    return false;
+            //}
+            if (editIndex == undefined) { return true }
+            if ($('#MyPopGrid').datagrid('validateRow', editIndex)) {
+                $('#MyPopGrid').datagrid('endEdit', editIndex);
+                editIndex = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editInfo(target) {
+            acceptInfo(target);
+            $('#MyPopGrid').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendInfo() {
+            if (endEditingInfo()) {
+                $('#MyPopGrid').datagrid('appendRow', { ID: -1 });
+                editIndex = $('#MyPopGrid').datagrid('getRows').length - 1;
+                $('#MyPopGrid').datagrid('selectRow', editIndex)
+                        .datagrid('beginEdit', editIndex);
+            }
+        }
+        function removeInfo(target) {
+            rejectInfo();
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#MyPopGrid').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptInfo(target) {
+            editIndex = getRowIndex(target);
+
+            if (endEditingInfo()) {
+                $('#MyPopGrid').datagrid('acceptChanges');
+            }
+        }
+        function rejectInfo() {
+            $('#MyPopGrid').datagrid('rejectChanges');
+            editIndex = undefined;
+        }
+        function updateActionsInfo(index) {
+            $('#MyPopGrid').datagrid('refreshRow', index);
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+
+        }
+
+        function productNoFormatter(val, row, index) {
+            if (row.ProductID == -1) {
+                return "";
+            }
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+        }
+
+        function onClickCell(index, field){
+            if (editIndex != index){
+                if (endEditingInfo()){
+                    $('#MyPopGrid').datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $('#MyPopGrid').datagrid('getEditor', {index:index,field:field});
+                    if (ed){
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndex = index;
+                } else {
+                    setTimeout(function(){
+                        $('#MyPopGrid').datagrid('selectRow', editIndex);
+                    },0);
+                }
+            }
+            RemovePopover();
+        }
+        function emptyFunc() {
+
+        }
+        function onLoadSuccess() {
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+
+            var rows = $('#MyPopGrid').datagrid('getRows');
+            var TotalCBM = 0;
+            var Ctns=0;
+            var Qty=0;
+            var SumSalePrice=0;
+            var SumNetPrice=0;
+            var CurrencySign= "";
+            var SumPriceFactoryFormatter=0;
+
+            for (var i = 0; i < rows.length; i++) {
+                var thisRow = rows[i];
+                if (parseFloat(thisRow.TotalCBM) == thisRow.TotalCBM) {
+                    TotalCBM += parseFloat(thisRow.TotalCBM);
+                }
+                Ctns += parseFloat(thisRow.Ctns);
+                Qty += parseInt(thisRow.Qty);
+                SumSalePrice += parseFloat(thisRow.SumSalePrice);
+                SumNetPrice += parseFloat(thisRow.SumNetPrice);
+
+                CurrencySign = thisRow.CurrencySign;
+                SumPriceFactoryFormatter += thisRow.Qty * thisRow.PriceFactory;
+            }
+
+            //统计信息
+            $('#MyPopGrid').datagrid('reloadFooter',
+                [
+                    {
+                        ProductID:-1,
+                        TotalCBM: NumberToRound(TotalCBM,2),
+                        Ctns: NumberToRound(Ctns,2),
+                        Qty: Qty,
+                        SumSalePrice: NumberToRound(SumSalePrice,2),
+                        SumNetPrice: NumberToRound(SumNetPrice,2),
+                        SumPriceFactoryFormatter:CurrencySign+ NumberToRound(SumPriceFactoryFormatter,2),
+                    },
+                ]
+            );
+
+        }
+        
+        function GetValue(number) {
+            if (number == "") {
+                number = 0;
+            }
+            if (number == null) {
+                number = 0;
+            }
+            return parseFloat(number);
+        }
+
+        //格式化金额为123,456.78
+        function formatMoney(number, places, thousand, decimal) {
+            number = number || 0;
+            places = !isNaN(places = Math.abs(places)) ? places : 2;
+            thousand = thousand || ",";
+            decimal = decimal || ".";
+            var negative = number < 0 ? "-" : "",
+                i = parseInt(number = Math.abs(+number || 0).toFixed(places), 10) + "",
+                j = (j = i.length) > 3 ? j % 3 : 0;
+            return negative + (j ? i.substr(0, j) + thousand : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousand) + (places ? decimal + Math.abs(number - i).toFixed(places).slice(2) : "");
+        }
+
+        //格式化为货币位数
+        function formatPrice(price, v) {
+            if (price == null) {
+                return "";
+            }
+            return price == 0 ? "" : parseFloat(price).toFixed(v);
+        }
+    </script>
+}

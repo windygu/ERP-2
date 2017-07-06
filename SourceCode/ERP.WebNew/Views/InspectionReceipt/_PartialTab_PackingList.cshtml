@@ -1,0 +1,102 @@
+﻿@model List<ERP.Models.InspectionReceipt.DTOInspectionReceipt>
+@using ERP.Models.CustomEnums
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    var ThisModel = Model;
+}
+<!--装箱单选项卡-->
+
+<div title="装箱单">
+
+    @for (int i = 0; i < Model.Count; i++)
+    {
+
+        var item2 = Model[i];
+        <div class="Factory">
+            <div style="margin-bottom:0px;" class="modal-title">
+                @item2.InvNo
+                <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </div>
+
+            <div class="history_box">
+                <h3 class="popTitle"> PACKING   LIST<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+                <div class="popContent">
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">TO:</label>
+                        <div class="col-sm-8 control-label">@Html.Raw(item2.CustomerName)</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Inv. No:</label>
+                        <div class="col-sm-8 control-label">@item2.InvNo</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">地址:</label>
+                        <div class="col-sm-8 control-label">@Html.Raw(item2.CustomerStreet)<br />@item2.CustomerReg</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">DATE:</label>
+                        <div class="col-sm-8 control-label">@item2.CreateDateForamtter</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">PO.NO:</label>
+                        <div class="col-sm-8 control-label">@item2.SMCustoerPO</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Loading port:</label>
+                        <div class="col-sm-8 control-label">
+                            @item2.INPortName ,CHINA
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Destination:</label>
+                        <div class="col-sm-8 control-label">@item2.INEndPortName</div>
+                    </div>
+                </div>
+
+                <h3 class="popTitle">报检产品信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+                <div class="popContent table-responsive">
+                    <table id="MyPopGrid_PackingList_@(i)" class="easyui-datagrid" style="width:100%">
+                        <thead data-options="frozen:true">
+                            <tr>
+                                <th data-options="field:'No',width:100,sortable:true">Item No.</th>
+                                <th data-options="field:'HsName',width:150,sortable:true,align:'center',editor:{type:'validatebox'}">报关品名</th>
+                                <th data-options="field:'HsEngName',width:150,sortable:true,align:'center',editor:{type:'validatebox'}">报关英文品名</th>
+                            </tr>
+                        </thead>
+                        <thead>
+                            <tr>
+                                <th data-options="field: 'HSCodeName', width: 100, align: 'center'">报关编码</th>
+                                <th data-options="field: 'ProductsQuauity', width: 100, align: 'center'">产品数量</th>
+                                <th data-options="field: 'ProductsBoxNum', width: 100, align: 'center'">产品箱数</th>
+                                <th data-options="field: 'WeightGrossSum', width: 100, align: 'center'">出运毛重</th>
+                                <th data-options="field: 'WeightNetSum', width: 100, align: 'center'">出运净重</th>
+                                <th data-options="field: 'CUFT', width: 100, align: 'center'">出运体积</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           
+                        <tr>
+                            <td style="width:100px;"></td>
+                            <td style="width:100px;">@item2.HsName</td>
+                            <td style="width:100px;">@item2.HsEngName</td>
+                            <td style="width:100px;">@item2.HSCodeName</td>
+                            <td style="width:100px;">@item2.ProductsQuauity</td>
+                            <td style="width:100px;">@item2.ProductsBoxNum</td>
+                            <td style="width:100px;">@item2.WeightGrossSum</td>
+                            <td style="width:100px;">@item2.WeightNetSum</td>
+                            <td style="width:100px;">@item2.CUFT</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>

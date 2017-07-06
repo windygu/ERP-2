@@ -1,0 +1,99 @@
+﻿@model List<ERP.Models.InspectionCustoms.VMInspectionCustoms>
+@using ERP.Models.CustomEnums
+@using ERP.Tools
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    var ThisModel = Model;
+}
+
+<!--报关委托书选项卡-->
+<div id="dvTab_CustomsCommission" title="报关委托书">
+    <h3 class="popTitle">报关委托书信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+    <div class="popContent">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var item2 = Model[i];
+            int k = i;
+
+            <div class="Factory">
+                <div style="margin-bottom:0px;" class="modal-title">
+                    <span class="txt_InvoiceNO_@(i) text-center" style="width: 98%;">
+                        @item2.InvoiceNO
+                    </span>
+                    <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+                </div>
+                <div class="history_box">
+                    @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                    {
+                        <h3 class="popTitle">
+                            附件信息<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+                        </h3>
+                        <div class="popContent">
+                            <div class="form-group col-sm-12 has-feedback">
+                                <label class="col-sm-2 control-label">上传附件:</label>
+                                <div class="col-sm-10 control-label">
+                                    <div class="uploadify">
+                                        <input type="file" name="txtUploadFile_Proxy_@(k)" id="txtUploadFile_Proxy_@(k)" />
+                                        <a class="a_upload" onclick="UpLoadFile('#txtUploadFile_Proxy_@(k)')">上传</a>
+                                        <div class="fileQueue"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <script type="text/javascript">
+                            //上传附件插件初始化代码
+                            InitialUploadify(@item2.InspectionCustomsDetailID,@i,'#txtUploadFile_Proxy_@(k)','#fileListTable_Proxy_@(k)','list_CustomsCommission','@(UploadFileType.InspectionCustomsCommission)');
+                        </script>
+                    }
+
+                    <h3 class="popTitle">
+                        已上传的附件信息<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+                    </h3>
+
+                    <div class="popContent">
+                        <div class="history_box">
+                            <table id="fileListTable_Proxy_@(k)" class="table table-bordered TableTrList" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                                <thead>
+                                    <tr class="t_bg">
+                                        <td width="50%">附件名称</td>
+                                        <td width="20%">上传时间</td>
+                                        <td width="30%">操作</td>
+                                    </tr>
+                                </thead>
+                                @if (item2.list_DeclareElements != null)
+                                {
+                                    for (int j = 0; j < item2.list_CustomsCommission.Count; j++)
+                                    {
+                                        var item = item2.list_CustomsCommission[j];
+                                        <tr>
+                                            <td style="display:none;">
+                                                <input type="hidden" value="@item.ID" class="UpLoadFileListID" />
+                                                <input class="IsDelete" type="hidden" value="false" />
+                                                <input class="ServerFileName" type="hidden" value="@item.ServerFileName" />
+                                                <input class="DisplayFileName" type="hidden" value="@item.DisplayFileName" />
+                                            </td>
+                                            <td>@item.DisplayFileName</td>
+                                            <td>@Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                            <td>
+                                                <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+
+                                                <!--编辑时才能删除-->
+                                                @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                                                {
+                                                    <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                                }
+                                            </td>
+                                        </tr>
+                                        
+                                    }
+                                }
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        }
+    </div>
+</div>

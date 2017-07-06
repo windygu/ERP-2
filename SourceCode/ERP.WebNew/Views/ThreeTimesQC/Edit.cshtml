@@ -1,0 +1,545 @@
+﻿@using ERP.Models.CustomEnums
+@model ERP.Models.ThreeTimesQC.VMThreeTimesQC
+
+@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@using (Ajax.BeginForm("Edit", "ThreeTimesQC", null, new AjaxOptions() { HttpMethod = "Post", OnBegin = "OnBegin", OnSuccess = "OnSuccess" }, new { id = "frmEdit" }))
+{
+    @Html.HiddenFor(p => p.ID)
+    @Html.HiddenFor(p => p.ApprovalStatus)
+    @Html.HiddenFor(p => p.StatusID)
+
+    <div id="inline">
+        @Html.Partial("_PartialPurchaseContract", Model.PurchaseContract)
+
+        @if (Model.PageType == PageTypeEnum.Edit || Model.PageType == PageTypeEnum.Approval)
+        {
+            <h3 class="popTitle">
+                上传三期QC附件
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="row popContent" style="overflow: inherit;">
+                <div class="form-group col-sm-4 has-feedback @(Model.ApprovalStatus!=0?"hide":"")">
+                    <label class="col-sm-4 control-label">前期附件：</label>
+                    <div class="col-sm-8 control-label">
+                        <div class="uploadify">
+                            <input type="file" name="uploadify" id="uploadify" />
+                            <a class="a_upload" onclick="UpLoadFile()">上传</a>
+                            <div class="fileQueue">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-sm-4 has-feedback @(Model.ApprovalStatus!=1?"hide":"")">
+                    <label class="col-sm-4 control-label">中期附件：</label>
+                    <div class="col-sm-8 control-label">
+                        <div class="uploadify">
+                            <input type="file" name="uploadify2" id="uploadify2" />
+                            <a class="a_upload" onclick="UpLoadFile2()">上传</a>
+                            <div class="fileQueue">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group col-sm-4 has-feedback @(Model.ApprovalStatus!=2?"hide":"")">
+                    <label class="col-sm-4 control-label">尾期附件：</label>
+                    <div class="col-sm-8 control-label">
+                        <div class="uploadify">
+                            <input type="file" name="uploadify3" id="uploadify3" />
+                            <a class="a_upload" onclick="UpLoadFile3()">上传</a>
+                            <div class="fileQueue">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <h3 class="popTitle">
+            已上传的三期QC附件信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <div class="history_box">
+                <table id="fileListTable1" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr class="t_bg">
+                            <td width="20%">类型</td>
+                            <td width="30%">附件名称</td>
+                            <td width="20%">上传时间</td>
+                            <td width="30%">操作</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UpLoadFileList_One != null)
+                        {
+                            int index = 0;
+                            foreach (var item in Model.UpLoadFileList_One.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                                <tr>
+                                    <td class="hide">
+                                        <input class="UpLoadFileListID" name="UpLoadFileList_One[@(index)].ID" type="hidden" value="@item.ID" />
+                                        <input class="ServerFileName" name="UpLoadFileList_One[@(index)].ServerFileName" type="hidden" value="@item.ServerFileName" />
+                                        <input class="IsDelete" name="UpLoadFileList_One[@(index)].IsDelete" type="hidden" value="@item.IsDelete" />
+                                    </td>
+                                    <td>前期的三期QC附件</td>
+                                    <td>@item.DisplayFileName</td>
+                                    <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+                                        @if ((Model.PageType == PageTypeEnum.Edit || Model.PageType == PageTypeEnum.Approval) && Model.ApprovalStatus == 0)
+                                        {
+                                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                        }
+                                    </td>
+                                </tr>
+                                ++index;
+                            }
+                        }
+                    </tbody>
+                </table>
+                <table id="fileListTable2" class="table table-bordered @(Model.ApprovalStatus==0?"hide":"")" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr class="t_bg">
+                            <td width="20%">类型</td>
+                            <td width="30%">附件名称</td>
+                            <td width="20%">上传时间</td>
+                            <td width="30%">操作</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UpLoadFileList_Two != null)
+                        {
+                            int index = 0;
+                            foreach (var item in Model.UpLoadFileList_Two.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                                <tr>
+                                    <td class="hide">
+                                        <input class="UpLoadFileListID" name="UpLoadFileList_Two[@(index)].ID" type="hidden" value="@item.ID" />
+                                        <input class="ServerFileName" name="UpLoadFileList_Two[@(index)].ServerFileName" type="hidden" value="@item.ServerFileName" />
+                                        <input class="IsDelete" name="UpLoadFileList_Two[@(index)].IsDelete" type="hidden" value="@item.IsDelete" />
+                                    </td>
+                                    <td>中期的三期QC附件</td>
+                                    <td>@item.DisplayFileName</td>
+                                    <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+                                        @if ((Model.PageType == PageTypeEnum.Edit || Model.PageType == PageTypeEnum.Approval) && Model.ApprovalStatus == 1)
+                                        {
+                                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                        }
+                                    </td>
+                                </tr>
+                                ++index;
+                            }
+                        }
+                    </tbody>
+                </table>
+                <table id="fileListTable3" class="table table-bordered @(Model.ApprovalStatus!=2?"hide":"")" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr class="t_bg">
+                            <td width="20%">类型</td>
+                            <td width="30%">附件名称</td>
+                            <td width="20%">上传时间</td>
+                            <td width="30%">操作</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UpLoadFileList_Three != null)
+                        {
+                            int index = 0;
+                            foreach (var item in Model.UpLoadFileList_Three.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                                <tr>
+                                    <td class="hide">
+                                        <input class="UpLoadFileListID" name="UpLoadFileList_Three[@(index)].ID" type="hidden" value="@item.ID" />
+                                        <input class="ServerFileName" name="UpLoadFileList_Three[@(index)].ServerFileName" type="hidden" value="@item.ServerFileName" />
+                                        <input class="IsDelete" name="UpLoadFileList_Three[@(index)].IsDelete" type="hidden" value="@item.IsDelete" />
+                                    </td>
+                                    <td>尾期的三期QC附件</td>
+                                    <td>@item.DisplayFileName</td>
+                                    <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+                                        @if ((Model.PageType == PageTypeEnum.Edit || Model.PageType == PageTypeEnum.Approval) && Model.ApprovalStatus == 2)
+                                        {
+                                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                        }
+                                    </td>
+                                </tr>
+                                ++index;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <h3 class="popTitle">
+            回复意见
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            @if (Model.PageType == PageTypeEnum.ReplySuggest)
+            {
+                @Html.TextAreaFor(d => d.Suggest, new { @class = "form-control" })
+            }
+            else
+            {
+                @Html.TextAreaFor(d => d.Suggest, new { @class = "form-control", disabled = "disabled" })
+            }
+        </div>
+
+
+
+        @if (Model.PageType == PageTypeEnum.Approval || Model.PageType == PageTypeEnum.Details)
+        {
+            <h3 class="popTitle">
+                审批意见
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="popContent">
+                @if (Model.PageType == PageTypeEnum.Details || Model.StatusID == (int)ShippingMarkStatusEnum.NotPassCheck)
+                {
+                    @Html.TextAreaFor(d => d.Comment, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    Model.Comment = "";
+                    @Html.TextAreaFor(d => d.Comment, new { @class = "form-control" })
+                }
+            </div>
+        }
+
+        <div class="popBtns">
+            @switch (Model.PageType)
+            {
+                case PageTypeEnum.Add:
+                case PageTypeEnum.Edit:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)ThreeTimesQCStatusEnum.OutLine))">保存</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)ThreeTimesQCStatusEnum.PendingCheck))">保存并提交审批</button>
+                    break;
+                case PageTypeEnum.ReplySuggest:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)ThreeTimesQCStatusEnum.ReplySuggest))">保存回复意见</button>
+                    break;
+                case PageTypeEnum.Approval:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)ThreeTimesQCStatusEnum.PassedCheck))">审批通过</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)ThreeTimesQCStatusEnum.NotPassCheck))">驳回重审</button>
+                    break;
+                default:
+                    break;
+
+            }
+            
+            <button type="button" class="btn btn-default" data-bind="click: $root.submit.bind($data, @((int)ThreeTimesQCStatusEnum.ViewPDF))">查看PDF文件</button>
+            <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+        </div>
+
+        <h3 class="popTitle">
+            历史记录
+            <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+        </h3>
+        <div class="popContent" style="display:none;">
+            <div class="history_box">
+                <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr class="t_bg">
+                            <td width="20%">日期</td>
+                            <td width="20%">操作者</td>
+                            <td width="30%">状态</td>
+                            <td width="30%">意见/备注</td>
+                        </tr>
+                        @foreach (var item_history in Model.list_history.OrderByDescending(d => d.DT_CREATEDATE))
+                        {
+                            <tr>
+                                <td>@item_history.DT_CREATEDATE</td>
+                                <td>@item_history.ST_CREATEUSER</td>
+                                <td>@item_history.Comment</td>
+                                <td>@item_history.CheckSuggest</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+@section scripts{
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+    <script src="@Url.Content("~/Scripts/PurchaseContract_ProductMixed.js")"></script>
+
+    <script>
+        $(function () {
+
+            $(".Factory_ProductList .Factory").each(function (index) {
+                $(this).find(".dg" + index).datagrid();
+            });
+            jav.initGridCellTooltips();
+            InitPopover();
+
+            uploadifyInitial();
+            uploadifyInitial2();
+            uploadifyInitial3();
+        });
+
+        function uploadifyInitial() {
+            $("#uploadify").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@((short)UploadFileType.ThreeTimesQC_One)&id=@Model.ID', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+                fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                //uploadLimit: 10, //同时上传多小个文件
+                sizeLimit: 100000000, //限制上传大小10M
+                //queueSizeLimit: 10, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) { }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) { }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    var count = $("#fileListTable1 tr:not(:first)").length;
+                    var serverFileName = $.parseJSON(response).data.NewFilePath;
+                    var displayFileName = $.parseJSON(response).data.OldFileName;
+
+                    var fileListStr = '<tr>';
+                    fileListStr += '<td class="hide"><input name="UpLoadFileList_One[' + count + '].DisplayFileName" type="hidden" value="' + displayFileName + '"class="DisplayFileName" /><input name="UpLoadFileList_One[' + count + '].ServerFileName" type="hidden" value="' + serverFileName + '" class="ServerFileName" /><input name="UpLoadFileList_One[' + count + '].DT_CREATEDATE" type="hidden" value="' + formateDate2(new Date()) + '" class="DT_CREATEDATE" /><input class="IsDelete" name="UpLoadFileList_One[' + count + '].IsDelete" type="hidden" /></td>';
+                    fileListStr += '<td>前期的三期QC附件</td>';
+                    fileListStr += '<td>' + displayFileName + '</td>';
+                    fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                    fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button><button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+                    fileListStr += '</tr>';
+                    $("#fileListTable1").prepend(fileListStr);
+                }  //当单个文件上传成功后激发的事件
+            });
+        }
+
+        function uploadifyInitial2() {
+            $("#uploadify2").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@((short)UploadFileType.ThreeTimesQC_Two)&id=@Model.ID', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+                fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                //uploadLimit: 10, //同时上传多小个文件
+                sizeLimit: 100000000, //限制上传大小10M
+                //queueSizeLimit: 10, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) { }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) { }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    var count = $("#fileListTable2 tr:not(:first)").length;
+                    var serverFileName = $.parseJSON(response).data.NewFilePath;
+                    var displayFileName = $.parseJSON(response).data.OldFileName;
+                    var fileListStr = '<tr>';
+                    fileListStr += '<td class="hide"><input name="UpLoadFileList_Two[' + count + '].DisplayFileName" type="hidden" value="' + displayFileName + '" class="DisplayFileName"/><input name="UpLoadFileList_Two[' + count + '].ServerFileName" type="hidden" value="' + serverFileName + '" class="ServerFileName" /><input name="UpLoadFileList_Two[' + count + '].DT_CREATEDATE" type="hidden" value="' + formateDate2(new Date()) + '" class="DT_CREATEDATE" /><input class="IsDelete" name="UpLoadFileList_Two[' + count + '].IsDelete" type="hidden" /></td>';
+                    fileListStr += '<td>中期的三期QC附件</td>';
+                    fileListStr += '<td>' + displayFileName + '</td>';
+                    fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                    fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button><button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+                    fileListStr += '</tr>';
+                    $("#fileListTable2").prepend(fileListStr);
+                }  //当单个文件上传成功后激发的事件
+            });
+        }
+
+        function uploadifyInitial3() {
+            $("#uploadify3").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@((short)UploadFileType.ThreeTimesQC_Three)&id=@Model.ID', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+                fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                //uploadLimit: 10, //同时上传多小个文件
+                sizeLimit: 100000000, //限制上传大小10M
+                //queueSizeLimit: 10, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) { }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) { }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    var count = $("#fileListTable3 tr:not(:first)").length;
+                    var serverFileName = $.parseJSON(response).data.NewFilePath;
+                    var displayFileName = $.parseJSON(response).data.OldFileName;
+                    var fileListStr = '<tr>';
+                    fileListStr += '<td class="hide"><input name="UpLoadFileList_Three[' + count + '].DisplayFileName" type="hidden" value="' + displayFileName + '" class="DisplayFileName" /><input name="UpLoadFileList_Three[' + count + '].ServerFileName" type="hidden" value="' + serverFileName + '" class="ServerFileName" /><input name="UpLoadFileList_Three[' + count + '].DT_CREATEDATE" type="hidden" value="' + formateDate2(new Date()) + '" class="DT_CREATEDATE" /><input class="IsDelete" name="UpLoadFileList_Three[' + count + '].IsDelete" type="hidden" /></td>';
+                    fileListStr += '<td>尾期的三期QC附件</td>';
+                    fileListStr += '<td>' + displayFileName + '</td>';
+                    fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                    fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button><button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+                    fileListStr += '</tr>';
+                    $("#fileListTable3").prepend(fileListStr);
+                }  //当单个文件上传成功后激发的事件
+            });
+        }
+        //上传
+        function UpLoadFile() {
+            $('#uploadify').uploadifyUpload('*');
+        }
+        function UpLoadFile2() {
+            $('#uploadify2').uploadifyUpload('*');
+        }
+        function UpLoadFile3() {
+            $('#uploadify3').uploadifyUpload('*');
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+
+        //删除
+        function DeleteFile(e, path) {
+            $(e).closest("tr").find(".IsDelete").val(true);
+            $(e).closest("tr").hide();
+        }
+
+        function KOModel() {
+            this.ID = ko.observable(@(Model.ID));
+            this.StatusID = ko.observable();
+            this.Comment = ko.observable();
+            this.Suggest = ko.observable();
+
+            this.UpLoadFileList_One = ko.observableArray();
+            this.UpLoadFileList_Two = ko.observableArray();
+            this.UpLoadFileList_Three = ko.observableArray();
+
+        }
+
+        function UpLoadFileList_Model(ID,DisplayFileName,ServerFileName,DT_CREATEDATE,IsDelete){
+            this.ID = ko.observable(ID);
+            this.DisplayFileName = ko.observable(DisplayFileName);
+            this.ServerFileName = ko.observable(ServerFileName);
+            this.DT_CREATEDATE = ko.observable(DT_CREATEDATE);
+            this.IsDelete = ko.observable(IsDelete);
+        }
+
+        function KOViewModel() {
+            var self = this;
+
+            self.MyModel = ko.observable();
+            self.MyModel(new KOModel());
+
+            var checkSubmit = false;//防止重复提交
+            //提交
+            self.submit = function (StatusID) {
+
+                var NotPassCheck= @((int)ThreeTimesQCStatusEnum.NotPassCheck);
+                if (StatusID == NotPassCheck && $.trim($("#Comment").val()) == "") {
+                    $.messager.alert("提示", "请输入审核意见！", "info", function () {
+                        $("#Comment").focus();
+                    });
+                    return false;
+                }
+
+                self.MyModel().StatusID(StatusID);
+                self.MyModel().Comment($("#Comment").val());
+                self.MyModel().Suggest($("#Suggest").val());
+
+                var ApprovalStatus = parseInt($("#ApprovalStatus").val());
+                var IsPassedCheck = $("#StatusID").val() == "@((int)ThreeTimesQCStatusEnum.PassedCheck)";
+
+                for (var i = 1; i <= 3; i++) {
+                    var UpLoadFileList = [];
+
+                    if ($("#fileListTable"+i+" tbody tr .ServerFileName").length > 0) {
+                        $("#fileListTable"+i+" tbody tr").each(function () {
+                            var UpLoadFileListID = $(this).find(".UpLoadFileListID").val();
+                            var ServerFileName = $(this).find(".ServerFileName").val();
+                            var DisplayFileName = $(this).find(".DisplayFileName").val();
+                            var DT_CREATEDATE = $(this).find(".DT_CREATEDATE").val();
+                            var IsDelete = $(this).find(".IsDelete").val();
+                            if (ServerFileName != "undefined") {
+                                UpLoadFileList.push(new UpLoadFileList_Model(UpLoadFileListID,DisplayFileName,ServerFileName,DT_CREATEDATE,IsDelete));
+                            }
+                        });
+                        if (IsPassedCheck) {
+                            if (i == 1) {
+                                self.MyModel().UpLoadFileList_One(UpLoadFileList);
+                            } else if (i == 2) {
+                                self.MyModel().UpLoadFileList_Two(UpLoadFileList);
+                            } else if (i == 3) {
+                                self.MyModel().UpLoadFileList_Three(UpLoadFileList);
+                            }
+                        } else {
+                            if (i == 1 && ApprovalStatus == 0) {
+                                self.MyModel().UpLoadFileList_One(UpLoadFileList);
+                            } else if (i == 2 && ApprovalStatus == 1) {
+                                self.MyModel().UpLoadFileList_Two(UpLoadFileList);
+                            } else if (i == 3 && ApprovalStatus == 2) {
+                                self.MyModel().UpLoadFileList_Three(UpLoadFileList);
+                            }
+                        }
+
+                    }
+                }
+
+
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/ThreeTimesQC/Edit")',
+                    data: ko.toJSON(self.MyModel)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    completeLoading();
+                    if (StatusID==7) {//查看PDF文件
+                        window.open(data);
+                        return;
+                    }
+                    if (!data.IsSuccess) {
+                        $.messager.alert("提示", "失败了！"+data.Msg);
+                        return;
+                    } else {
+                        parentGridReload();
+                        OA.CloseMe(true);
+                    }
+                });
+            }
+        }
+        var KOViewModel = new KOViewModel();
+        ko.applyBindings(KOViewModel);
+
+    </script>
+}

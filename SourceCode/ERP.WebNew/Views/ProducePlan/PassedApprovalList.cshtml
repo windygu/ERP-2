@@ -1,0 +1,28 @@
+﻿@{
+    ViewBag.Title = "已审核生产计划";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model ERP.Models.ProducePlan.VMDTOProduceSearch
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var tableName = "#MyGrid";
+
+        var showwatch = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProducePlanElementPricileges.Watch);
+        function operationFormatter(val, row, index) {
+            var rows = $(tableName).datagrid('getRows');
+            var row = rows[index];
+            var a = "3";
+            var ops = "";
+            if (showwatch>0) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)'  href='@(Url.Content("~/ProducePlan/WaitCheck"))?id="+ row.ID + "&DataFlag="+a+"' style='margin: 0 5px;'>查看</a>";
+            }
+
+            return ops;
+
+        }
+    </script>
+}

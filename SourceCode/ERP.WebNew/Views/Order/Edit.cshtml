@@ -1,0 +1,2545 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@using ERP.Models.CustomEnums
+@model ERP.Models.Order.VMOrderEdit
+
+@section styles{
+
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+    <style type="text/css">
+        .glyphicon {
+            right: 20px;
+        }
+
+        .box_1k {
+            margin-top: 0;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+
+        .temp_productfitting_content {
+            width: 479px;
+            height: 80px;
+        }
+
+        .temp_productfitting_left {
+            float: left;
+            width: 100px;
+            margin: 5px;
+            min-height: 60px;
+        }
+
+        .temp_productfitting_right {
+            float: left;
+            width: 170px;
+        }
+
+        .temp_productfitting_right_list {
+            padding-top: 5px;
+        }
+
+        .temp_productfitting_label {
+            font-weight: bold;
+            color: #15428B;
+            width: 100px;
+        }
+    </style>
+
+}
+
+@using (Ajax.BeginForm("Edit", "Order", null, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit" }))
+{
+    @Html.HiddenFor(d => d.OrderID)
+    @Html.HiddenFor(d => d.PageType)
+    @Html.HiddenFor(d => d.OrderStatusID)
+    @Html.HiddenFor(d => d.QuotID)
+
+    @Html.Partial("_PartialSelectProduct")
+    @Html.Partial("_PartialSelectQuote")
+
+    <input id="temp_SelectCustomer" type="hidden" />
+    <input id="QuoteTemplateFileName" type="hidden" />
+    <input id="Commission" type="hidden" />
+    <input id="Agent" type="hidden" />
+    <input id="Allowance" type="hidden" />
+
+    <h3 class="popTitle">
+        销售订单信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+
+    <div class="row popContent" style="overflow: inherit;">
+        @if (Model.PageType != PageTypeEnum.Add)
+        {
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">销售核算单号：</label>
+                <div class="col-sm-8 control-label">
+                    @Model.OrderNumber
+                </div>
+            </div>
+
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">&nbsp;</label>
+                <div class="col-sm-8 control-label">
+                    &nbsp;
+                </div>
+            </div>
+        }
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">销售订单来源：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Model.OrderOrigin
+                }
+                else
+                {
+                    <select class="form-control" name="OrderOrigin" required="" data-bv-field="OrderOrigin">
+                        <option value="手工录入" @(Model.OrderOrigin == "手工录入" ? "selected='selected'" : "")>手工录入</option>
+                        <option value="报价单生成" @(Model.OrderOrigin == "报价单生成" ? "selected='selected'" : "")>报价单生成</option>
+                        <option value="网站汇总" @(Model.OrderOrigin == "网站汇总" ? "selected='selected'" : "")>网站汇总（预留）</option>
+                    </select>
+                }
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">Shipping Window：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @(Model.OrderDateStart + " ~ " + Model.OrderDateEnd)
+                }
+                else
+                {
+                    <div class="col-sm-5" style="padding:0;">
+                        @Html.TextBoxFor(d => d.OrderDateStart, new { @class = "form-control Wdate", style = "padding-right: 5px;" })
+                    </div>
+                    <span class="col-sm-2" style="padding: 0; text-align: center;">-</span>
+                    <div class="col-sm-5" style="padding:0;">
+                        @Html.TextBoxFor(d => d.OrderDateEnd, new { @class = "form-control Wdate", style = "padding-right: 5px;" })
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">出运港：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Model.PortName
+                }
+                else
+                {
+                    @InlineHelpers.GetSelectionForDictionaryInfos(ViewBag.Ports, "PortID", true, Model.PortID)
+                }
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">DC：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Model.DestinationPortName
+                }
+                else
+                {
+                    @InlineHelpers.GetSelectionForDictionaryInfos(ViewBag.GoalPort, "DestinationPortID", true, Model.DestinationPortID)
+                }
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">@ERP.Tools.Keys.CustomerPO：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Model.POID
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.POID, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">@ERP.Tools.Keys.ECHPO：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Model.EHIPO
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.EHIPO, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">客户：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Model.CustomerNo
+
+                    <div style="display:none;">
+                        @InlineHelpers.GetSelectionForCustomers(ViewBag.CustomerInfos, "CustomerID", true, Model.CustomerID)
+                    </div>
+                }
+                else
+                {
+                    @InlineHelpers.GetSelectionForCustomers(ViewBag.CustomerInfos, "CustomerID", true, Model.CustomerID)
+                }
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">客户下单日期：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Model.CustomerDate
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.CustomerDate, new { @class = "form-control Wdate" })
+                }
+            </div>
+        </div>
+
+        <div id="divCategoryManager" class="form-group col-sm-6 has-feedback" style="display:none;">
+            <label class="col-sm-4 control-label">Category Manager：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.CategoryManager, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.CategoryManager, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+
+        @*<div id="divPaymentTerms" class="form-group col-sm-6 has-feedback" style="display:none;">
+                <label class="col-sm-4 control-label">Payment Terms：</label>
+                <div class="col-sm-8 control-label">
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.TextBoxFor(d => d.PaymentTerms, new { @class = "form-control", disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.TextBoxFor(d => d.PaymentTerms, new { @class = "form-control" })
+                    }
+                </div>
+            </div>*@
+
+        <div id="divTransportType" class="form-group col-sm-6 has-feedback" style="display:none;">
+            <label class="col-sm-4 control-label">出运方式：</label>
+            <div class="col-sm-8 control-label">
+                @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                {
+                    @InlineHelpers.GetSelection(ViewData["list_TransportType"] as SelectList, "TransportType", true, Model.TransportType, "txt_TransportType", "txt_TransportType")
+                }
+                else
+                {
+                    @InlineHelpers.GetSelection(ViewData["list_TransportType"] as SelectList, "TransportType", false, Model.TransportType, "txt_TransportType", "txt_TransportType")
+                }
+            </div>
+        </div>
+
+        <div id="divTestingStandardsFilename" class="form-group col-sm-6 has-feedback" style="display:none;">
+            <label class="col-sm-4 control-label">检测标准文件名：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.TestingStandardsFilename, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.TestingStandardsFilename, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8 control-label">
+                <label>
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdVerification, new { disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdVerification)
+                    }
+                    第三方验货
+                </label>
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8 control-label">
+                <label>
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdAudits, new { disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdAudits)
+                    }
+                    第三方验厂
+                </label>
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8 control-label">
+                <label>
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdTest, new { disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdTest)
+                    }
+                    第三方检测
+                </label>
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8 control-label">
+                <label>
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdSampling, new { disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdSampling)
+                    }
+                    第三方抽检
+                </label>
+            </div>
+        </div>
+        <div id="divCurrencyExchange" class="form-group col-sm-6 has-feedback" style="display:none;">
+            <label class="col-sm-4 control-label text-danger">换汇：</label>
+            <div class="col-sm-8 control-label">
+                @Html.TextBoxFor(d => d.CurrencyExchange, new { @class = "form-control" })
+            </div>
+        </div>
+
+    </div>
+
+    <div class="hide">
+        <!--混装产品-->
+        <table id="MyPopGrid_ProductMixed" class="table table-bordered"></table>
+    </div>
+
+    <h3 class="popTitle">
+        产品信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="popContent select_table row chanpin">
+
+        <div class="form-group">
+            @if (Model.PageType != PageTypeEnum.Details)
+            {
+                <button id="btnSelectProduct" type="button" class="btn btn-info" data-toggle="modal" style="display: none;">选择产品</button>
+                <button id="btnSelectQuot" type="button" class="btn btn-info" data-toggle="modal" style="display: none;">选择报价单</button>
+                <button id="btnDelete" type="button" onclick="deleteSelected()" class="btn btn-danger">删除选中产品</button>
+            }
+            按工厂分组
+            <input class="easyui-switchbutton" id="GroupByFactory" data-options="onChange:IsGroupByFactory" checked="checked">
+        </div>
+
+        <div class="table-responsive">
+
+            <table id="MyPopGrid" class="easyui-datagrid" style="width:100%;overflow:auto;">
+                <thead data-options="frozen:true">
+                    <tr>
+                        <th data-options="field:'ck',checkbox:true"></th>
+                        <th data-options="field:'SortIndex',width:100,align:'center',editor:{type:'validatebox',options:{validType:['integer']}}">排序</th>
+                        <th data-options="field:'No',width:120,align:'left',formatter:productNoFormatter">Item NO.</th>
+                        <th data-options="field:'IsProductFitting',width:80,align:'center',formatter:IsProductFittingFormatter">查看配件产品</th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <th data-options="field:'SkuNumber',width:80,align:'center',editor:{type:'validatebox'}">SKU#</th>
+                        <th data-options="field:'SkuCode',width:80,align:'center',hidden:true,editor:{type:'validatebox'}">Sku Code</th>
+                        <th data-options="field:'UPC',width:100,align:'center',editor:{type:'validatebox'}">UPC</th>
+                        <th data-options="field:'QualityAssuranceTesting',width:100,align:'center',hidden:true,editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:[{'Selected':false,'Text':'&nbsp;','Value':''},{'Selected':false,'Text':'是','Value':'true'},{'Selected':false,'Text':'否','Value':'false'}],
+                                    editable:false,
+                                }
+                            },formatter:formatStatus">Quality Assurance Testing</th>
+
+                        <th data-options="field:'OfStoreReadyInnersEnclosed',width:100,align:'center',hidden:true,editor:{type:'validatebox'}"># of Store Ready inners enclosed</th>
+                        <th data-options="field:'PreTicketed',width:100,align:'center',hidden:true,editor:{type:'validatebox'}">Pre-ticketed</th>
+                        <th data-options="field:'FactoryName',width:80,align:'center'">FTY</th>
+                        <th data-options="field:'Desc',width:200,align:'center',editor:{type:'validatebox'}">Description</th>
+
+                        <th data-options="field:'Department',width:100,align:'center',hidden:true,editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:list_Department,
+                                    editable:false,
+                                }
+                            },formatter:formatDepartment">部门</th>
+
+                        <th data-options="field:'StyleName',width:80,align:'center'">Style</th>
+                        <th data-options="field:'UnitName',width:80,align:'center'">单位</th>
+                        <th data-options="field:'INR',width:80,align:'center',hidden:true,editor:{type:'numberbox',options:{precision:0}}">INR/INR</th>
+
+                        <th data-options="field:'ColorName',width:100,align:'center',hidden:true,editor:{type:'validatebox'}">颜色</th>
+
+                        <th data-options="field:'InnerBoxRate',width:80,align:'center'">Inner Pack</th>
+
+                        <th data-options="field:'OuterBoxRate',width:80,align:'center'">Case Pack</th>
+                        <th data-options="field:'OuterLengthIN',width:80,align:'center'">Case L</th>
+                        <th data-options="field:'OuterWidthIN',width:80,align:'center'">Case W</th>
+                        <th data-options="field:'OuterHeightIN',width:80,align:'center'">Case H</th>
+                        <th data-options="field:'OuterVolume',width:80,align:'center'">Cu'ft</th>
+                        <th data-options="field:'TotalCuft',width:80,align:'center'">Total Cu'ft</th>
+
+                        <th data-options="field:'TotalCBM',width:80,align:'center'">Total CBM</th>
+
+                        <th data-options="field:'Ctns',width:80,align:'center'">Ctns</th>
+                        <th data-options="field:'Qty',width:80,align:'center',editor:{type:'validatebox',options:{required:true,validType:['integer']}}">Qty</th>
+                        <th data-options="field:'SalePrice',width:80,align:'center',editor:{type:'validatebox',options:{required:true}}">PO Price($)</th>
+                        <th data-options="field:'SumSalePrice',width:80,align:'center'">Total PO($)</th>
+
+                        <th data-options="field:'NetPrice',width:80,align:'center',editor:{type:'validatebox',options:{required:true}}">Net Price($)</th>
+                        <th data-options="field:'SumNetPrice',width:80,align:'center'">Total Net($)</th>
+
+                        <th data-options="field:'PriceFactoryFormatter',width:80,align:'center'">FTY Price</th>
+                        <th data-options="field:'SumPriceFactoryFormatter',width:80,align:'center'">Total Fty</th>
+
+                        <th data-options="field:'ELC',width:80,align:'center',editor:{type:'validatebox'}">ELC($)</th>
+                        <th data-options="field:'RetailPrice',width:80,align:'center',editor:{type:'validatebox'}">Retail($)</th>
+                        <th data-options="field:'MUPercent',width:80,align:'center'">PO MU%</th>
+                        <th data-options="field:'RateFormatter',width:80,align:'center'">Rate</th>
+                        <th data-options="field:'Commission',width:80,align:'center',editor:{type:'validatebox',options:{required:true}}">Commission%</th>
+                        <th data-options="field:'Remarks',width:80,align:'center',editor:{type:'validatebox'}">Remark</th>
+
+                        <th data-options="field:'ID',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'ProductFrom',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'ProductID',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'Image',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'CommissionAmount',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'CurrencySign',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'PriceFactory',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'MiscImportLoad',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'Allowance',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'Agent',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'Rate',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'QuoteTemplateFileName',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'PalletPc',width:80,align:'center',hidden:true">PalletPc</th>
+                        <th data-options="field:'Duty',width:80,align:'center',hidden:true">Duty</th>
+                        <th data-options="field:'FreightRate',width:80,align:'center',hidden:true">FreightRate</th>
+                        <th data-options="field:'Freight',width:80,align:'center',hidden:true">Freight</th>
+                        <th data-options="field:'FOBFTY',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'IsProductMixed',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'ParentProductMixedID',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'FactoryID',width:80,align:'center',hidden:true"></th>
+                        <th data-options="field:'QuotProductID',width:80,align:'center',hidden:true"></th>
+                    </tr>
+                </thead>
+
+                <tbody data-bind="foreach: Order().list_OrderProduct">
+                    <tr>
+                        <td></td>
+                        <td data-bind="text:SortIndex"></td>
+                        <td data-bind="text:No"></td>
+                        <td data-bind="text:IsProductFitting"></td>
+
+                        <td data-bind="text:SkuNumber"></td>
+                        <td data-bind="text:SkuCode"></td>
+                        <td data-bind="text:UPC"></td>
+                        <td data-bind="text:QualityAssuranceTesting"></td>
+                        <td data-bind="text:OfStoreReadyInnersEnclosed"></td>
+                        <td data-bind="text:PreTicketed"></td>
+                        <td data-bind="text:FactoryName"></td>
+                        <td data-bind="text:Desc"></td>
+                        <td data-bind="text:Department"></td>
+
+                        <td data-bind="text:StyleName"></td>
+                        <td data-bind="text:UnitName"></td>
+                        <td data-bind="text:INR"></td>
+                        <td data-bind="text:ColorName"></td>
+                        <td data-bind="text:InnerBoxRate"></td>
+
+                        <td data-bind="text:OuterBoxRate"></td>
+                        <td data-bind="text:OuterLengthIN"></td>
+                        <td data-bind="text:OuterWidthIN"></td>
+                        <td data-bind="text:OuterHeightIN"></td>
+                        <td data-bind="text:OuterVolume"></td>
+                        <td data-bind="text:TotalCuft"></td>
+
+                        <td data-bind="text:TotalCBM"></td>
+
+                        <td data-bind="text:Ctns"></td>
+                        <td data-bind="text:Qty"></td>
+                        <td data-bind="text:formatPrice(SalePrice,GetCost_RoundNumber(QuoteTemplateFileName))"></td>
+                        <td data-bind="text:SumSalePrice"></td>
+
+                        <td data-bind="text:NetPrice"></td>
+                        <td data-bind="text:SumNetPrice"></td>
+
+                        <td data-bind="text:PriceFactoryFormatter"></td>
+                        <td data-bind="text:SumPriceFactoryFormatter"></td>
+
+                        <td data-bind="text:ELC"></td>
+                        <td data-bind="text:RetailPrice"></td>
+                        <td data-bind="text:MUPercent"></td>
+                        <td data-bind="text:RateFormatter"></td>
+                        <td data-bind="text:Commission"></td>
+                        <td data-bind="text:Remarks"></td>
+
+                        <td data-bind="text:ID"></td>
+                        <td data-bind="text:ProductFrom"></td>
+                        <td data-bind="text:ProductID"></td>
+                        <td data-bind="text:Image"></td>
+                        <td data-bind="text:CommissionAmount"></td>
+                        <td data-bind="text:CurrencySign"></td>
+                        <td data-bind="text:PriceFactory"></td>
+                        <td data-bind="text:MiscImportLoad"></td>
+                        <td data-bind="text:Allowance"></td>
+                        <td data-bind="text:Agent"></td>
+                        <td data-bind="text:Rate"></td>
+                        <td data-bind="text:QuoteTemplateFileName"></td>
+                        <td data-bind="text:PalletPc"></td>
+                        <td data-bind="text:Duty"></td>
+                        <td data-bind="text:FreightRate"></td>
+                        <td data-bind="text:Freight"></td>
+                        <td data-bind="text:FOBFTY"></td>
+                        <td data-bind="text:IsProductMixed"></td>
+                        <td data-bind="text:ParentProductMixedID"></td>
+                        <td data-bind="text:FactoryID"></td>
+                        <td data-bind="text:QuotProductID"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="zongji">
+            <ul>
+                <li id="li_ALL_SumSalePrice_Ch" class="w_60 summaryCh">
+                    <span>Total PO：</span>
+                    <label class="red">$</label><label id="label_ALL_SumSalePrice_Ch" class="control-label"></label>
+                </li>
+                <li id="li_ALL_SumPriceFactory_Ch" class="summaryCh">
+                    <span>Total FTY：</span>
+                    <label class="red">¥</label><label id="label_ALL_SumPriceFactory_Ch" class="control-label"></label>
+                </li>
+                <li id="li_ALL_SumRate_Ch" class="summaryCh">
+                    <span>Rate：</span>
+                    <label class="red"></label><label id="label_ALL_SumRate_Ch" class="control-label"></label>
+                </li>
+                <li class="w_60 summaryEn">
+                    <span>Total PO：</span>
+                    <label class="red">$</label><label id="label_ALL_SumSalePrice_En" class="control-label"></label>
+                </li>
+                <li class="summaryEn">
+                    <span>Total FTY：</span>
+                    <label class="red">$</label><label id="label_ALL_SumPriceFactory_En" class="control-label"></label>
+                </li>
+                <li class="summaryEn">
+                    <span>Rate：</span>
+                    <label id="label_ALL_SumRate_En" class="control-label"></label>%
+                </li>
+
+                <li class="Additional" style="width:100%;">
+                    <span style="float: left;line-height: 30px;">Additional：$</span>
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        <input id="Additional" class="form-control" type="text" style="width: 100px;float: left;" value="@Model.Additional" disabled="disabled" />
+                    }
+                    else
+                    {
+                        <input id="Additional" class="form-control" type="text" style="width: 100px;float: left;" value="@Model.Additional" />
+                    }
+                </li>
+
+                <li class="w_60 summaryTotal">
+                    <span>Grand Total：</span>
+                    <label class="red">$</label><label id="label_ALL_SumSalePrice" class="control-label"></label>
+                </li>
+                <li class="summaryTotal">
+                    <span>Commission：</span>
+                    <label class="red">$</label><label id="label_ALL_SumCommission" class="control-label"></label>
+                </li>
+            </ul>
+
+            <input id="ALL_SumSalePrice_Ch" type="hidden" />
+            <input id="ALL_SumPriceFactory_Ch" type="hidden" />
+            <input id="ALL_SumRate_Ch" type="hidden" />
+            <input id="ALL_SumSalePrice_En" type="hidden" />
+            <input id="ALL_SumPriceFactory_En" type="hidden" />
+            <input id="ALL_SumRate_En" type="hidden" />
+            <input id="ALL_SumSalePrice" type="hidden" />
+            <input id="hidden_ALL_SumSalePrice" type="hidden" />
+            <input id="ALL_SumCommission" type="hidden" />
+        </div>
+
+        <div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">出货方式：</label>
+                <div class="col-sm-8 control-label">
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        <input class="form-control" id="ShippingType" name="ShippingType" type="text" value="@Model.ShippingType" disabled="disabled">
+                    }
+                    else
+                    {
+                        <input class="form-control" id="ShippingType" name="ShippingType" type="text" value="@Model.ShippingType">
+                    }
+                </div>
+            </div>
+            <div class="form-group col-sm-12 has-feedback">
+                <label class="col-sm-2 control-label" style="width:16.2%">备注：</label>
+                <div class="col-sm-10 control-label">
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.TextAreaFor(d => d.CabinetRemark, new { @class = "form-control", disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.TextAreaFor(d => d.CabinetRemark, new { @class = "form-control" })
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    if (Model.PageType == PageTypeEnum.Approval || Model.PageType == PageTypeEnum.Details)
+    {
+        <h3 class="popTitle">
+            审批意见
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            @if (Model.PageType == PageTypeEnum.Details || Model.OrderStatusID == (int)OrderStatusEnum.NotPassApproval)
+            {
+                @Html.TextAreaFor(d => d.CheckSuggest, new { @class = "form-control", disabled = "disabled" })
+            }
+            else
+            {
+                @Html.TextAreaFor(d => d.CheckSuggest, new { @class = "form-control" })
+            }
+        </div>
+    }
+
+    <div class="popBtns">
+        @switch (Model.PageType)
+        {
+            case PageTypeEnum.Add:
+            case PageTypeEnum.Edit:
+                <button type="button" class="btn btn-primary" data-bind="click: $root.save.bind($data, @((int)OrderStatusEnum.OutLine))">保存</button>
+                <button type="button" class="btn btn-danger" data-bind="click: $root.save.bind($data, @((int)OrderStatusEnum.PendingApproval))">保存并提交审批</button>
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                break;
+            case PageTypeEnum.Details:
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">关闭</button>
+                break;
+            case PageTypeEnum.Approval:
+                <button type="button" class="btn btn-primary" data-bind="click: $root.save.bind($data, @((int)OrderStatusEnum.PassedApproval))">审批通过</button>
+                <button type="button" class="btn btn-danger" data-bind="click: $root.save.bind($data, @((int)OrderStatusEnum.NotPassApproval))">驳回重审</button>
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                break;
+            default:
+                break;
+
+        }
+        <input id="btnSaveDraft" type="button" data-bind="click: $root.SaveDraft.bind($data)" style="display:none;" />
+    </div>
+
+    if (Model.PageType != PageTypeEnum.Add)
+    {
+        <h3 class="popTitle">
+            历史记录
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            <div class="history_box">
+                <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr class="t_bg">
+                            <td width="20%">日期</td>
+                            <td width="20%">操作者</td>
+                            <td width="30%">状态</td>
+                            <td width="30%">意见/备注</td>
+                        </tr>
+                        @if (Model.list_OrderHistory != null)
+                        {
+                            foreach (var item_history in Model.list_OrderHistory.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                                <tr>
+                                    <td>@item_history.DT_CREATEDATE</td>
+                                    <td>@item_history.ST_CREATEUSER</td>
+                                    <td>@item_history.Comment</td>
+                                    <td>@item_history.CheckSuggest</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+    }
+
+
+    <div id="temp_productfitting" style="display:none;">
+        <div class="datagrid-row-detail">
+            <div class="panel" style="display: block;">
+                <div class="temp_productfitting_content" title="">
+                    <div class="temp_productfitting_left">
+                        <img class="temp_Img" src="" style="width:100px;">
+                    </div>
+
+                    <div class="temp_productfitting_right">
+                        <div class="temp_productfitting_right_list">
+                            <span class="temp_productfitting_label">货号:</span>
+                            <span class="temp_No"></span>
+                        </div>
+
+                        <div class="temp_productfitting_right_list">
+                            <span class="temp_productfitting_label">品名:</span>
+                            <span class="temp_Name"></span>
+                        </div>
+
+                    </div>
+
+                    <div class="temp_productfitting_right">
+                        <div class="temp_productfitting_right_list">
+                            <span class="temp_productfitting_label">工厂:</span>
+                            <span class="temp_FactoryName"></span>
+                        </div>
+
+                        <div class="temp_productfitting_right_list">
+                            <span class="temp_productfitting_label">价格:</span>
+                            <span class="temp_PriceFactory"></span>
+                        </div>
+                    </div>
+
+                    <div class="temp_productfitting_right">
+                        <div class="temp_productfitting_right_list">
+                            <span class="temp_productfitting_label">数量:</span>
+                            <span class="temp_Qty"></span>
+                        </div>
+
+                        <div class="temp_productfitting_right_list">
+                            <span class="temp_productfitting_label">跟单费用比例(%):</span>
+                            <span class="temp_FeesRate"></span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="temp_productfitting2" style="display:none;"></div>
+
+    <div class="beizhu">
+        <ul>
+            <li>PS： 字体颜色为红色是必填项；交货开始时间不能大于交货结束时间；客户下单日期不能大于交货开始时间。</li>
+        </ul>
+    </div>
+
+}
+
+<script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+<script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+<script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+<script src="@Url.Content("~/Scripts/jquery.easyui.datagrid-groupview.js")"></script>
+
+@section scripts{
+    <script>
+
+        $(function () {
+            $("select[name=CustomerID]").selectpicker();
+
+            $("select[name='OrderOrigin'] option[value='" + $("#OrderOrigin").val() + "']");
+
+            OrderOriginChange($("select[name=OrderOrigin]").val());
+
+            $("#frmEdit").attr("disabled", "disabled");
+
+            $("#frmEdit .Wdate").blur(function () {
+                var time = $(this).val();
+                $(this).attr("value", time);
+                $('#frmEdit').bootstrapValidator('revalidateField', $(this).prop("name"));
+            });
+
+            $("#MyPopGrid").datagrid({
+                checkOnSelect:true,
+                onBeforeEdit:onBeforeEdit,
+                onAfterEdit:onAfterEdit,
+                onCancelEdit:onCancelEdit,
+                onLoadSuccess:onLoadSuccess,
+                onClickCell: @(Model.PageType == PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+                showFooter: true,
+                onBeginEdit:onBeginEdit,
+            });
+
+            $("#MyPopGrid_ProductMixed").datagrid({
+                checkOnSelect:true,
+                columns:GetColumns(),
+                data:@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.listProducts_Mixed))),
+            });
+
+            //每次加载
+            var rows = $('#MyPopGrid').datagrid("getRows");
+            if (rows && rows.length > 0) {
+                for (var i = 0; i < rows.length; i++) {
+
+                    var field = "NetPrice";
+                    CalculateRow(rows[i],field);
+
+                    updateActionsInfo(i);
+                }
+            }
+
+            GetTotal();
+            BindGroupGrid();
+            GetCustomerInfo();
+        });
+
+        var list_Department = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["Department"])));
+
+        function formatDepartment(value,row,index){
+            for(var i=0; i < list_Department.length; i++){
+                if (list_Department[i].Value == value)
+                    return list_Department[i].Text;
+            }
+            return value;
+        }
+
+        function formatStatus(value,row,index){
+            if (value=="true") {
+                return "是";
+            }else if (value=="false") {
+                return "否";
+            }
+            return "";
+        }
+
+        function onBeginEdit(index,row){
+            $(".datagrid-editable-input,.validatebox-text").on("keypress",function(e){
+                if(e.keyCode == 13){
+                    acceptInfo(row);
+                    UpdateSubDatagrid(index,row);
+
+                    UpdateExpander();
+                }
+            });
+
+
+            $(".datagrid-editable-input").on("change", function (e) {
+                var field = $(this).parents("td[field]").attr("field");
+                CalculateRow(row,field);
+            });
+        }
+
+        //销售订单来源下拉框修改
+        $("select[name=OrderOrigin]").change(function () {
+            var $this = $(this);
+            OrderOriginChange($this.val());
+        });
+
+        function OrderOriginChange(val) {
+            if (val == "手工录入") {
+                if ($("#PageType").val() == "Check" || $("#PageType").val() == "Approval") {
+                    $("select[name=CustomerID]").attr("disabled", "disabled");
+                } else {
+                    $("select[name=CustomerID]").removeAttr("disabled");
+                }
+                $("#btnSelectProduct").show();
+                $("#btnSelectQuot").hide();
+            }
+            else if (val == "报价单生成") {
+                $("select[name=CustomerID]").attr("disabled", "disabled");
+                $("#btnSelectProduct").hide();
+                $("#btnSelectQuot").show();
+            }
+            else {
+                $("select[name=CustomerID]").removeAttr("disabled");
+                $("#btnSelectProduct").hide();
+                $("#btnSelectQuot").hide();
+            }
+
+            $("select[name=CustomerID]").selectpicker("refresh");
+        }
+
+        $("#btnSelectProduct").click(function () {
+            if ($('#PortID').val() == "") {
+                $.messager.alert("提示", "请选择出运港！", "info", function () {
+                    $("#PortID").focus();
+                });
+                return;
+            }
+
+            if ($('#CustomerID').val() == "") {
+                $.messager.alert("提示", "请选择客户！", "info", function () {
+                    $("#CustomerID").focus();
+                });
+                return;
+            }
+
+            $('#myModal1').modal({
+                keyboard: true
+            });
+        });
+
+        $("#btnSelectQuot").click(function () {
+            $('#myModal2').modal({
+                keyboard: true
+            });
+        });
+
+        $("#btnSelect").click(function () {
+            SelectProduct();
+        });
+
+        //手工录入
+        function SelectProduct() {
+            $("#QuotID").val("");
+            var idArray = getSelections("#modalGrid", "ProductID");
+            if (idArray.length <= 0) {
+                $.messager.alert("提示", "请选择产品！");
+                return;
+            }
+
+            var ProductArray = [];
+            var rows = $('#MyPopGrid').datagrid('getRows');
+            for (var i = 0; i < rows.length; i++) {
+                var thisProductID = rows[i].ProductID;
+                if (idArray.contains(thisProductID)) {
+                    ProductArray.push(rows[i].No);
+                    idArray = idArray.remove(thisProductID);
+                }
+            }
+            if (ProductArray.length > 0) {
+                $.messager.alert("提示", "产品货号：[" + ProductArray.join(',') + "]在订单中已存在！");
+            }
+
+            $.get("@Url.Content("~/Product/GetProductInfoByOrder")", {
+                idList: idArray.join(','),
+                CustomerID: $('#CustomerID').val(),
+                PortID: $("#PortID").val(),
+            },function (data) {
+                if (data.length > 0) {
+                    var rows = $('#MyPopGrid').datagrid('getRows');
+                    //debugger;
+                    var maxIndex = 0;
+                    for (var i = 0; i < rows.length; i++) {
+                        var sortIndex= parseInt(rows[i]["SortIndex"]);
+                        if (maxIndex < sortIndex) {
+                            maxIndex = sortIndex;
+                        }
+                    }
+
+                    for (var i = 0; i < data.length; i++) {
+                        ++maxIndex;
+                        data[i].ID = -data[i].ProductID;
+                        data[i].SortIndex = maxIndex;
+                        data[i].PriceFactoryFormatter = data[i].CurrencySign + data[i].PriceFactory;
+                        data[i].QualityAssuranceTesting = false;
+
+                        $('#MyPopGrid').datagrid('appendRow', data[i]);
+                        //rows.push(data[i]);
+                    }
+
+                    $.messager.show({ title: "提示", msg: "产品添加成功！", timeout: 2000, showType: 'slide' });
+
+                    $("select[name=OrderOrigin] option").removeAttr("selected");
+                    $("select[name=OrderOrigin] option:eq(0)").attr("selected", "selected");
+                    
+                    UpdateExpander();
+
+                    InitPopover();
+                    hoverPopover();
+
+                    for (var i = 0; i < data.length; i++) {
+                        Add_ProductMixed(data[i]);
+                    }
+                }
+
+            }, "json");
+            //$(".modal-header .close").click();//关闭
+        }
+
+        //选中报价单
+        function SelectedQuot2(id) {
+            $("#QuotID").val(id);
+            $.get("/Quote/GetQuote", { id: id },
+               function (data) {
+                   $("select[name=CustomerID] option").removeAttr("selected");
+                   $("select[name=CustomerID] option").each(function () {
+                       if ($(this).val() == data.CustomerID) {
+                           $(this).attr({ "selected": "selected" });
+                       }
+                   });
+                   $("select[name=CustomerID]").val(data.CustomerID);
+                   //$("select[name=CustomerID]").attr({ "disabled": "disabled" });
+                   $("select[name=CustomerID]").selectpicker("refresh");
+
+                   $("input[name=CustomerDate]").val(data.QuotDate);
+
+                   GetCustomerInfo();
+               });
+
+            $.get("/Quote/GetQuoteProducts", { id: id },
+                function (data) {
+                    if (data.length > 0) {
+
+                        var idArray = [];
+                        for (var i = 0; i < data.length; i++) {
+                            idArray.push(data[i].ProductID);
+                        }
+
+                        var ProductArray = [];
+                        var rows = $('#MyPopGrid').datagrid('getRows');
+                        for (var i = 0; i < rows.length; i++) {
+                            var thisProductID = rows[i].ProductID;
+                            if (idArray.contains(thisProductID)) {
+                                ProductArray.push(rows[i].No);
+                                idArray = idArray.remove(thisProductID);
+                            }
+                        }
+                        if (ProductArray.length > 0) {
+                            $.messager.alert("提示", "产品货号：[" + ProductArray.join(',') + "]在订单中已存在！");
+                        }
+
+                        $("select[name=OrderOrigin] option:eq(1)").attr("selected", "selected");
+
+                        var rows = $('#MyPopGrid').datagrid('getRows');
+                        var maxIndex = 0;
+                        for (var i = 0; i < rows.length; i++) {
+                            var sortIndex= rows[i]["SortIndex"];
+                            if (maxIndex < sortIndex) {
+                                maxIndex = sortIndex;
+                            }
+                        }
+
+                        for (var i = 0; i < data.length; i++) {
+                            if (idArray.contains(data[i].ProductID)) {
+                                ++maxIndex;
+                                data[i].QuotProductID = data[i].ID;
+                                data[i].ID = -data[i].ProductID;
+                                data[i].SortIndex = maxIndex;
+                                data[i].SalePrice = data[i].Cost;
+                                if (data[i].QuoteTemplateFileName == "S60") {
+                                    data[i].SalePrice =NumberToRound( data[i].Cost * (1 - data[i].Agent / 100),2);
+                                }
+                                data[i].RetailPrice = data[i].Retail;
+                                data[i].PriceFactoryFormatter = data[i].CurrencySign + data[i].PriceFactory;
+                                data[i].QualityAssuranceTesting = false;
+                                $('#MyPopGrid').datagrid('appendRow', data[i]);
+                                //rows.push(data[i]);
+                            }
+                        }
+
+                        if (idArray.length>0) {
+                            $.messager.show({ title: "提示", msg: "产品添加成功！", timeout: 2000, showType: 'slide' });
+                        }
+                        
+                        UpdateExpander();
+
+                        InitPopover();
+                        hoverPopover();
+
+                        for (var i = 0; i < data.length; i++) {
+                            Add_ProductMixed(data[i]);
+                        }
+
+                    }
+                }, "json");
+
+            $(".modal-header .close").click();//关闭
+            return false;
+        }
+
+        //客户下拉框改变
+        $("select[name=CustomerID]").change(function () {
+            GetCustomerInfo();
+        });
+
+        $("#CurrencyExchange").change(function() {
+            GetTotal();
+        });
+
+        //获取客户信息
+        function GetCustomerInfo() {
+            var CustomerID = $("select[name=CustomerID]").val();
+            if (CustomerID<=0) {
+                return;
+            }
+            $.get("@Url.Content("~/Quote/GetCustomer")", {
+                CustomerID: CustomerID,
+            }).done(function (data) {
+                var SelectCustomer=data[0].SelectCustomer;
+                $("#temp_SelectCustomer").val(SelectCustomer);
+
+                $("#QuoteTemplateFileName").val(data[0].QuoteTemplateFileName);
+                $("#Commission").val(data[0].Commission);
+                $("#Agent").val(data[0].Agent);
+                $("#Allowance").val(data[0].Allowance);
+                if (SelectCustomer=="S164") {
+                    $("#divCurrencyExchange").show();
+                    if ($("#CurrencyExchange").val()=="") {
+                        $("#CurrencyExchange").val(6.5);
+                    }
+
+                    var isDetailPage = @(Model.PageType == PageTypeEnum.Details?"true":"false");
+                    if (isDetailPage) {
+                        $("#divCurrencyExchange").hide();
+                        //$("#CurrencyExchange").attr("disabled","disabled");
+
+                    }
+                    GetTotal();
+                }else {
+                    $("#divCurrencyExchange").hide();
+                    $("#CurrencyExchange").val("");
+                }
+
+                var $thisDatagrid = $('#MyPopGrid');
+                ShowOrHideColumn($thisDatagrid);
+
+                if (SelectCustomer=="S188") {
+                    $("#divCategoryManager").show();
+                    GetTotal();
+                }else {
+                    $("#divCategoryManager").hide();
+                    $("#CategoryManager").val("");
+                }
+
+                if (SelectCustomer=="S13") {
+                    $("#divTransportType").show();
+                    $("#divTestingStandardsFilename").show();
+                }else {
+                    $("#divTransportType").hide();
+                    $("#divTestingStandardsFilename").hide();
+                }
+
+            });
+        }
+
+        function deleteSelected() {
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+
+                    var idArray = [];
+                    var rows = $("#MyPopGrid").datagrid('getSelections');
+                    for (var i = 0; i < rows.length; i++) {
+                        var rowIndex=$('#MyPopGrid').datagrid('getRowIndex',rows[i]);
+                        if (rowIndex >= 0) {
+                            $('#MyPopGrid').datagrid('deleteRow', rowIndex);
+                            Delete_ProductMixed(rows[i].ID);
+                        }
+                    }
+
+                    var index2=0;
+                    $('#MyPopGrid').prev().find(".datagrid-body table tbody tr:odd").each(function(index,e){
+                        if ($(e).find("table.datagrid-f").attr("id")!=undefined) {
+                            if ($(e).find("table.datagrid-f").attr("id").indexOf("ddv-")>=0) {
+                                $(e).find("table.datagrid-f").removeAttr("id").attr("id","ddv-"+index2);
+                                index2++;
+                            }
+                        }
+
+                        if ($(e).find("table").attr("id")!=undefined) {
+                            if ($(e).find("table").attr("id").indexOf("ddv-")>=0) {
+                                $(e).find("table").removeAttr("id").attr("id","ddv-"+index2);
+                                index2++;
+                            }
+                        }
+
+                    });
+                    
+                    editIndex = undefined;
+
+                    UpdateExpander();
+
+                    GetTotal();
+                }
+            });
+
+        }
+        function KOModel() {
+            var self = this;
+
+            self.OrderStatusID = ko.observable();
+
+            self.OrderID = ko.observable();
+            self.OrderOrigin = ko.observable();
+            self.OrderDateStart = ko.observable();
+            self.OrderDateEnd = ko.observable();
+            self.CustomerDate = ko.observable();
+
+            self.IsThirdVerification = ko.observable();
+            self.IsThirdAudits = ko.observable();
+            self.IsThirdTest = ko.observable();
+            self.IsThirdSampling = ko.observable();
+
+            self.CustomerID = ko.observable();
+            self.PortID = ko.observable();
+            self.DestinationPortID = ko.observable();
+            self.POID = ko.observable();
+            self.EHIPO = ko.observable();
+
+            self.CheckSuggest = ko.observable();
+
+            self.ShippingType = ko.observable();
+            self.CabinetRemark = ko.observable();
+
+            self.OrderRate = ko.observable();
+            self.OrderRate_En = ko.observable();
+            self.OrderAmount = ko.observable();
+
+            self.ST_CREATEUSER = ko.observable("@(Model.ST_CREATEUSER)");
+            self.ApproverIndex = ko.observable("@(Model.ApproverIndex)");
+
+            self.QuotID = ko.observable();
+            self.CurrencyExchange = ko.observable();
+            self.Additional = ko.observable();
+            self.CategoryManager = ko.observable();
+            self.TransportType = ko.observable();
+            self.TestingStandardsFilename = ko.observable();
+
+            self.list_OrderProduct = ko.observableArray();
+            self.listProducts_Mixed = ko.observableArray();
+
+        }
+
+        function KOViewModel() {
+            var self = this;
+
+            self.Order = ko.observableArray();
+            self.Order(new KOModel());
+
+            self.Order().list_OrderProduct(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_OrderProduct != null ? Model.list_OrderProduct.OrderBy(d=>d.SortIndex) : null))));
+
+            var hasCached = @(new ERP.BLL.ERP.Order.OrderService().GetOneCachedOrder(ERP.WebNew.Service.CurrentUserServices.Me.UserID, Model.OrderID) == null ? "false" : "true");
+            var openCached=@((string.IsNullOrEmpty(Request.QueryString["openCached"]) || Request.QueryString["openCached"] == "false") ? "true" : "false");
+            var isEditPage = @(Model.PageType==PageTypeEnum.Edit?"true":"false");
+            var isAddPage = @(Model.PageType==PageTypeEnum.Add?"true":"false");
+            if(openCached && hasCached &&(isEditPage||isAddPage)){
+                $.messager.confirm("提示", "发现您有未保存的销售订单信息，是否加载？", function(r){
+                    if(r){
+                        window.location.href = "/Order/Edit/@(Model.OrderID)?openCached=true";
+                        GetTotal();
+
+                    }
+                });
+            }
+
+            var checkSubmit = false;//防止重复提交
+            self.save = function (StatusID) {
+
+                var rows = $('#MyPopGrid_ProductMixed').datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.Order().listProducts_Mixed(rows);
+                }
+
+                if (editIndex != undefined) {
+                    $.messager.confirm("提示", "发现您有正在编辑状态的产品，是否保存？", function(r){
+                        if(r){
+                            endEditingInfo();
+                        }
+                    });
+                    return false;
+                }
+
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+
+                if (bootstrapValidator.isValid()) {
+
+                    var OrderID = $("#OrderID").val();
+                    var OrderOrigin = $("select[name=OrderOrigin]").val();
+                    var OrderDateStart = $("input[name=OrderDateStart]").val();
+                    var OrderDateEnd = $("input[name=OrderDateEnd]").val();
+                    var CustomerDate = $("input[name=CustomerDate]").val();
+
+                    var IsThirdVerification = $("input[name=IsThirdVerification]").is(":checked") ? true : false;
+                    var IsThirdAudits = $("input[name=IsThirdAudits]").is(":checked") ? true : false;
+                    var IsThirdTest = $("input[name=IsThirdTest]").is(":checked") ? true : false;
+                    var IsThirdSampling = $("input[name=IsThirdSampling]").is(":checked") ? true : false;
+
+                    var CustomerID = $("select[name=CustomerID]").val();
+                    var PortID = $("select[name=PortID]").val();
+                    var DestinationPortID = $("select[name=DestinationPortID]").val();
+                    var POID = $("input[name=POID]").val();
+                    var EHIPO = $("input[name=EHIPO]").val();
+
+                    var ShippingType = $("input[name=ShippingType]").val();
+                    var CabinetRemark = $("textarea[name=CabinetRemark]").val();
+
+                    var CheckSuggest = $.trim($("textarea[name=CheckSuggest]").val());
+
+                    if (OrderDateStart > OrderDateEnd) {
+                        $.messager.alert("提示", "交货开始时间不能大于交货结束时间！");
+                        return false;
+                    }
+                    if (CustomerDate > OrderDateStart) {
+                        $.messager.alert("提示", "客户下单日期不能大于交货开始时间！");
+                        return false;
+                    }
+
+                    if (CustomerID == "") {
+                        $.messager.alert("提示", "请选择客户！");
+                        return false;
+
+                    }
+
+                    var NotPassApproval = @((int)OrderStatusEnum.NotPassApproval);
+                    if (StatusID == NotPassApproval && CheckSuggest == "") {
+                        $.messager.alert("提示", "请输入审批意见！", "info", function () {
+                            $("#CheckSuggest").focus();
+                        });
+                        return;
+                    }
+
+                    self.Order().OrderID(OrderID);
+                    self.Order().OrderOrigin(OrderOrigin);
+                    self.Order().OrderDateStart(OrderDateStart);
+                    self.Order().OrderDateEnd(OrderDateEnd);
+                    self.Order().CustomerDate(CustomerDate);
+
+                    self.Order().IsThirdVerification(IsThirdVerification);
+                    self.Order().IsThirdAudits(IsThirdAudits);
+                    self.Order().IsThirdTest(IsThirdTest);
+                    self.Order().IsThirdSampling(IsThirdSampling);
+
+                    self.Order().CustomerID(CustomerID);
+                    self.Order().PortID(PortID);
+                    self.Order().DestinationPortID(DestinationPortID);
+                    self.Order().POID(POID);
+                    self.Order().EHIPO(EHIPO);
+
+                    self.Order().CheckSuggest(CheckSuggest);
+
+                    self.Order().ShippingType(ShippingType);
+                    self.Order().CabinetRemark(CabinetRemark);
+
+                    self.Order().OrderRate($("#ALL_SumRate_Ch").val());
+                    self.Order().OrderRate_En($("#ALL_SumRate_En").val());
+                    self.Order().OrderAmount($("#ALL_SumSalePrice").val());
+
+                    self.Order().OrderStatusID(StatusID);
+
+                    self.Order().QuotID($("#QuotID").val());
+                    self.Order().CurrencyExchange($("#CurrencyExchange").val());
+                    self.Order().Additional($("#Additional").val());
+                    self.Order().CategoryManager($("#CategoryManager").val());
+                    self.Order().TransportType($("#TransportType").val());
+                    self.Order().TestingStandardsFilename($("#TestingStandardsFilename").val());
+
+                    $("#bntSave").removeAttr("disabled");
+
+                    var rows = $('#MyPopGrid').datagrid("getRows");
+                    if (rows && rows.length > 0) {
+                        self.Order().list_OrderProduct(rows);
+
+                        var validQty = true;
+                        var validSalePrice = true;
+                        var validRatailPrice = true;
+
+                        for (var i = 0; i < rows.length; i++) {
+                            var thisRow=rows[i];
+                            if (parseInt(thisRow.Qty) != thisRow.Qty || parseInt(thisRow.Qty) <= 0) {
+                                validQty = false;
+                                break;
+                            }
+                            if (parseFloat(thisRow.SalePrice) != thisRow.SalePrice || parseFloat(thisRow.SalePrice) <= 0) {
+                                validSalePrice = false;
+                                break;
+                            }
+                            if (parseFloat(thisRow.RetailPrice) != thisRow.RetailPrice || parseFloat(thisRow.RetailPrice) <= 0) {
+                                validRatailPrice = false;
+                                break;
+                            }
+                        }
+                        
+                        var customerCode = $("#CustomerID option:selected").text();
+                        console.log(customerCode);
+                        if (!validQty) {
+                            $.messager.alert("提示", "Qty必须是正整数！");
+                            return;
+                        } else if (!validSalePrice) {
+                            if (customerCode != "" && !jav.list_ContainZeroPrice_Customer.contains(customerCode.trim())) {
+                                $.messager.alert("提示", "PO Price必须是大于0的数字！");
+                                return;
+                            }
+                        } else if (!validRatailPrice) {
+                            if (customerCode != "" && !jav.list_ContainZeroPrice_Customer.contains(customerCode.trim())) {
+                                $.messager.alert("提示", "Retail必须是大于0的数字！");
+                                return;
+                            }
+                        }
+                    }
+                    else {
+                        self.Order().list_OrderProduct(null);
+                        $.messager.alert("提示", "请选择产品信息！");
+                        return;
+                    }
+
+                    if (checkSubmit) {
+                        $.messager.alert("提示", "请勿重复提交！");
+                        return;
+                    }
+                    checkSubmit = true;
+                    loading();
+
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@Url.Content("~/Order/Edit/" + Model.OrderID)",
+                        data: ko.toJSON(self.Order())
+                    }).done(function (data) {
+                        checkSubmit = false;
+                        completeLoading();
+                        if (!data.IsSuccess) {
+                            $.messager.alert("提示",data.Msg);
+                        }
+                        else {
+                            parentGridReload();
+                            OA.CloseMe(true);
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    });
+                }
+                else {
+                    $(".glyphicon-remove:first").prev().focus();
+                    return;
+                }
+            };
+
+            self.SaveDraft = function () {
+
+                var rows = $('#MyPopGrid_ProductMixed').datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.Order().listProducts_Mixed(rows);
+                }
+
+                var OrderID = $("#OrderID").val();
+                var OrderOrigin = $("select[name=OrderOrigin]").val();
+                var OrderDateStart = $("input[name=OrderDateStart]").val();
+                var OrderDateEnd = $("input[name=OrderDateEnd]").val();
+                var CustomerDate = $("input[name=CustomerDate]").val();
+
+                var IsThirdVerification = $("input[name=IsThirdVerification]").is(":checked") ? true : false;
+                var IsThirdAudits = $("input[name=IsThirdAudits]").is(":checked") ? true : false;
+                var IsThirdTest = $("input[name=IsThirdTest]").is(":checked") ? true : false;
+                var IsThirdSampling = $("input[name=IsThirdSampling]").is(":checked") ? true : false;
+
+                var CustomerID = $("select[name=CustomerID]").val();
+                var PortID = $("select[name=PortID]").val();
+                var DestinationPortID = $("select[name=DestinationPortID]").val();
+                var POID = $("input[name=POID]").val();
+                var EHIPO = $("input[name=EHIPO]").val();
+
+                var ShippingType = $("input[name=ShippingType]").val();
+                var CabinetRemark = $("textarea[name=CabinetRemark]").val();
+
+                var CheckSuggest = $.trim($("textarea[name=CheckSuggest]").val());
+
+                self.Order().OrderID(OrderID);
+                self.Order().OrderOrigin(OrderOrigin);
+                self.Order().OrderDateStart(OrderDateStart);
+                self.Order().OrderDateEnd(OrderDateEnd);
+                self.Order().CustomerDate(CustomerDate);
+
+                self.Order().IsThirdVerification(IsThirdVerification);
+                self.Order().IsThirdAudits(IsThirdAudits);
+                self.Order().IsThirdTest(IsThirdTest);
+                self.Order().IsThirdSampling(IsThirdSampling);
+
+                self.Order().CustomerID(CustomerID);
+                self.Order().PortID(PortID);
+                self.Order().DestinationPortID(DestinationPortID);
+                self.Order().POID(POID);
+                self.Order().EHIPO(EHIPO);
+
+                self.Order().CheckSuggest(CheckSuggest);
+
+                self.Order().ShippingType(ShippingType);
+                self.Order().CabinetRemark(CabinetRemark);
+
+                self.Order().OrderRate($("#ALL_SumRate_Ch").val());
+                self.Order().OrderRate_En($("#ALL_SumRate_En").val());
+                self.Order().OrderAmount($("#ALL_SumSalePrice").val());
+
+                self.Order().OrderStatusID($("#OrderStatusID").val());
+
+                self.Order().ALL_SumSalePrice_Ch = ko.observable($("#ALL_SumSalePrice_Ch").val());
+                self.Order().ALL_SumSalePrice_En = ko.observable($("#ALL_SumSalePrice_En").val());
+
+                self.Order().ALL_SumPriceFactory_Ch = ko.observable($("#ALL_SumPriceFactory_Ch").val());
+                self.Order().ALL_SumPriceFactory_En = ko.observable($("#ALL_SumPriceFactory_En").val());
+
+                self.Order().ALL_SumRate_Ch = ko.observable($("#ALL_SumRate_Ch").val());
+                self.Order().ALL_SumRate_En = ko.observable($("#ALL_SumRate_En").val());
+
+                self.Order().ALL_SumSalePrice = ko.observable($("#ALL_SumSalePrice").val());
+                self.Order().ALL_SumCommission = ko.observable($("#ALL_SumCommission").val());
+
+                self.Order().QuotID($("#QuotID").val());
+                self.Order().CurrencyExchange($("#CurrencyExchange").val());
+                self.Order().Additional($("#Additional").val());
+
+                self.Order().CategoryManager($("#CategoryManager").val());
+                self.Order().TransportType($("#TransportType").val());
+                self.Order().TestingStandardsFilename($("#TestingStandardsFilename").val());
+
+                var rows = $('#MyPopGrid').datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.Order().list_OrderProduct(rows);
+                }
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/Order/SaveDraft")',
+                    data: ko.toJSON(self.Order)
+                }).done(function (data) {
+                    if(data){
+                        $.messager.show({title:"自动保存", msg:"自动保存成功！", timeout:2000, showType:'slide' });
+                    }
+                });
+            }
+        };
+        var viewModel = new KOViewModel()
+        ko.applyBindings(viewModel);
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndex = undefined;
+        function onBeforeEdit(index, row) {
+            row.editing = true;
+            updateActionsInfo(index);
+
+            UpdateExpander();
+        }
+
+        function onAfterEdit(index, row,a) {
+            var field = "NetPrice";
+            if (a.SortIndex != undefined ||a.SkuNumber != undefined ||a.SkuCode != undefined || a.UPC != undefined || a.QualityAssuranceTesting != undefined || a.Desc != undefined || a.Department != undefined || a.Qty != undefined || a.SalePrice != undefined || a.ELC != undefined || a.RetailPrice != undefined || a.Commission != undefined || a.INR != undefined || a.Remarks != undefined) {
+                field = "SortIndex";//为了防止NetPrice的值不正确
+            }
+            CalculateRow(row,field);
+
+            GetTotal();
+            row.editing = false;
+            updateActionsInfo(index);
+
+            UpdateExpander();
+        }
+        function onCancelEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function endEditingInfo() {
+            //var isView = ((bool)ViewData["IsView"] ? 1 : 0);
+            //if(isView === 1){
+            //    return false;
+            //}
+            if (editIndex == undefined) { return true }
+            if ($('#MyPopGrid').datagrid('validateRow', editIndex)) {
+                $('#MyPopGrid').datagrid('endEdit', editIndex);
+                editIndex = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editInfo(target) {
+            acceptInfo(target);
+            $('#MyPopGrid').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendInfo() {
+            if (endEditingInfo()) {
+                $('#MyPopGrid').datagrid('appendRow', { ID: -1 });
+                editIndex = $('#MyPopGrid').datagrid('getRows').length - 1;
+                $('#MyPopGrid').datagrid('selectRow', editIndex)
+                        .datagrid('beginEdit', editIndex);
+            }
+        }
+        function removeInfo(target) {
+            rejectInfo();
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#MyPopGrid').datagrid('deleteRow', getRowIndex(target));
+                    GetTotal();
+                }
+            });
+        }
+        function acceptInfo(target) {
+            editIndex = getRowIndex(target);
+
+            if (endEditingInfo()) {
+                $('#MyPopGrid').datagrid('acceptChanges');
+            }
+        }
+        function rejectInfo() {
+            $('#MyPopGrid').datagrid('rejectChanges');
+            editIndex = undefined;
+        }
+        function updateActionsInfo(index) {
+            $('#MyPopGrid').datagrid('refreshRow', index);
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+            hoverPopover();
+        }
+
+        function productNoFormatter(val, row, index) {
+            if (row.ProductID == -1) {
+                return "";
+            }
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+        }
+
+        function IsProductFittingFormatter(val, row, index) {
+            if (row.ProductID == -1) {
+                return "";
+            }
+            var str="无";
+            if ((row.ProductFrom!=0 && row.IsProductFitting)||(row.ProductFrom==0 && row.IsProductFitting=="true")) {
+                str= "<a winType='idialog' class='data-content hoverPopover' winSize='1200,800,yes'  data-id='"+row.ID+"'  data-productid='"+row.ProductID+"'  data-productfrom='"+row.ProductFrom+"' data-content='<div class=&quot;popoverDiv&quot;></div>' href='javascript:void(0)'>查看</a>";
+            }
+
+            return str;
+        }
+
+        function hoverPopover(){
+
+            $(".hoverPopover").popover({
+                container: 'body',
+                html: true,
+                trigger: "hover",
+                //delay: {hide: 2000}
+            }).on('shown.bs.popover', function (event) {
+                var ID = $(this).data("id");
+                if (ID <0) {
+                    ID = $(this).data("productid");
+                }
+                var ProductFrom= $(this).data("productfrom");
+                var ModuleType = @((int)ModuleTypeEnum.Order);
+                if (ProductFrom!=0) {
+                    ModuleType= @((int)ModuleTypeEnum.Product);
+                }
+                $("#temp_productfitting2").html("");
+                var describedby=$(this).attr("aria-describedby");
+
+                $.get("@Url.Content("~/ProductFitting/GetProductFittingInfoByID")", {
+                    ID: ID,
+                    ModuleType:ModuleType,
+                },function (data) {
+                    $("#temp_productfitting2").html("");
+                    if (data.length > 0) {
+                        for (var i = 0; i < data.length; i++) {
+                            var thisRow = data[i];
+                            $("#temp_productfitting .temp_Img").attr("src",thisRow.Image);
+                            $("#temp_productfitting .temp_No").text(thisRow.No);
+                            $("#temp_productfitting .temp_Name").text(thisRow.Name);
+                            $("#temp_productfitting .temp_FactoryName").text(thisRow.FactoryName);
+                            $("#temp_productfitting .temp_PriceFactory").text(thisRow.CurrencySign + thisRow.PriceFactory);
+                            $("#temp_productfitting .temp_Qty").text(thisRow.Qty);
+                            $("#temp_productfitting .temp_FeesRate").text(thisRow.FeesRate);
+
+                            $("#temp_productfitting2").prepend($("#temp_productfitting").html());
+                        }
+                        $("#" + describedby + " .popoverDiv").html( $("#temp_productfitting2").html());
+                    }
+                }, "json");
+
+            }).on('hide.bs.popover', function (event) {
+                event.preventDefault();
+            });
+        }
+
+        $(function(){
+            $(document.body).on("mouseleave", ".popover", function (event) {
+                $('.popover').hide();
+            });
+
+            $(document.body).on("mouseenter", ".hoverPopover", function (event) {
+                $('.popover').hide();
+                var id=$(this).attr("aria-describedby");
+                $("#"+id).show();
+            });
+        });
+
+        function onClickCell(index, field){
+            if (editIndex != index){
+                var tempIndex = editIndex;
+                
+                if (endEditingInfo()){
+                    if (tempIndex != undefined) {
+                        var row = $('#MyPopGrid').datagrid("getRows")[tempIndex];
+                        if (row.IsProductMixed=="true" || row.IsProductMixed==true) {
+                            if ($("#ddv-" + tempIndex).html()=="") {
+                                $("#ddv-" + tempIndex).datagrid();
+                            }
+                            UpdateSubDatagrid(tempIndex,row);
+                        }
+                    }
+
+                    $('#MyPopGrid').datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $('#MyPopGrid').datagrid('getEditor', {index:index,field:field});
+                    if (ed){
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    
+
+                    editIndex = index;
+                } else {
+                    setTimeout(function(){
+                        $('#MyPopGrid').datagrid('selectRow', editIndex);
+                    },0);
+                }
+            }
+            RemovePopover();
+        }
+        function emptyFunc() {
+
+        }
+        function onLoadSuccess() {
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+            hoverPopover();
+            var rows = $('#MyPopGrid').datagrid('getRows');
+            var TotalCBM = 0;
+            var Ctns=0;
+            var Qty=0;
+            var SumSalePrice=0;
+            var SumNetPrice=0;
+            var CurrencySign= "";
+            var SumPriceFactoryFormatter=0;
+
+            for (var i = 0; i < rows.length; i++) {
+                var thisRow = rows[i];
+                if (parseFloat(thisRow.TotalCBM) == thisRow.TotalCBM) {
+                    TotalCBM += parseFloat(thisRow.TotalCBM);
+                }
+                Ctns += parseFloat(thisRow.Ctns);
+                Qty += parseInt(thisRow.Qty);
+                SumSalePrice += parseFloat(thisRow.SumSalePrice);
+                SumNetPrice += parseFloat(thisRow.SumNetPrice);
+
+                CurrencySign = thisRow.CurrencySign;
+                SumPriceFactoryFormatter += thisRow.Qty * thisRow.PriceFactory;
+            }
+
+            //统计信息
+            $('#MyPopGrid').datagrid('reloadFooter',
+                [
+                    {
+                        ProductID:-1,
+                        QualityAssuranceTesting:null,
+                        TotalCBM: NumberToRound(TotalCBM,2),
+                        Ctns: NumberToRound(Ctns,2),
+                        Qty: Qty,
+                        SumSalePrice: NumberToRound(SumSalePrice,2),
+                        SumNetPrice: NumberToRound(SumNetPrice,2),
+                        SumPriceFactoryFormatter:CurrencySign+ NumberToRound(SumPriceFactoryFormatter,2),
+                    },
+                ]
+            );
+
+        }
+
+        //显示或隐藏汇总列
+        function ToggleTotal() {
+            $(".summaryCh").show();
+            $(".summaryEn").show();
+            $(".summaryTotal").show();
+            var summaryCh = parseFloat($("#label_ALL_SumSalePrice_Ch").text());
+            var summaryEn = parseFloat($("#label_ALL_SumSalePrice_En").text());
+            if (summaryCh == 0) {
+                $(".summaryCh").hide();
+            }
+            if (summaryEn == 0) {
+                $(".summaryEn").hide();
+            }
+            if (summaryCh == 0 && summaryEn == 0) {
+                $(".summaryTotal").hide();
+            }
+        }
+
+        //计算行
+        function CalculateRow(row,field) {
+
+            var CurrencyExchange=6.5;
+            if ($("#CurrencyExchange").val()!="") {
+                CurrencyExchange= parseFloat($("#CurrencyExchange").val());
+            }
+
+            //Fobfty($) 。当工厂价格是美金报价，Fobfty=工厂价格。当工厂价格是人民币报价，Fobfty=工厂价格/汇率。
+            if (row.CurrencySign == "¥") {
+                row.FOBFTY =  NumberToRound(row.PriceFactory / CurrencyExchange,4);
+            }
+            else{
+                row.FOBFTY = row.PriceFactory;
+            }
+            if (row.OuterBoxRate!=0) {
+                row.Freight = NumberToRound(row.FreightRate * row.OuterVolume / row.OuterBoxRate,2);
+            }
+
+            var NetPrice = row.NetPrice;
+            row.Qty = NumberToRound(row.Qty,0);
+            row.SalePrice = NumberToRound(row.SalePrice,GetCost_RoundNumber(row.QuoteTemplateFileName));
+            row.SumSalePrice = NumberToRound(row.Qty * row.SalePrice, 2);
+            if (row.OuterBoxRate == 0) {
+                row.Ctns = 0;
+            }else {
+                row.Ctns = row.Qty / row.OuterBoxRate;
+            }
+            row.TotalCuft = row.Ctns * row.OuterVolume;
+            row.TotalCBM = NumberToRound(row.TotalCuft / 35.315, 2);
+
+            row.NetPrice = row.SalePrice * (1 - row.Commission / 100);
+            if (row.QuoteTemplateFileName == "S164") {
+                row.NetPrice = row.SalePrice * (1 - row.Commission / 100) * (1 - row.Agent / 100) * (1 - row.Allowance / 100);
+
+            }
+            if (row.QuoteTemplateFileName == "Form1" || row.QuoteTemplateFileName == "S235" || row.QuoteTemplateFileName == "S237") {
+                row.NetPrice = row.SalePrice * (1 - row.Commission / 100) * (1 - row.Allowance / 100);
+            }
+            if (row.QuoteTemplateFileName == "S188") {
+                row.NetPrice = row.SalePrice * (1 - row.Commission / 100) * (1 - row.Allowance / 100) * (1 - row.MiscImportLoad / 100);
+            }
+            if (row.QuoteTemplateFileName == "S288") {
+                row.NetPrice = row.SalePrice * (1 - row.Commission / 100) * (1 - row.MiscImportLoad / 100);
+            }
+            if (row.QuoteTemplateFileName == "DT") {
+                row.NetPrice = row.SalePrice * (1 - row.Commission / 100);
+            }
+
+            row.SumNetPrice = NumberToRound(row.NetPrice * row.Qty, 2);
+
+            if (row.RetailPrice == 0) {
+                row.MUPercent = 0;
+            }else{
+                row.MUPercent = NumberToRound((row.RetailPrice - row.ELC) / row.RetailPrice * 100, 2);
+            }
+
+            row.CommissionAmount = row.SalePrice * row.Commission / 100 * row.Qty;
+
+            row.PriceFactoryFormatter = row.CurrencySign + row.PriceFactory;
+            row.SumPriceFactoryFormatter = row.CurrencySign + NumberToRound(row.Qty * row.PriceFactory,2);
+
+            if (row.SalePrice == 0) {
+                row.RateFormatter = "";
+            }else{
+                if (row.CurrencySign == "¥") {
+                    row.Rate = NumberToRound((row.PriceFactory) / row.NetPrice, 2);
+                    row.RateFormatter = row.Rate;
+                } else {
+                    row.Rate = NumberToRound((row.NetPrice - row.PriceFactory) / row.NetPrice * 100.00, 2);
+                    row.RateFormatter = row.Rate + "%";
+                }
+
+                if (row.QuoteTemplateFileName == "S164") {//S164的Rate用美元的显示方式
+                    var PalletPc = GetValue(row.PalletPc);
+                    var Duty = GetValue(row.Duty);
+                    var Freight = GetValue(row.Freight);
+                    var FOBFTY = GetValue(row.FOBFTY);
+                    var Rate = (row.NetPrice - PalletPc -  Duty - Freight - FOBFTY) / row.SalePrice * 100.00;
+
+                    row.Rate = NumberToRound(Rate,2);
+                    row.RateFormatter = row.Rate + "%";
+                }
+            }
+            row.Ctns = NumberToRound(row.Ctns,2);
+            row.TotalCuft = NumberToRound(row.TotalCuft,2);
+            row.NetPrice = NumberToRound(row.NetPrice,GetNetPrice_RoundNumber(row.QuoteTemplateFileName));
+            row.CommissionAmount = NumberToRound(row.CommissionAmount,4);
+            row.ELC = NumberToRound(row.ELC,GetELC_RoundNumber(row.QuoteTemplateFileName));
+            row.RetailPrice = NumberToRound(row.RetailPrice,2);
+
+            if (field == "NetPrice") {
+                row.NetPrice = NetPrice;
+            }
+
+            //console.log("计算之后————————————————————————————————————");
+            //console.log("PO Price = " + row.SalePrice);
+            //console.log("Commission% = "+row.Commission);
+            //console.log("MiscImportLoad% = "+row.MiscImportLoad);
+            //console.log("Net Price = "+row.NetPrice );
+        }
+
+        function GetValue(number) {
+            if (number == "") {
+                number = 0;
+            }
+            if (number == null) {
+                number = 0;
+            }
+            return parseFloat(number);
+        }
+
+        //Additional内容改变时
+        $("#Additional").blur(function() {
+            var $this = $(this);
+            var Additional = $this.val();
+            if (parseFloat(Additional) != Additional) {
+                $.messager.alert("提示", "Additional必须为数字！", "info", function () {
+                    $this.focus();
+                });
+                $this.val(0);
+                Additional = 0;
+            }
+            $this.val(NumberToRound($this.val(),2));
+            GetTotal();
+        });
+
+        function GetTotal() {
+            onLoadSuccess();
+
+            var ALL_SumSalePrice_Ch = 0;
+            var ALL_SumSalePrice_En = 0;
+
+            var ALL_SumPriceFactory_Ch = 0;
+            var ALL_SumPriceFactory_En = 0;
+
+            var All_SumNetPrice_En = 0;
+            var All_SumNetPrice_Ch = 0;
+
+            var ALL_SumCommission = 0;
+
+            var SumDuty_Ch = 0;
+            var SumDuty_En = 0;
+            var SumFreight_Ch = 0;
+            var SumFreight_En = 0;
+            var SumPalletPc_Ch = 0;
+            var SumPalletPc_En = 0;
+
+            var rows = $('#MyPopGrid').datagrid('getRows');
+            for (var i = 0; i < rows.length; i++) {
+                var thisRow = rows[i];
+
+                if (thisRow.CurrencySign == "¥") {
+                    ALL_SumSalePrice_Ch += thisRow.SalePrice * thisRow.Qty;
+                    ALL_SumPriceFactory_Ch += thisRow.PriceFactory * thisRow.Qty;
+                    All_SumNetPrice_Ch += parseFloat(thisRow.SumNetPrice);
+
+                    SumDuty_Ch += GetValue(thisRow.Duty) * thisRow.Qty;
+                    SumFreight_Ch += GetValue(thisRow.Freight) * thisRow.Qty;
+                    SumPalletPc_Ch += GetValue(thisRow.PalletPc) * thisRow.Qty;
+                }
+                else if (thisRow.CurrencySign == "$") {
+                    ALL_SumSalePrice_En += thisRow.SalePrice * thisRow.Qty;
+                    ALL_SumPriceFactory_En += thisRow.PriceFactory * thisRow.Qty;
+                    All_SumNetPrice_En += parseFloat(thisRow.SumNetPrice);
+
+                    SumDuty_En += GetValue(thisRow.Duty) * thisRow.Qty;
+                    SumFreight_En += GetValue(thisRow.Freight) * thisRow.Qty;
+                    SumPalletPc_En += GetValue(thisRow.PalletPc) * thisRow.Qty;
+                }
+                ALL_SumCommission += thisRow.CommissionAmount;
+            }
+
+            var QuoteTemplateFileName = $("#QuoteTemplateFileName").val();
+            var Commission = GetValue($("#Commission").val()) / 100;
+            var Agent = GetValue($("#Agent").val()) / 100;
+            var Allowance = GetValue($("#Allowance").val()) / 100;
+            var CurrencyExchange=GetValue($("#CurrencyExchange").val());
+            var ALL_SumRate_Ch = NumberToRound((ALL_SumPriceFactory_Ch) / All_SumNetPrice_Ch, 2);//人民币换汇
+
+            var ALL_SumRate_En = NumberToRound((All_SumNetPrice_En - ALL_SumPriceFactory_En) / All_SumNetPrice_En * 100.00, 2);//美元换汇
+
+            if (QuoteTemplateFileName == "S164") {
+                ALL_SumSalePrice_En += ALL_SumSalePrice_Ch;
+                ALL_SumSalePrice_Ch = 0;
+                ALL_SumRate_Ch = 0;
+                //debugger;
+                ALL_SumRate_En = NumberToRound((ALL_SumSalePrice_En * (1-Commission) * (1-Agent) * (1-Allowance) - (SumDuty_Ch + SumDuty_En) - (SumFreight_Ch + SumFreight_En) - (SumPalletPc_Ch + SumPalletPc_En) - (ALL_SumPriceFactory_En +  ALL_SumPriceFactory_Ch / CurrencyExchange)) / ALL_SumSalePrice_En * 100.00,2);
+            }
+            if (ALL_SumSalePrice_En == 0) {
+                ALL_SumRate_En = 0;
+            }
+            if (ALL_SumSalePrice_Ch == 0) {
+                ALL_SumRate_Ch = 0;
+            }
+
+            ALL_SumSalePrice_Ch = NumberToRound(ALL_SumSalePrice_Ch, 2);
+            ALL_SumPriceFactory_Ch = NumberToRound(ALL_SumPriceFactory_Ch, 2);
+            ALL_SumSalePrice_En = NumberToRound(ALL_SumSalePrice_En, 2);
+            ALL_SumPriceFactory_En = NumberToRound(ALL_SumPriceFactory_En, 2);
+            ALL_SumCommission = NumberToRound(ALL_SumCommission, 2);
+
+            var ALL_SumSalePrice = NumberToRound(ALL_SumSalePrice_Ch + ALL_SumSalePrice_En, 2);
+            var Additional = NumberToRound(GetValue($("#Additional").val()),2);
+            ALL_SumSalePrice += Additional;
+
+            var CommissionPercent = 0;
+            if (rows.length > 0) {
+                CommissionPercent = rows[0].Commission / 100;
+            }
+
+            $("#ALL_SumSalePrice_Ch").val(ALL_SumSalePrice_Ch);
+            $("#ALL_SumPriceFactory_Ch").val(ALL_SumPriceFactory_Ch);
+            $("#ALL_SumRate_Ch").val(ALL_SumRate_Ch);
+
+            $("#ALL_SumSalePrice_En").val(ALL_SumSalePrice_En);
+            $("#ALL_SumPriceFactory_En").val(ALL_SumPriceFactory_En);
+            $("#ALL_SumRate_En").val(ALL_SumRate_En);
+
+            $("#ALL_SumSalePrice").val(ALL_SumSalePrice);
+            $("#ALL_SumCommission").val(ALL_SumCommission);
+
+            $("#label_ALL_SumSalePrice_Ch").text(formatMoney(ALL_SumSalePrice_Ch));
+            $("#label_ALL_SumPriceFactory_Ch").text(formatMoney(ALL_SumPriceFactory_Ch));
+            $("#label_ALL_SumRate_Ch").text(formatMoney(ALL_SumRate_Ch));
+
+            $("#label_ALL_SumSalePrice_En").text(formatMoney(ALL_SumSalePrice_En));
+            $("#label_ALL_SumPriceFactory_En").text(formatMoney(ALL_SumPriceFactory_En));
+            $("#label_ALL_SumRate_En").text(formatMoney(ALL_SumRate_En));
+
+            $("#label_ALL_SumSalePrice").text(formatMoney(ALL_SumSalePrice));
+            $("#label_ALL_SumCommission").text(formatMoney(ALL_SumCommission));
+
+            $("#hidden_ALL_SumSalePrice").val(NumberToRound(ALL_SumSalePrice_Ch + ALL_SumSalePrice_En, 2));
+
+            ToggleTotal();
+
+            if (QuoteTemplateFileName == "S164") {
+                $(".summaryCh").show();
+                $("#li_ALL_SumSalePrice_Ch").html("");
+                $("#li_ALL_SumRate_Ch").html("");
+            }
+
+        }
+
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                OrderOrigin: {
+                    validators: {
+                        notEmpty: { message: '销售订单来源不能为空' },
+                    }
+                },
+                OrderDateStart: {
+                    validators: {
+                        notEmpty: { message: 'Shipping Window不能为空' },
+                    }
+                },
+                OrderDateEnd: {
+                    validators: {
+                        notEmpty: { message: 'Shipping Window不能为空' },
+                    }
+                },
+                PortID: {
+                    validators: {
+                        notEmpty: { message: '出运港不能为空' },
+                    }
+                },
+                DestinationPortID: {
+                    validators: {
+                        notEmpty: { message: 'DC不能为空' },
+                    }
+                },
+                POID: {
+                    validators: {
+                        notEmpty: { message: '客户PO不能为空' },
+                    }
+                },
+                CustomerID: {
+                    validators: {
+                        notEmpty: { message: '客户不能为空' },
+                    }
+                },
+                CustomerDate: {
+                    validators: {
+                        notEmpty: { message: '客户下单日期不能为空' },
+                    }
+                },
+
+            }
+        });
+
+        $(function() {
+            var isCaching = false;
+            $("html").on("blur", "input.form-control,select.form-control,textarea.form-control", function () {
+                if(!isCaching){
+                    isCaching = true;
+                }
+            });
+            // 每隔一分钟自动保存
+            setInterval(function(){
+                if(isCaching){
+                    $("#btnSaveDraft").click();
+                }
+            }, 60000);
+        });
+
+        //格式化金额为123,456.78
+        function formatMoney(number, places, thousand, decimal) {
+            number = number || 0;
+            places = !isNaN(places = Math.abs(places)) ? places : 2;
+            thousand = thousand || ",";
+            decimal = decimal || ".";
+            var negative = number < 0 ? "-" : "",
+                i = parseInt(number = Math.abs(+number || 0).toFixed(places), 10) + "",
+                j = (j = i.length) > 3 ? j % 3 : 0;
+            return negative + (j ? i.substr(0, j) + thousand : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousand) + (places ? decimal + Math.abs(number - i).toFixed(places).slice(2) : "");
+        }
+
+        var isGroupByFactory = true;
+
+        //绑定按工厂分组的汇总列
+        function BindGroupGrid() {
+            //debugger;
+
+            if (!isGroupByFactory) {
+                var rows = $('#MyPopGrid').datagrid('getRows');
+                var data = rows.sort(function(a,b){
+                    if (parseInt(a.SortIndex) < parseInt(b.SortIndex)) {
+                        return -1;
+                    }else {
+                        return 1;
+                    }
+                });
+
+            }else {
+                var rows = $('#MyPopGrid').datagrid('getRows');
+                var data = rows.sort(function(a,b){
+                    if (parseInt(a.FactoryID) == parseInt(b.FactoryID)) {
+                        if (parseInt(a.ID) < parseInt(b.ID)) {
+                            return -1;
+                        }
+                    }
+                    else if (parseInt(a.FactoryID) < parseInt(b.FactoryID)) {
+                        return -1;
+                    }else {
+                        return 1;
+                    }
+                });
+
+            }
+            $('#MyPopGrid').datagrid({
+                data:data,
+            });
+            UpdateExpander();
+
+            //var rows = $('#MyPopGrid').datagrid('getRows');
+            //var groups = {};
+            //for(var i = 0; i < rows.length; i++) {
+            //    var item = rows[i];
+            //    if(!groups[item.FactoryName]) {
+            //        groups[item.FactoryName] = [];
+            //    }
+            //    if (groups[item.FactoryName].length>0) {
+            //        var SumPriceFactory = NumberToRound(parseFloat(groups[item.FactoryName][0].SumPriceFactoryFormatter.substring(1)) + item.PriceFactory * item.Qty,2);
+
+            //        groups[item.FactoryName][0].TotalCBM = NumberToRound(groups[item.FactoryName][0].TotalCBM + item.TotalCBM,2);
+            //        groups[item.FactoryName][0].Ctns = NumberToRound(groups[item.FactoryName][0].Ctns + item.Ctns,2);
+            //        groups[item.FactoryName][0].Qty = parseInt(groups[item.FactoryName][0].Qty) + parseInt(item.Qty);
+            //        groups[item.FactoryName][0].SumSalePrice = NumberToRound(groups[item.FactoryName][0].SumSalePrice + item.SumSalePrice,2);
+            //        groups[item.FactoryName][0].SumNetPrice = NumberToRound(groups[item.FactoryName][0].SumNetPrice + item.SumNetPrice,2);
+            //        groups[item.FactoryName][0].SumPriceFactoryFormatter = item.CurrencySign + SumPriceFactory;
+            //    }else {
+            //        groups[item.FactoryName].push({
+            //            TotalCBM: item.TotalCBM,
+            //            Ctns: NumberToRound(parseFloat(item.Ctns),2),
+            //            Qty: item.Qty,
+            //            SumSalePrice: NumberToRound(item.SumSalePrice,2),
+            //            SumNetPrice: NumberToRound(item.SumNetPrice,2),
+            //            SumPriceFactoryFormatter: item.CurrencySign + NumberToRound(item.PriceFactory * item.Qty,2),
+            //        });
+            //    }
+            //}
+
+            //var data = [];
+
+            //for(var x in groups) {
+            //    if(Object.prototype.hasOwnProperty.call(groups, x)) {
+            //        data.push({
+            //            groupFieldKey:x,
+            //            groupedValue:groups[x]
+            //        });
+            //    }
+            //}
+            //$('#MyPopGrid').datagrid({
+            //    //groupField:'FactoryName',
+            //    //view: groupview,
+            //    //groupFormatter:function(value, rows){
+            //    //    return value + ' - ' + rows.length + ' Item(s)';
+            //    //},
+            //    data: rows,
+            //    //summaryEachGroup:true,
+            //    //summaryColumns:data,
+            //});
+        }
+
+        //是否按工厂进行分组
+        function IsGroupByFactory(checked){
+            if (editIndex != undefined) {
+                endEditingInfo();
+            }
+
+            isGroupByFactory = checked;
+            BindGroupGrid();
+            BindSubDatagrid();
+            UpdateExpander();
+        }
+
+        //获取ELC四舍五入的位数
+        function GetELC_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S13" || QuoteTemplateFileName == "S188") {
+                number = 3;
+            }
+            else if (QuoteTemplateFileName == "DG" || QuoteTemplateFileName == "F20" || QuoteTemplateFileName == "DT") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //获取Cost四舍五入的位数
+        function GetCost_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S13" || QuoteTemplateFileName == "S188") {
+                number = 3;
+            }
+            else if (QuoteTemplateFileName == "DG" || QuoteTemplateFileName == "F20" || QuoteTemplateFileName == "DT") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //获取Net Price四舍五入的位数
+        function GetNetPrice_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S13" || QuoteTemplateFileName == "S188" || QuoteTemplateFileName == "S235") {
+                number = 3;
+            }
+            else if (QuoteTemplateFileName == "DG" || QuoteTemplateFileName == "F20" || QuoteTemplateFileName == "DT") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //格式化为货币位数
+        function formatPrice(price, v) {
+            if (price == null) {
+                return "";
+            }
+            return price == 0 ? "" : parseFloat(price).toFixed(v);
+        }
+
+
+
+        function BindSubDatagrid(){
+            $('#MyPopGrid').datagrid({
+                view: detailview,
+                detailFormatter:function(index,row){
+                    if ($("#ddv-" + index).html()!= undefined) {
+                        return;
+                    }
+                    return '<div style="padding:2px"><table id="ddv-' + index + '"></table></div>';
+                },
+                onExpandRow: function(index,row){
+                    if ($("#ddv-" + index).html()!= "") {
+                        return;
+                    }
+
+                    var url='/Order/GetProducts_Mixed/'+row.ID;
+                    if (row.ID <0) {
+                        url= '/ProductMixed/GetProducts_Mixed/'+row.ProductID;
+                    }
+
+                    $('#ddv-'+index).datagrid({
+                        url:url,
+                        method:'get',
+                        fitColumns:false,
+                        singleSelect:true,
+                        rownumbers:false,
+                        loadMsg:'',
+                        height:'auto',
+                        frozenColumns:[[
+                        ]],
+                        columns:GetColumns(),
+                        onResize:function(){
+                            $('#MyPopGrid').datagrid('fixDetailRowHeight',index);
+                        },
+                        onLoadSuccess:function(){
+                            setTimeout(function(){
+                                $('#MyPopGrid').datagrid('resize');
+                                $('#MyPopGrid').datagrid('fixDetailRowHeight',index);
+                                UpdateSubDatagrid(index,row);
+                            },0);
+
+                        }
+                    });
+                    $('#MyPopGrid').datagrid('fixDetailRowHeight',index);
+
+                    var $thisDatagrid = $("#ddv-" + index);
+                    ShowOrHideColumn($thisDatagrid);
+
+                }
+            });
+        }
+        
+        function UpdateSubDatagrid(index,row){
+            if (row.IsProductMixed=="false" || row.IsProductMixed==false) {
+                return;
+            }
+            CalculateRow_Mixed($("#MyPopGrid_ProductMixed"),row,false);
+
+            var $thisDatagrid = $("#ddv-" + index);
+            CalculateRow_Mixed($thisDatagrid,row,true);
+
+
+            InitPopover();
+
+        }
+
+        function Add_ProductMixed(row){
+            if (row.IsProductMixed=="false" || row.IsProductMixed==false) {
+                return;
+            }
+            $.get("@Url.Content("/ProductMixed/GetProducts_Mixed/")"+ row.ProductID).done(function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    $('#MyPopGrid_ProductMixed').datagrid('appendRow', data[i]);
+                    data[i].ParentProductMixedID = row.ID;
+                    CalculateRow_Mixed($("#MyPopGrid_ProductMixed"),row,false);
+                }
+            });
+        }
+
+        function Delete_ProductMixed(id){
+            var rows = $("#MyPopGrid_ProductMixed").datagrid('getRows');
+            var deleteList=[];
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].ParentProductMixedID == id) {
+                    var rowIndex=$('#MyPopGrid_ProductMixed').datagrid('getRowIndex',rows[i]);
+                    deleteList.push(rowIndex);
+                }
+            }
+
+            for (var i = deleteList.length-1; i >=0 ; i--) {
+                $('#MyPopGrid_ProductMixed').datagrid('deleteRow', deleteList[i]);
+
+            }
+        }
+        
+        function CalculateRow_Mixed($thisDatagrid,row,isAllUpdate){
+            var rows = $thisDatagrid.datagrid("getRows");
+            if (rows && rows.length > 0) {
+                for (var i = 0; i < rows.length; i++) {
+                    if (!isAllUpdate && rows[i].ParentProductMixedID != row.ID) {
+                        continue;
+                    }
+
+                    
+                    rows[i].Qty = parseInt(row.Qty) * parseInt(rows[i].Qty2);
+                    if (rows[i].InnerBoxRate!=null && rows[i].InnerBoxRate!="") {
+                        rows[i].Qty = parseInt(row.Qty) * parseInt(rows[i].Qty2) * parseInt(row.OuterBoxRate) / parseInt(row.InnerBoxRate);
+                    }
+
+                    rows[i].INR = row.INR;
+                    rows[i].SalePrice=row.SalePrice;
+                    rows[i].ELC=row.ELC;
+                    rows[i].RetailPrice=row.RetailPrice;
+                    rows[i].Commission=row.Commission;
+                    rows[i].Remarks=row.Remarks;
+
+                    rows[i].Department=row.Department;
+
+                    var field = "SortIndex";
+                    CalculateRow(rows[i],field);
+
+                    rows[i].Ctns=row.Ctns;
+
+                    $thisDatagrid.datagrid('acceptChanges');
+                    $thisDatagrid.datagrid('refreshRow', i);
+                }
+            }
+        }
+
+        function ShowOrHideColumn($thisDatagrid){
+
+            var SelectCustomer = $("#temp_SelectCustomer").val();
+            if (SelectCustomer=="S188") {
+                $thisDatagrid.datagrid('showColumn','QualityAssuranceTesting');
+            }else {
+                $thisDatagrid.datagrid('hideColumn','QualityAssuranceTesting');
+            }
+
+            if (SelectCustomer=="S60" || SelectCustomer=="S10") {
+                $thisDatagrid.datagrid('showColumn','Department');
+            }else {
+                $thisDatagrid.datagrid('hideColumn','Department');
+            }
+
+            if (SelectCustomer=="S13") {
+                $thisDatagrid.datagrid('showColumn','ColorName');
+                $thisDatagrid.datagrid('showColumn','INR');
+            }else {
+                $thisDatagrid.datagrid('hideColumn','ColorName');
+                $thisDatagrid.datagrid('hideColumn','INR');
+            }
+
+            if (SelectCustomer=="S135") {
+                $thisDatagrid.datagrid('showColumn','SkuCode');
+            }else {
+                $thisDatagrid.datagrid('hideColumn','SkuCode');
+            }
+
+            if (SelectCustomer=="S10") {
+                $thisDatagrid.datagrid('showColumn','OfStoreReadyInnersEnclosed');
+            }else {
+                $thisDatagrid.datagrid('hideColumn','OfStoreReadyInnersEnclosed');
+            }
+
+            if (SelectCustomer=="S10") {
+                $thisDatagrid.datagrid('showColumn','PreTicketed');
+            }else {
+                $thisDatagrid.datagrid('hideColumn','PreTicketed');
+            }
+        }
+
+        function GetColumns(){
+            return [[
+                            { field:'No',width:120,align:'left',title: 'Item NO.'},
+                            { field:'IsProductFitting',width:80,align:'center',formatter:IsProductFittingFormatter,title: '查看配件产品'},
+
+                            { field:'SkuNumber',width:80,align:'center',editor:{type:'validatebox'},title: 'SKU#'},
+                            { field:'SkuCode',width:80,align:'center',hidden:true,editor:{type:'validatebox'},title: 'Sku Code'},
+                            { field:'UPC',width:100,align:'center',editor:{type:'validatebox'},title: 'UPC'},
+                            { field:'QualityAssuranceTesting',width:100,align:'center',hidden:true,editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:[{'Selected':false,'Text':'&nbsp;','Value':''},{'Selected':false,'Text':'是','Value':'true'},{'Selected':false,'Text':'否','Value':'false'}],
+                                    editable:false,
+                                }
+                            },formatter:formatStatus,title: 'Quality Assurance Testing'},
+
+                            { field:'OfStoreReadyInnersEnclosed',width:100,align:'center',hidden:true,editor:{type:'validatebox'},title: '# of Store Ready inners enclosed'},
+                            { field:'PreTicketed',width:100,align:'center',hidden:true,editor:{type:'validatebox'},title: 'Pre-ticketed'},
+                            { field:'FactoryName',width:80,align:'center',title: 'FTY'},
+                            { field:'Desc',width:200,align:'center',editor:{type:'validatebox'},title: 'Description'},
+                            { field:'Department',width:100,align:'center',hidden:true,editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:list_Department,
+                                    editable:false,
+                                }
+                            },formatter:formatDepartment,title: '部门'},
+
+                            { field:'StyleName',width:80,align:'center',title: 'Style'},
+                            { field:'UnitName',width:80,align:'center',title: '单位'},
+                            { field:'INR',width:80,align:'center',hidden:true,editor:{type:'numberbox',options:{precision:0}},title: 'INR/INR'},
+                            { field:'ColorName',width:100,align:'center',hidden:true,editor:{type:'validatebox'},title: '颜色'},
+                            { field:'InnerBoxRate',width:80,align:'center',title: 'Inner Pack'},
+                            { field:'OuterBoxRate',width:80,align:'center',title: 'Case Pack'},
+                            { field:'OuterLengthIN',width:80,align:'center',title: 'Case L'},
+                            { field:'OuterWidthIN',width:80,align:'center',title: 'Case W'},
+                            { field:'OuterHeightIN',width:80,align:'center',title: 'Case H'},
+                            { field:'OuterVolume',width:80,align:'center',title: 'Cu\'ft'},
+                            { field:'TotalCuft',width:80,align:'center',title: 'Total Cu\'ft'},
+                            { field:'TotalCBM',width:80,align:'center',title: 'Total CBM'},
+                            { field:'Ctns',width:80,align:'center',title: 'Ctns'},
+                            { field:'Qty',width:80,align:'center',editor:{type:'validatebox',options:{required:true,validType:['integer']}},title: 'Qty'},
+                            { field:'Qty2',width:80,align:'center',title: 'Qty',hidden:true},
+                            { field:'SalePrice',width:80,align:'center',editor:{type:'validatebox',options:{required:true}},title: 'PO Price($)'},
+                            { field:'SumSalePrice',width:80,align:'center',title: 'Total PO($)'},
+                            { field:'NetPrice',width:80,align:'center',editor:{type:'validatebox',options:{required:true}},title: 'Net Price($)'},
+                            { field:'SumNetPrice',width:80,align:'center',title: 'Total Net($)'},
+                            { field:'PriceFactoryFormatter',width:80,align:'center',title: 'FTY Price'},
+                            { field:'SumPriceFactoryFormatter',width:80,align:'center',title: 'Total Fty'},
+                            { field:'ELC',width:80,align:'center',editor:{type:'validatebox'},title: 'ELC($)'},
+                            { field:'RetailPrice',width:80,align:'center',editor:{type:'validatebox'},title: 'Retail($)'},
+                            { field:'MUPercent',width:80,align:'center',title: 'PO MU%'},
+                            { field:'RateFormatter',width:80,align:'center',title: 'Rate'},
+                            { field:'Commission',width:80,align:'center',editor:{type:'validatebox',options:{required:true}},title: 'Commission%'},
+                            { field:'Remarks',width:80,align:'center',editor:{type:'validatebox'},title: 'Remark'},
+                            { field:'ID',width:80,align:'center',hidden:true},
+                            { field:'ProductFrom',width:80,align:'center',hidden:true},
+                            { field:'ProductID',width:80,align:'center',hidden:true},
+                            { field:'Image',width:80,align:'center',hidden:true},
+                            { field:'CommissionAmount',width:80,align:'center',hidden:true},
+                            { field:'CurrencySign',width:80,align:'center',hidden:true},
+                            { field:'PriceFactory',width:80,align:'center',hidden:true},
+                            { field:'MiscImportLoad',width:80,align:'center',hidden:true},
+                            { field:'Allowance',width:80,align:'center',hidden:true},
+                            { field:'Agent',width:80,align:'center',hidden:true},
+                            { field:'Rate',width:80,align:'center',hidden:true},
+                            { field:'QuoteTemplateFileName',width:80,align:'center',hidden:true},
+                            { field:'PalletPc',width:80,align:'center',hidden:true},
+                            { field:'Duty',width:80,align:'center',hidden:true},
+                            { field:'Freight',width:80,align:'center',hidden:true},
+                            { field:'FOBFTY',width:80,align:'center',hidden:true},
+                            { field:'IsProductMixed',width:80,align:'center',hidden:true},
+                            { field:'ParentProductMixedID',width:80,align:'center',hidden:true},
+
+            ]]
+        }
+
+        $(function () {
+            BindSubDatagrid();
+            UpdateExpander();
+        });
+
+    </script>
+}

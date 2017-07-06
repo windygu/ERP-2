@@ -1,0 +1,749 @@
+﻿@model ERP.Models.OutSourcing.DTOOutsourcing
+@using ERP.Models.CustomEnums;
+@{
+    ViewBag.Title = @Model.PageTitle;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@section styles{
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+}
+
+<style>
+    .glyphicon {
+        right: 30px;
+    }
+</style>
+
+<form id="frmEdit" class="content-wrapper">
+
+    @Html.HiddenFor(d => d.ID, new { })
+    @Html.HiddenFor(d => d.PageTypeID, new { })
+    @Html.HiddenFor(d => d.ContractsID, new { })
+    @Html.HiddenFor(d => d.OutContractStatusID, new { })
+    @Html.HiddenFor(p => p.OutContractSum)
+
+    <h3 class="popTitle">
+        基本信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+
+    <div id="htmlDivOutsouringBasic" style="margin:0" class="popContent search_Condition box_1k p_t0">
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">采购合同编号：</label>
+            <div class="col-sm-8 control-label">@Model.PurchaseNumber</div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">采购合同日期：</label>
+            <div class="col-sm-8 control-label">@Model.PurchaseDate</div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">工厂：</label>
+            <div class="col-sm-8 control-label">@Model.FactoryAbbreviation</div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">采购合同交货日期：</label>
+            <div class="col-sm-8 control-label">
+                @Model.PurchaseDateStart
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">客户：</label>
+            <div class="col-sm-8 control-label">@Model.CustomerCode</div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">标签要求交货日期：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageTypeID == 2 || Model.PageTypeID == 4)
+                {
+                    @Html.TextBoxFor(d => d.DeliveryDateStart, new { @disabled = "disabled", @class = "form-control Wdate" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.DeliveryDateStart, new { @class = "form-control Wdate" })
+                }
+            </div>
+        </div>
+
+        @if (Model.PageTypeID > 1)
+            {
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">代购公司：</label>
+                <div class="col-sm-8 control-label">@Model.OutCompany</div>
+            </div>
+
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">代购合同日期：</label>
+                <div class="col-sm-8 control-label">@Model.CreateDate</div>
+            </div>
+
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">其它费用：</label>
+                <div class="col-sm-8 control-label">
+                    @if (Model.PageTypeID == 3)
+                    {
+                        @Html.TextBoxFor(q => q.OthersFee, new { @class = "form-control KeyupCalculateOutContractSum" })
+
+                    }
+                    else
+                    {
+                        @Html.TextBoxFor(q => q.OthersFee, new { @disabled = "disabled", @class = "form-control" })
+
+                    }
+                </div>
+            </div>
+
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">代购合同金额：</label>
+                <div id="txtOutContractSumText" class="col-sm-8 control-label">@Model.OutContractSum</div>
+                <input id="OutContractSumText_ExceptOthersFee" type="hidden" value="@Model.OutContractSumText" />
+            </div>
+
+        }
+    </div>
+
+    @if (Model != null && Model.OCPacksData != null)
+    {
+        <h3 class="popTitle">标签及产品信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+
+        <div id="OutsouringInfo" class="popContent">
+            @if (Model.OCPacksData != null && Model.OCPacksData.Count > 0)
+            {
+                <input type="hidden" id="OCPacksData_Count" value="@Model.OCPacksData.Count" />
+                for (var i = 0; i < Model.OCPacksData.Count; i++)
+                {
+                    @Html.HiddenFor(p => p.OCPacksData[i].ID, new { })
+                    @Html.HiddenFor(p => p.OCPacksData[i].TagProductsAmount, new { })
+
+                    <div id="dvOutContract_@i" class="Factory">
+                        <div class="modal-title" style="margin-bottom:0px;">
+                            <span style="display:none;">包装资料自编号：@Html.TextBoxFor(p => p.OCPacksData[i].PacksID, new { @DisplayMode = false })</span>
+
+                            <span><label>标签类型：</label>@Model.OCPacksData[i].TagName</span>
+
+                            <span><label style="float:left;color:yellow">代购公司：</label>@Html.DropDownListFor(p => p.OCPacksData[i].OutCompanyID, ViewData["OutCompanyList"] as SelectList, new { @style = "width:100px;", @class = "form-control txtStop OutCompanyID" })</span>
+
+                            <!--交货地由下拉框改为输入框：-->
+                            @*@Html.DropDownListFor(p => p.OCPacksData[i].DeliveryID, ViewData["DeliveryList"] as SelectList, new { @style = "width:100px;", @class = "form-control" })*@
+                            <span>
+                                <label style="float:left;color:yellow">交货地点：</label>
+                                @Html.TextBoxFor(p => p.OCPacksData[i].DeliveryName, new { @style = "width:100px;", @class = "form-control txtStop" })
+                            </span>
+                            @if (Model.PageTypeID == 1)
+                            {
+                                <span>
+                                    <label style="float:left;">其他费用：</label>
+                                    @Html.TextBoxFor(p => p.OCPacksData[i].OthersFee, new { @style = "width:100px;", @class = "form-control txtStop OthersFee", data = i, id = "OthersFee" + i })
+                                </span>
+                            }
+
+                            <span>合计：<label id="showTagProductsAmount_@i" class="ProductsAmount">@Model.OCPacksData[i].TagProductsAmount</label></span>
+                            <input id="ProductsAmount_ExceptOthersFee_@i" type="hidden" value="@Model.OCPacksData[i].TagProductsAmount" />
+                            <a class="table_toggle fa fa-2 fa-chevron-up" style="float:right;"></a>
+                        </div>
+
+                        <div class="history_box">
+                            <table id="MyPopGrid@(i)" class="easyui-datagrid" style="width:100%;overflow:auto;">
+                                <thead data-options="frozen:true">
+                                    <tr>
+                                        <th data-options="field:'OrderProductNO',width:100,align:'center',formatter:productNoFormatter">JK_NO</th>
+                                        <th data-options="field:'TagDescribe',width:150,align:'center',editor:{type:'validatebox'}">品名及规格</th>
+                                    </tr>
+                                </thead>
+                                <thead>
+                                    <tr>
+                                        <th data-options="field:'OrderProductFPrice',width:100,align:'center',editor:{type:'numberbox',options:{precision:3}}">单价(¥)</th>
+                                        <th data-options="field:'ProductTagsNumber',width:150,align:'center',editor:{type:'numberbox',options:{precision:0}}">数量(张)</th>
+                                        <th data-options="field:'ProductTagsAmount',width:150,align:'center'">金额(¥)</th>
+
+                                        <th data-options="field:'ID',width:100,align:'center',hidden:true"></th>
+                                        <th data-options="field:'OrderProductID',width:100,align:'center',hidden:true"></th>
+                                        <th data-options="field:'ProductID',width:100,align:'center',hidden:true"></th>
+                                        <th data-options="field:'ProductImage',width:100,align:'center',hidden:true"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.OCPacksData != null)
+                                    {
+                                        foreach (var item_product in Model.OCPacksData[i].OCPacksProducts)
+                                        {
+                                            <tr>
+                                                <td>@item_product.OrderProductNO</td>
+                                                <td>@item_product.TagDescribe</td>
+
+                                                <td>@item_product.OrderProductFPrice</td>
+                                                <td>@item_product.ProductTagsNumber</td>
+                                                <td>@item_product.ProductTagsAmount</td>
+
+                                                <td>@item_product.ID</td>
+                                                <td>@item_product.OrderProductID</td>
+                                                <td>@item_product.ProductID</td>
+                                                <td>@item_product.ProductImage</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+
+                            </table>
+
+                            <div style="padding-top: 10px;">
+                                标签要求：
+                                @if (Model.PageTypeID == 1 || Model.PageTypeID == 3)
+                                {
+                                    @Html.TextAreaFor(p => p.OCPacksData[i].PacksRemark, new { @class = "form-control" })
+                                }
+                                else
+                                {
+                                    @Html.TextAreaFor(d => d.OCPacksData[i].PacksRemark, new { @disabled = "disabled", @class = "form-control" })
+                                }
+                            </div>
+                        </div>
+
+                        <!--赋下拉框选中值-->
+                        <script type="text/javascript">
+
+                            $("#OCPacksData_"+@i+"__"+"OutCompanyID").val(@Model.OCPacksData[i].OutCompanyID);
+
+                            if(@Model.PageTypeID >1){
+                                $("#OCPacksData_"+@i+"__"+"OutCompanyID").prop("disabled",true);
+                                $("#OCPacksData_" +@i +"__" + "DeliveryName").prop("disabled",true);
+                            }
+                        </script>
+                    </div>
+
+                }
+            }
+        </div>
+
+        if (Model.PageTypeID == 1)
+        {
+            <h3 class="popTitle">各代购合同条款及备注<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+            <div class="popContent">
+                @for (var i = 0; i < Model.OCPacksData.Count; i++)
+                {
+                    //@Html.LabelFor(q=>q.OCPacksData[i].TagSample)
+                    <label id="labClasueTitle_@i"></label>
+                    @Html.TextAreaFor(q => q.OCPacksData[i].OCClasue, new { @class = "form-control", rows = "8" })
+                    <script type="text/javascript">
+                        $("#OCPacksData_"+@i+"__"+"OCClasue").hide();
+                    </script>
+
+                }
+            </div>
+
+        }
+        else
+        {
+    <!--采购合同新建完成后，只有一个合同条款及备注-->
+
+            <h3 class="popTitle">
+                合同条款及备注
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="popContent">
+                @if (Model.PageTypeID == 1 || Model.PageTypeID == 3)
+                {
+                    @Html.TextAreaFor(p => p.Clasue, new { @class = "form-control", rows = "8" })
+                }
+                else
+                {
+                    @Html.TextAreaFor(d => d.Clasue, new { @disabled = "disabled", @class = "form-control", rows = "8" })
+                }
+            </div>
+        }
+
+        if (Model.PageTypeID == 4)
+        {
+            <h3 class="popTitle">审核意见<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+            <div class="popContent">
+                @Html.TextAreaFor(d => d.AuditIdea, new { @class = "form-control" })
+            </div>
+        }
+
+    <!--操作按钮-->
+        <div class="popBtns">
+            @switch (Model.PageTypeID)
+            {
+                case 1:
+                case 3:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)OutContractStatusEnum.OutLine))">保存为草稿</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)OutContractStatusEnum.PendingCheck))">保存并提交审核</button>
+                    break;
+
+                case 4:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)OutContractStatusEnum.PassedCheck))">审核通过</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)OutContractStatusEnum.NotPassCheck))">驳回重审</button>
+
+                    break;
+
+                default:
+                    break;
+            }
+
+            <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+        </div>
+
+    <!--审核历史记录列表-->
+        if (Model.PageTypeID > 1)
+        {
+            <h3 class="popTitle">
+                历史记录
+                <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+            </h3>
+            <div style="display:none;" class="popContent">
+                <div class="history_box">
+                    <table class="table table-bordered" style="width:100%;">
+                        <thead>
+                            <tr class="TH">
+                                <th width="20%">审批日期</th>
+                                <th width="20%">审批人</th>
+                                <th width="20%">状态</th>
+                                <th width="40%">审批意见</th>
+                            </tr>
+                        </thead>
+                        @if (Model.OCOutContractHis != null)
+                        {
+                            foreach (var item in Model.OCOutContractHis.OrderByDescending(d => d.AuditCreateDate))
+                            {
+                                <tr>
+                                    <td>@item.AuditCreateDate</td>
+                                    <td>@item.AuditUserName</td>
+                                    <td>@item.OutContractStatus</td>
+
+                                    <td>@item.AuditPacksIdea</td>
+                                </tr>
+                            }
+                        }
+                    </table>
+                </div>
+            </div>
+        }
+    }
+</form>
+
+<script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+<script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+<script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+<script src="@Url.Content("~/Scripts/jquery.easyui.datagrid-detailview.js")"></script>
+
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            //审核时，清空审核意见
+            //if(GstrPageTypeID==4){
+            //    $("#AuditIdea").val("");
+
+            //}
+
+            //阻止折叠事件发生
+            $(".txtStop").on("click",function (even) {
+                even.stopPropagation();
+            });
+
+            $(".OutCompanyID").on("change",function (obj) {
+                ControlClasueInput(obj);
+            });
+
+            $("#frmEdit .Wdate").blur(function () {
+                var time = $(this).val();
+                $(this).attr("value", time);
+                $('#frmEdit').bootstrapValidator('revalidateField', $(this).prop("name"));
+            });
+        });
+
+        //一个代购公司对应一个合同条款及备注
+        function ControlClasueInput(obj) {
+            var clasueTitleId = "", clasueId = "", locationSelectId = "#" + obj.currentTarget.id;
+            var a = obj.currentTarget.value;//当前被选中的代购公司Id
+            var b = 0;
+            var c = locationSelectId.substr(13, 1);
+            c = parseFloat(c);
+            var d = "";
+            var arrCompanyId = [];
+            $("select").each(function (i, j) {
+                clasueTitleId = "#labClasueTitle_" + i;//代购合同条款及备注的标签名称
+                clasueId = "#OCPacksData_" + i + "__OCClasue";//每个标签代购公司所对应的“合同条款及备注”多行文本Id
+
+                //代购公司为空时，隐藏对应“合同条款及备注”及其标签名称并清空值
+                if (j.value == "") {
+                    $(clasueTitleId).text("");
+                    $(clasueTitleId).hide();
+                    $(clasueId).val("");
+                    $(clasueId).hide();
+                } else {
+                    if ($.inArray(j.value, arrCompanyId) == -1) {
+                        d = $("#" + j.id)[0].selectedIndex;
+                        d = $("#" + j.id)[0].options[d].text;
+                        $(clasueTitleId).text(d + "代购合同条款及备注");
+                        $(clasueTitleId).show();
+
+                        $(clasueId).show();
+                    } else {
+                        $(clasueTitleId).text("");
+                        $(clasueTitleId).hide();
+                        $(clasueId).val("");
+                        $(clasueId).hide();
+
+                    }
+                    arrCompanyId.push(j.value);
+
+                }
+
+            });
+        }
+
+        $(function(){
+            var OCPacksData_Count=parseInt( $("#OCPacksData_Count").val());
+            for (var i = 0; i < OCPacksData_Count; i++) {
+                $("#MyPopGrid"+i).datagrid({
+                    checkOnSelect:true,
+                    onBeforeEdit:onBeforeEdit,
+                    onAfterEdit:onAfterEdit,
+                    onCancelEdit:onCancelEdit,
+                    onLoadSuccess:onLoadSuccess,
+                    onClickCell: @(Model.PageTypeID == 2 ? "emptyFunc" : "onClickCell"),
+                    showFooter: true,
+                    onBeginEdit:onBeginEdit,
+
+                });
+            }
+        });
+
+        function KOModel(item) {
+            this.ID = ko.observable(item.ID);
+            this.DeliveryDateStart = ko.observable();
+            this.PageTypeID = ko.observable();
+            this.ContractsID = ko.observable();
+            this.OthersFee = ko.observable();
+            this.Clasue = ko.observable();
+            this.AuditIdea = ko.observable();
+            this.OutContractStatusID = ko.observable();
+
+            this.OCPacksData = ko.observableArray();
+        }
+
+        function KOViewModel() {
+            var self = this;
+
+            self.MyModel = ko.observable();
+            self.MyModel(new KOModel(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model)))));
+            self.MyModel().OCPacksData(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.OCPacksData))));
+
+            var checkSubmit = false;//防止重复提交
+            //提交
+            self.submit = function (StatusID) {
+
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (!bootstrapValidator.isValid()) {
+                    $(".glyphicon-remove:first").prev().focus();
+                    return false;
+                }
+
+                var NotPassCheck= @((int)OutContractStatusEnum.NotPassCheck);
+                if (StatusID == NotPassCheck && $.trim($("#AuditIdea").val()) == "") {
+                    $.messager.alert("提示", "请输入审核意见！", "info", function () {
+                        $("#AuditIdea").focus();
+                    });
+                    return false;
+                }
+
+                if (editIndex != undefined) {
+                    $.messager.confirm("提示", "发现您有正在编辑状态的产品，是否保存？", function(r){
+                        if(r){
+                            endEditingInfo();
+                        }
+                    });
+                    return false;
+                }
+
+                if ($("#OthersFee").val()!=null) {
+                    if ($("#OthersFee").val()==parseFloat($("#OthersFee").val())) {
+                        self.MyModel().OthersFee($("#OthersFee").val());
+                    }else {
+                        $.messager.alert("提示", "其他费用必须是大于等于0的数字！");
+                    }
+                }
+
+                self.MyModel().DeliveryDateStart($("#DeliveryDateStart").val());
+                self.MyModel().PageTypeID($("#PageTypeID").val());
+                self.MyModel().ContractsID($("#ContractsID").val());
+                self.MyModel().Clasue($("#Clasue").val());
+                self.MyModel().AuditIdea($("#AuditIdea").val());
+
+                self.MyModel().OutContractStatusID(StatusID);
+
+
+                var validOutCompanyID = true;
+                var validDeliveryName = true;
+                var validOthersFee = true;
+
+                var OCPacksData_Count=parseInt( $("#OCPacksData_Count").val());
+                for (var i = 0; i < OCPacksData_Count; i++) {
+                    var rows = $("#MyPopGrid"+i).datagrid("getRows");
+                    if (rows && rows.length > 0) {
+                        self.MyModel().OCPacksData()[i].OCPacksProducts = ko.observableArray();
+                        self.MyModel().OCPacksData()[i].OCPacksProducts(rows);
+                    }
+
+                    var $dv=$("#dvOutContract_"+i);
+                    var temp="OCPacksData["+i+"].";
+                    var OutCompanyID = $dv.find("select[name='"+temp+"OutCompanyID']").val();
+                    var DeliveryName = $dv.find("input[name='"+temp+"DeliveryName']").val();
+                    var TagProductsAmount = $("input[name='OCPacksData["+i+"].TagProductsAmount']").val();
+                    var OthersFee = $dv.find("input[name='"+temp+"OthersFee']").val();
+                    var PacksRemark = $dv.find("textarea[name='"+temp+"PacksRemark']").val();
+                    var OCClasue = $("textarea[name='"+temp+"OCClasue']").val();
+
+                    self.MyModel().OCPacksData()[i].OutCompanyID = ko.observable();
+                    self.MyModel().OCPacksData()[i].DeliveryName = ko.observable();
+                    self.MyModel().OCPacksData()[i].TagProductsAmount = ko.observable();
+                    self.MyModel().OCPacksData()[i].OthersFee = ko.observable();
+                    self.MyModel().OCPacksData()[i].PacksRemark = ko.observable();
+                    self.MyModel().OCPacksData()[i].OCClasue = ko.observable();
+
+                    self.MyModel().OCPacksData()[i].OutCompanyID(OutCompanyID);
+                    self.MyModel().OCPacksData()[i].DeliveryName(DeliveryName);
+                    self.MyModel().OCPacksData()[i].TagProductsAmount(TagProductsAmount);
+                    self.MyModel().OCPacksData()[i].OthersFee(OthersFee);
+                    self.MyModel().OCPacksData()[i].PacksRemark(PacksRemark);
+                    self.MyModel().OCPacksData()[i].OCClasue(OCClasue);
+                    if (OutCompanyID==null || OutCompanyID=="") {
+                        validOutCompanyID=false;
+                        break;
+                    }
+
+                    if (DeliveryName==null || DeliveryName=="") {
+                        validDeliveryName=false;
+                        break;
+                    }
+
+                    if (OthersFee!=null && OthersFee!="") {
+                        if (parseFloat(OthersFee) != OthersFee || parseFloat(OthersFee) < 0) {
+                            validOthersFee = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (!validOutCompanyID) {
+                    $.messager.alert("提示", "请选择代购公司！");
+                    return;
+                } else if (!validDeliveryName) {
+                    $.messager.alert("提示", "请输入交货地点");
+                    return;
+                } else if (!validOthersFee) {
+                    $.messager.alert("提示", "其他费用必须是大于等于0的数字！");
+                    return;
+                }
+
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/Outsourcing/Save")',
+                    data: ko.toJSON(self.MyModel)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    if (!data.IsSuccess) {
+                        completeLoading();
+                        $.messager.alert("提示", "失败了！");
+                        return;
+                    } else {
+                        parentGridReload();
+                        OA.CloseMe(true);
+                    }
+                });
+            }
+        }
+
+        var KOViewModel = new KOViewModel();
+        ko.applyBindings(KOViewModel);
+
+
+        function productNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.ProductImage, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.OrderProductNO);
+        }
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndex = undefined;
+        var editGrid = "";
+
+        function onBeforeEdit(index, row) {
+            row.editing = true;
+            updateActionsInfo(index);
+
+        }
+
+        function onAfterEdit(index, row) {
+            row.editing = false;
+            CalculateRow(row,editGrid);
+
+            updateActionsInfo(index);
+
+        }
+        function onCancelEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function endEditingInfo() {
+            if (editIndex == undefined) { return true }
+            if ($(editGrid).datagrid('validateRow', editIndex)) {
+                $(editGrid).datagrid('endEdit', editIndex);
+                editIndex = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function updateActionsInfo(index) {
+            $(editGrid).datagrid('refreshRow', index);
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+
+        }
+
+        function acceptInfo(target) {
+            editIndex = getRowIndex(target);
+            if (endEditingInfo()) {
+                $(editGrid).datagrid('acceptChanges');
+            }
+        }
+
+        function onClickCell(index, field) {
+            if (editGrid !="#" +$(this)[0].id && endEditingInfo()) {
+                editIndex = undefined;
+            }
+            var thisID=$(this)[0].id;
+            editGrid = "#" + thisID;
+            if (editIndex != index) {
+                if (endEditingInfo()) {
+                    $(editGrid).datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $(editGrid).datagrid('getEditor', { index: index, field: field });
+                    if (ed) {
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndex = index;
+                } else {
+                    setTimeout(function () {
+                        $(editGrid).datagrid('selectRow', editIndex);
+                    }, 0);
+                }
+            }
+            RemovePopover();
+        }
+
+        function onBeginEdit(index, row) {
+            $(".datagrid-editable-input,.validatebox-text").on("keypress",function(e){
+                if(e.keyCode == 13){
+                    acceptInfo(row);
+                }
+            });
+
+            $(".datagrid-editable-input").on("change", function (e) {
+                CalculateRow(row,editGrid);
+            });
+        }
+
+        function emptyFunc() {
+
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+        }
+
+        $(function(){
+            // 表单验证
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+
+                fields: {
+                    DeliveryDateStart: {
+                        validators: {
+                            notEmpty: { message: '标签要求交货日期不能为空' },
+                        }
+                    },
+                }
+            });
+        });
+
+
+        //计算行
+        function CalculateRow(row,editGrid) {
+            var OrderProductFPrice = row.OrderProductFPrice;
+            var ProductTagsNumber=row.ProductTagsNumber;
+
+            row.ProductTagsAmount = NumberToRound(OrderProductFPrice * ProductTagsNumber,3);
+
+            CalculateSum(editGrid);
+        }
+
+        function CalculateSum(editGrid) {
+            var editID=editGrid.substr(editGrid.length-1,1);
+
+            var SumAmount=0;
+            if ($("#OthersFee"+editID)!=null && $("#OthersFee"+editID).val()==parseFloat($("#OthersFee"+editID).val())) {
+                SumAmount=parseFloat($("#OthersFee"+editID).val());
+            }
+            var thisRows= $(editGrid).datagrid('getRows');
+            for (var i = 0; i < thisRows.length; i++) {
+                SumAmount+=parseFloat(thisRows[i].ProductTagsAmount);
+            }
+            
+            SumAmount = NumberToRound(SumAmount,3);
+
+            $("#showTagProductsAmount_"+editID).text(SumAmount);
+            $("input[name='OCPacksData["+editID+"].TagProductsAmount'").val(SumAmount);
+
+            CalculateSum2();
+        }
+
+        function CalculateSum2() {
+            var Sum=0;
+            if ($("#OthersFee").val()!=null) {
+                if ($("#OthersFee").val()==parseFloat($("#OthersFee").val())) {
+                    Sum=parseFloat($("#OthersFee").val());
+                }else {
+                    $.messager.alert("提示", "其他费用必须是大于等于0的数字！");
+                }
+            }
+
+            var OCPacksData_Count=parseInt( $("#OCPacksData_Count").val());
+            for (var i = 0; i < OCPacksData_Count; i++) {
+                Sum+=parseFloat( $("#showTagProductsAmount_"+i).text());
+            }
+            
+            Sum = NumberToRound(Sum, 3);
+
+            $("#txtOutContractSumText").text(Sum);
+        }
+
+        $(".OthersFee").on("change",function(){
+            CalculateSum("#MyPopGrid"+$(this).attr("data"));
+        });
+
+        $("#OthersFee").on("change",function(){
+            CalculateSum2();
+        });
+    </script>
+}

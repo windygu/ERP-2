@@ -1,0 +1,326 @@
+﻿/* here you can put your own css to customize and override the theme */
+
+.b {
+    font-weight: bolder !important;
+}
+
+.right {
+    text-align: right !important;
+}
+
+.left {
+    text-align: left !important;
+}
+
+.nowrap, ul.nowrap > li, ol.nowrap > li {
+    white-space: nowrap !important;
+}
+
+.form-groupx {
+    margin-bottom: 15px;
+}
+
+.form-horizontal .form-groupx:after {
+    clear: both;
+}
+
+/*
+ul.userNavList > li> ul > li {padding:0px;margin:0px !important;}
+*/
+.h, .hidden, .hide {
+    display: none;
+}
+
+form > div.row, div.page > div.row {
+    margin: 5px 0px 0px 0px !important;
+    padding: 5px 0px 10px 0px !important;
+}
+/*.new{ background-image:url(../n.gif);height:13px;width:26px;}
+*/
+.n {
+    color: White !important;
+    background-color: Red !important;
+    font-size: 9pt;
+    padding: 2px;
+}
+
+    .n:before {
+        content: "新";
+    }
+
+div.footer a {
+    color: White !important;
+}
+
+ul.SearchResult {
+    display: block;
+    width: 100%;
+    margin: 0px;
+    padding: 10px;
+    list-style: none;
+}
+
+    ul.SearchResult > li {
+        width: 100%;
+        height: 25px;
+        font-size: 14px;
+    }
+
+        ul.SearchResult > li > a {
+            float: left;
+            width: 90%;
+        }
+
+        ul.SearchResult > li > span {
+            float: right;
+            width: 20px;
+        }
+
+        ul.SearchResult > li:hover {
+            background-color: black !important;
+        }
+
+            ul.SearchResult > li:hover,
+            ul.SearchResult > li:hover * {
+                color: white !important;
+            }
+
+.key {
+    color: Red !important;
+}
+
+body.Page-3D {
+    background-color: #f0f0f0;
+}
+
+    body.Page-3D > div#ReadPageInfo {
+        box-shadow: 5px 5px 5px #ccc;
+    }
+
+li.b * {
+    font-weight: bolder;
+}
+
+ul.col, ol.col, ul.ol {
+    width: 100% !important;
+    display: block !important;
+    list-style-type: none;
+    padding: 0px !important;
+    margin: 0px !important;
+}
+
+a.button-small {
+    font-size: 12px !important;
+    text-decoration: none !important;
+}
+
+div.page div.content p {
+    line-height: 180% !important;
+    font-size: 16px;
+}
+
+div.linkInfo {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+div.page div.content blockquote.file * {
+    font-size: 14px;
+    line-height: 20px;
+}
+
+div.page div.hotButton button {
+    font-size: 12px;
+}
+
+ul.list, ul.list2 {
+    padding-left: 10px !important;
+}
+
+    ul.list li {
+        float: left;
+        margin-top: 3px;
+        text-align: left;
+    }
+
+        ul.list li:before {
+            content: "• ";
+        }
+
+        ul.list li small, ul.list2 li small {
+            font-size: 9px;
+            color: gray;
+            margin-left: 5px;
+        }
+
+ul.extended li ul.col li, ul.col li {
+    display: block;
+    float: left;
+    margin: 0px !important;
+    padding: 0px;
+    text-align: left;
+}
+
+ul.col li {
+    padding: 5px;
+}
+
+ul.extended li ul.col li a {
+    height: 32px !important;
+    margin-top: 0px !important;
+    display: block;
+    padding-top: 0px !important;
+    line-height: 32px;
+}
+/*
+ul.extended li ul.col li,
+ul.extended li
+{
+  margin:0px !important;
+  padding:0px !important;
+  height:30px !important;
+}
+ul.extended li ul.col li a,
+ul.extended li p
+{  margin:3px !important;
+   padding:0px 3px 3px 5px!important;
+}
+*/
+ul.list2 li, ol.list2 li {
+    display: block;
+    float: left;
+    margin-bottom: 1px;
+    margin-top: 1px;
+    text-align: left;
+}
+
+    ul.list2 li:before {
+        content: "• ";
+    }
+
+ul.col1 li, ol.col1 li {
+    width: 100% !important;
+}
+
+ul.col2 li, ol.col2 li {
+    width: 50% !important;
+}
+
+ul.col3 li, ol.col3 li {
+    width: 33.33% !important;
+}
+
+ul.col4 li, ol.col4 li {
+    width: 25% !important;
+}
+
+ul.col5 li, ol.col5 li {
+    width: 20% !important;
+}
+
+ul.col6 li, ol.col6 li {
+    width: 16.66% !important;
+}
+
+ul.col7 li, ol.col7 li {
+    width: 14.2857% !important;
+}
+
+form > div.row > div.control-label,
+div.page > div.row > div.control-label {
+    text-align: right;
+    overflow: hidden;
+    text-overflowx: ellipsis;
+    white-space: nowrap;
+}
+
+form.form-horizontal div.form-group > div.group > label.control-label {
+    text-align: right;
+    overflow: hidden;
+    text-overflowx: ellipsis;
+    white-space: nowrap;
+}
+
+.must {
+    color: red !important;
+}
+
+.ellipsis li, .ellipsis td {
+    -moz-binding: url('ellipsis.xml#ellipsis'); /*相对当前html的路径*/
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.ol li {
+    display: block;
+    position: relative;
+    height: 30px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-top: 5px;
+}
+
+    .ol li a {
+        -moz-binding: url('ellipsis.xml#ellipsis'); /*相对当前html的路径*/
+        overflow: hidden;
+        text-overflow: ellipsis;
+        position: absolute;
+        white-space: nowrap;
+        top: 8px;
+        left: 16px;
+        display: block;
+        width: 90%;
+    }
+
+        .ol li a span {
+            color: Black;
+        }
+
+        .ol li a small {
+            color: gray;
+            font-size: 12px !important;
+        }
+
+li.b a, li.b {
+    font-weight: bolder;
+    font-size: 14px;
+}
+
+.ol li > small {
+    display: block;
+    position: absolute;
+    color: gray;
+    width: 120px;
+    text-align: right;
+    top: 10px;
+    font-size: 10px !important;
+    right: 0px;
+}
+
+.ol li:before {
+    content: "•";
+}
+
+/*xufei quot offer.aspx*/
+.table-advance {
+    white-space: nowrap;
+}
+
+.table-editable input {
+}
+
+.table-editable select {
+}
+.table-editable input[type="checkbox"] {
+    width: 20px;
+}
+
+.table-collapse {
+    table-layout: fixed;
+}
+
+    .table-collapse td {
+    }
+
+        .table-collapse td:first-child {
+        }

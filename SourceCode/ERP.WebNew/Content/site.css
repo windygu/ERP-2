@@ -1,0 +1,300 @@
+.datagrid-htable > tbody > tr {
+    background: #666;
+    color: #fff;
+}
+
+    .datagrid-htable > tbody > tr > td .datagrid-btable > tbody > tr > td {
+        /*padding: 8px;*/
+    }
+
+.datagrid-header td.datagrid-header-over {
+    background: none;
+    color: #FFF;
+    cursor: default;
+}
+
+.datagrid-sort-icon {
+    padding: 0 10px 0 0 !important;
+}
+
+.datagrid-view table td {
+    height: 35px;
+}
+
+.popoverDiv {
+    /*width: 300px;*/
+    height: 300px;
+    overflow: auto;
+}
+
+.popoverImg {
+    height: 100%;
+}
+/*加载中*/
+#loadingDiv {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    top: 0;
+    background: #000;
+    opacity: 0.6;
+    filter: alpha(opacity=60);
+    z-index: 9000;
+}
+
+    #loadingDiv .loadingText {
+        position: absolute;
+        width: auto;
+        height: 57px;
+        line-height: 57px;
+        padding-left: 50px;
+        padding-right: 5px;
+        background: #fff url(/images/loading.gif) no-repeat scroll 5px 10px;
+        color: #000;
+    }
+
+/*展开收缩*/
+#sliderbarToogler {
+    background-color: #050505;
+    left: -6px;
+    padding: 9px;
+    position: absolute;
+    top: 94px;
+    width: 39px;
+    cursor: pointer;
+    opacity: 0.5;
+    z-index: 10;
+    display: none;
+}
+
+    #sliderbarToogler span {
+        display: block;
+        width: 24px;
+        height: 24px;
+        background: url(/images/arr.png) no-repeat;
+    }
+
+        #sliderbarToogler span.arr_l {
+            background-position: 2px 0px;
+        }
+
+        #sliderbarToogler span.arr_r {
+            background-position: 2px -34px;
+        }
+
+/* 重置easyui被选中行后，行中a标签的颜色 */
+.datagrid-row-selected a.data-content:link, .datagrid-row-selected a.data-content:visited {
+    color: #fff;
+}
+
+.wordbreak {
+    word-break: break-all;
+}
+
+.hidden {
+    display: none;
+}
+
+.popTitle {
+    cursor: pointer;
+    background: #666;
+    font-size: 14px;
+    color: #fff;
+    padding: 10px 15px;
+    font-weight: bold !important;
+    margin-top: 15px;
+}
+
+.popContent {
+    width: 100%;
+    padding: 15px;
+    border: 1px #666 solid;
+    border-top: 0px;
+    margin-bottom: 10px;
+    overflow: auto;
+}
+
+.popBtns {
+    width: 100%;
+    text-align: right;
+    padding: 15px 15px 15px 0;
+    margin-top: 10px;
+    border-top: 1px #ccc solid;
+    clear: both;
+}
+
+.popConfirm {
+    margin: 15px 0;
+    text-align: left;
+}
+
+.modal-header .close {
+    width: initial;
+    height: initial;
+    text-indent: initial;
+}
+
+label.control-label {
+    margin-top: 0;
+    text-align: right;
+    font-weight: normal;
+    line-height: 30px;
+}
+
+div.control-label {
+    text-align: left;
+    line-height: 30px;
+}
+
+.t_bg {
+    background: #666;
+    color: #fff;
+}
+
+.imgPreviewDiv {
+    text-align: center;
+    vertical-align: middle;
+}
+
+#imgPreview {
+    height: auto;
+    width: auto;
+    max-width: 500px;
+    max-height: 500px;
+    overflow: auto;
+    border: 1px solid #ccc;
+    cursor: pointer;
+}
+
+#tree {
+    max-height: 500px;
+    overflow: auto;
+}
+
+.content-wrapper {
+    min-height: 600px;
+}
+
+.search_Condition ul li.width100p {
+    width: 100%;
+}
+
+.bootstrap-select.btn-group:not(.input-group-btn), .bootstrap-select.btn-group[class*="span"] {
+    margin-bottom: 0;
+}
+
+label {
+    font-weight: normal;
+}
+
+input[type=checkbox] {
+    margin: 0;
+}
+
+.form-horizontal .control-label p {
+    text-align: left;
+    padding: 0;
+}
+
+.form-horizontal .has-feedback .form-control-feedback {
+    top: 5px;
+}
+/*客户屏幕小余1280px时，需要调整一下比例*/
+@media only screen and (max-width: 1280px) {
+    .header {
+        height: 32px;
+        min-height: 32px;
+        padding: 0 10px 0 10px;
+    }
+
+        .header .navbar-nav > li.dropdown .dropdown-toggle {
+            margin: 0px;
+            padding: 5px 5px 5px 5px;
+        }
+
+            .header .navbar-nav > li.dropdown .dropdown-toggle > i {
+                font-size: 14px;
+            }
+
+        .header .navbar-nav > li.dropdown .dropdown-menu > li > a > i {
+            font-size: 12px;
+        }
+
+        .header .navbar-nav > li.dropdown.user .dropdown-toggle {
+            padding: 5px 5px 5px 5px;
+        }
+
+    #userAvata {
+        width: 16px;
+        height: 16px;
+    }
+
+    #My_User_Info {
+        line-height: 16px;
+        font-size: 12px;
+    }
+
+    .theme-panel > .toggler {
+        padding: 10px;
+        background-size: 16px;
+    }
+
+    .page-sidebar-fixed .page-sidebar {
+        top: 32px !important;
+    }
+
+    .page-header-fixed .page-container {
+        margin-top: 22px;
+    }
+
+    .btn {
+        min-width: 90px;
+        padding: 5px 4px;
+    }
+
+    .datagrid-view table td {
+        height: 28px;
+    }
+
+    .search_Condition ul li {
+        font-size: 14px;
+        padding-right: 5px;
+        padding-bottom: 5px;
+        height: 30px;
+        margin-top: 5px;
+    }
+
+        .search_Condition ul li.search {
+            padding-top: 5px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+    .form-control {
+        height: 31px;
+    }
+
+    .modal-dialog {
+        width: 850px;
+    }
+
+    #imgPreview {
+        max-width: 350px;
+        max-height: 350px;
+    }
+
+    .content-wrapper {
+        min-height: 400px;
+    }
+
+    .search_Condition ul li {
+        width: 50%;
+    }
+}
+
+.datagrid-row-groupSummary {
+    background: #efefef;
+}
+.datagrid-row-selected {
+    color: #000;
+}

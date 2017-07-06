@@ -1,0 +1,85 @@
+﻿@model ERP.Models.InspectionExchange.VMInspectionExchangeSearch
+@using ERP.Models.CustomEnums;
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@{
+    ViewBag.Title = "待审核结汇单据列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+
+        var tableName = "#MyGrid";
+
+        var showWatch = @(Model.PageElementPrivileges & (int)InspectionExchangeElementPrivileges.Watch);
+        var showExchange = @(Model.PageElementPrivileges & (int)InspectionExchangeElementPrivileges.Exchange);
+        var showEdit = @(Model.PageElementPrivileges & (int)InspectionExchangeElementPrivileges.Edit);
+        var showApproval = @(Model.PageElementPrivileges & (int)InspectionExchangeElementPrivileges.Approval);
+
+        var PendingMaintenance= @((int)InspectionExchangeStatusEnum.PendingMaintenance);
+        var PendingCheck= @((int)InspectionExchangeStatusEnum.PendingCheck);
+        var OutLine= @((int)InspectionExchangeStatusEnum.OutLine);
+        var NotPassCheck= @((int)InspectionExchangeStatusEnum.NotPassCheck);
+
+        function operationFormatter(val, row, index) {
+            var ops="";
+            var StatusID = row.StatusID;
+
+            if(showWatch>0 && StatusID>PendingMaintenance){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionExchange/Edit/"))" + row.InspectionExchangeID + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showExchange>0 && StatusID==PendingMaintenance){
+                if (row.IsCheck) {
+                    ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionExchange/Edit/"))" + row.InspectionExchangeID + "?Type=Add' style='margin: 0 5px;'>结汇</a>";
+                }else {
+                    ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='SelectCheckType(" + row.InspectionExchangeID + ")' href='javascript:void(0)' style='margin: 0 5px;'>结汇</a>";
+                }
+            }
+
+            if(showEdit>0&&(StatusID == OutLine || StatusID == NotPassCheck)){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionExchange/Edit/"))" + row.InspectionExchangeID + "' style='margin: 0 5px;'>编辑</a>";
+            }
+
+            if(showApproval>0 && StatusID==PendingCheck && row.IsHasApprovalPermission){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionExchange/Edit/"))" + row.InspectionExchangeID + "?Type=Approval' style='margin: 0 5px;'>审核</a>";
+            }
+            return ops;
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","ID"]);
+        }
+
+
+        function SelectCheckType(InspectionExchangeID) {
+            $.messager.confirm('提示', '按照订单号/订舱号结汇？', function(r){
+                if (r) {
+                    $.messager.confirm('提示', '您将按照订单号结汇，确认吗？', function(r2){
+                        if (r2) {
+                            $.post("@(Url.Content("~/InspectionExchange/SelectIsCheck"))", { "InspectionExchangeID": InspectionExchangeID,"IsCheck":true }, function (data) {
+                                $(tableName).datagrid('reload');
+                            });
+                        }
+                    });
+                }else {
+                    $.messager.confirm('提示', '您将按照订舱号结汇，确认吗？', function(r2){
+                        if (r2) {
+                            $.post("@(Url.Content("~/InspectionExchange/SelectIsCheck"))", { "InspectionExchangeID": InspectionExchangeID,"IsCheck":false  }, function (data) {
+                                $(tableName).datagrid('reload');
+                            });
+                        }
+                    });
+
+                }
+            });
+
+        }
+    </script>
+}

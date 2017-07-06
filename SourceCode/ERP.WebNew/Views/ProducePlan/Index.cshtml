@@ -1,0 +1,62 @@
+﻿@{
+    ViewBag.Title = "上传生产计划";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model ERP.Models.ProducePlan.VMDTOProduceSearch
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var tableName = "#MyGrid";
+
+        //删除产品
+        function SubmitData(pid) {
+            $.messager.confirm('提示','确定要提交选中的信息吗？',function(r){
+                if (r){
+                    $.post('@Url.Content("~/ProducePlan/Submit")', { id: pid },
+                       function (result) {
+                           switch (result) {
+                               case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect) :
+                                   alert("没有提交成功");
+                                   break;
+                               case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success) :
+
+                                   $(tableName).datagrid('reload');
+                                   break;
+                               default:
+                                   break;
+                           }
+                       }, "json");
+                }
+            });
+        }
+        var showwatch = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProducePlanElementPricileges.Watch);
+        var showUpload = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProducePlanElementPricileges.Upload);
+        var showSubmit = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProducePlanElementPricileges.Submit);
+        function operationFormatter(val, row, index) {
+            var rows = $(tableName).datagrid('getRows');
+            var row = rows[index];
+            var ops = "";
+            var a=0;
+            var b=1;
+            if (showwatch>0) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ProducePlan/WaitCheck"))?id="+ row.ID + "&DataFlag="+a+"' style='margin: 0 5px;'>查看</a>";
+            }
+            if (showUpload>0) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ProducePlan/Upload"))?id="+ row.ID + "&DataFlag="+b+"' style='margin: 0 5px;'>上传生产计划</a>";
+            }
+
+            if (showSubmit>0) {
+                if (row.StatusName!="待上传") {
+
+                    ops += "<button id='btnSubmit' wintype='idialog' type='button' winsize='900,800,yes' onclick='SubmitData("+row.ID+")'  class='btn btn-default btn-xs w_auto '>提交审核</button>";
+
+                }
+            }
+            return ops;
+
+        }    //删除产品
+    </script>
+}

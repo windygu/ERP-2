@@ -1,0 +1,36 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@model ERP.Models.ThirdPartyVerification.VMOrderSearch
+
+@{
+    ViewBag.Title = "第三方验货";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)ThirdPartyVerificationElementPrivileges.View);
+        var showUpload = @(Model.PageElementPrivileges & (int)ThirdPartyVerificationElementPrivileges.UpLoad);
+
+        var StatusID = row.StatusID;
+        var HadUpload=@((int)ThirdPartyVerificationStatusEnum.HadUpload);
+
+        var ops = "";
+
+        if (showView > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ThirdPartyVerification/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+        if (showUpload > 0&&StatusID!=HadUpload) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ThirdPartyVerification/Edit/"))" + val + "' style='margin: 0 5px;'>上传验货报告</a>";
+        }
+        return ops;
+    }
+</script>

@@ -1,0 +1,36 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@model ERP.Models.ShipmentOrder.VMShipmentOrderSearch
+
+@{
+    ViewBag.Title = "已审核的出运通知";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function StatusFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+        return row.NotificationStatusName;
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)ShipmentNotificationElementPrivileges.View);
+
+        var ops = "";
+
+        if (showView > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentNotification/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+
+        return ops;
+    }
+</script>

@@ -1,0 +1,83 @@
+﻿@model ERP.Models.Inspection.VMInspectionSearch
+@using ERP.Models.CustomEnums
+
+<div class="content-wrapper">
+
+    <form class="form-inline frmFind" role="form" runat="server" method="get">
+        <div class="search_Condition box_1k">
+            <ul>
+                <li>
+                    <label class="col-xs-2">采购单号：</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(d => d.PurchaseNumber, new { @class = "form-control" })
+                    </div>
+                </li>
+                <li>
+                    <label class="col-xs-2">工厂：</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(d => d.FactoryName, new { @class = "form-control" })
+                    </div>
+                </li>
+                <li>
+                    <label class="col-xs-2">状态：</label>
+                    <div class="col-sm-10">
+                        @Html.DropDownListFor(d => d.StatusID, ViewData["Status"] as SelectList, new { @class = "form-control" })
+                    </div>
+                </li>
+                <li>
+                    <label class="col-xs-2">验厂名称：</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(d => d.InspectionName, new { @class = "form-control" })
+                    </div>
+                </li>
+                <li class="search">
+                    <button id="bntFind" type="submit" onclick="return OA.s(this)" class="btn btn-info">查询</button>
+                    <button type="button" class="btn btn-info" onclick="clearAll(this)">清空所有</button>
+                </li>
+            </ul>
+        </div>
+        <div class="Control">
+        </div>
+    </form>
+    @{
+        bool isPageInspectionAuditNoticeList = (Model.PageType == PageTypeEnum.InspectionAuditNoticeList);
+        bool isPageInspectionDetectNoticeList = (Model.PageType == PageTypeEnum.InspectionDetectNoticeList);
+    }
+    <table id="MyGrid" class="easyui-datagrid"
+           data-options="resizeHandle:'right',singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/Inspection/GetAll")?PageType=@((int)Model.PageType)&@HttpContext.Current.Request.QueryString',method:'get',onLoadSuccess:onLoadSuccess,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+        <thead>
+            <tr>
+                <!--基本信息-->
+                <th data-options="field:'PurchaseNumber',align:'center',width:'130',sortable:true">采购单号</th>
+                <th data-options="field:'InspectionName',align:'center',width:'120',sortable:true">第三方名称</th>
+                <th data-options="field:'FactoryName',align:'center',width:'150',sortable:true">工厂</th>
+                <th data-options="field:'StartTime',align:'center',width:'100',sortable:true">开始@(isPageInspectionAuditNoticeList ? "验厂" : isPageInspectionDetectNoticeList ? "检测" : "抽检")时间</th>
+                <th data-options="field:'EndTime',align:'center',width:'100',sortable:true">结束@(isPageInspectionAuditNoticeList ? "验厂" : isPageInspectionDetectNoticeList ? "检测" : "抽检")时间</th>
+                @if (isPageInspectionAuditNoticeList)
+                {
+                    <th data-options="field:'InspectionAuditFeeFormatter',align:'center',width:'100',sortable:true">我司承担费用</th>
+                    <th data-options="field:'InspectionAuditFee_ForFactoryFormatter',align:'center',width:'100',sortable:true">工厂承担费用</th>
+                }
+                else if (isPageInspectionDetectNoticeList)
+                {
+                    <th data-options="field:'InspectionDetectFeeFormatter',align:'center',width:'100',sortable:true">我司承担费用</th>
+                    <th data-options="field:'InspectionDetectFee_ForFactoryFormatter',align:'center',width:'100',sortable:true">工厂承担费用</th>
+                }
+                else
+                {
+                    <th data-options="field:'InspectionSamplingFeeFormatter',align:'center',width:'100',sortable:true">我司承担费用</th>
+                    <th data-options="field:'InspectionSamplingFee_ForFactoryFormatter',align:'center',width:'100',sortable:true">工厂承担费用</th>
+                }
+                <th data-options="field:'StatusName',align:'center',width:'100',sortable:true">状态</th>
+                <th data-options="field:'DT_MODIFYDATE',align:'center',width:'130',sortable:true">最后修改时间</th>
+                <th data-options="field:'ID',align:'center',formatter:operationFormatter">操作</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<script>
+    function onLoadSuccess() {
+        jav.initGridCellTooltips(["ID"]);
+    }
+</script>

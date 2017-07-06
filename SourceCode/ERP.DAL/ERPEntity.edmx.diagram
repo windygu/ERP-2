@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="a0ea7afb01524e13b68d46af9bd717a5" Name="Diagram1" ZoomLevel="77">
+        <EntityTypeShape EntityType="ERPModel.ERPRole" Width="1.5" PointX="6" PointY="160.75" />
+        <EntityTypeShape EntityType="ERPModel.Hierarchy" Width="1.5" PointX="0.75" PointY="139.625" />
+        <EntityTypeShape EntityType="ERPModel.RolePermission" Width="1.5" PointX="8.25" PointY="175.125" />
+        <EntityTypeShape EntityType="ERPModel.SystemUser" Width="1.5" PointX="3" PointY="142.375" />
+        <EntityTypeShape EntityType="ERPModel.UserRole" Width="1.5" PointX="8.25" PointY="152.25" />
+        <EntityTypeShape EntityType="ERPModel.BuyingConfirmation" Width="1.5" PointX="5.75" PointY="4.75" />
+        <EntityTypeShape EntityType="ERPModel.Com_DataDictionary" Width="1.5" PointX="0.75" PointY="7.75" />
+        <EntityTypeShape EntityType="ERPModel.Customer_Commission" Width="1.5" PointX="13.5" PointY="152.125" />
+        <EntityTypeShape EntityType="ERPModel.Customer_Rep" Width="1.5" PointX="2.75" PointY="7.75" />
+        <EntityTypeShape EntityType="ERPModel.Delivery_Encasements" Width="1.5" PointX="27.75" PointY="136.25" />
+        <EntityTypeShape EntityType="ERPModel.Delivery_EncasementsHis" Width="1.5" PointX="36" PointY="144" />
+        <EntityTypeShape EntityType="ERPModel.Delivery_EncasementsProducts" Width="1.5" PointX="38" PointY="151.125" />
+        <EntityTypeShape EntityType="ERPModel.Delivery_ShipmentNotificationHistory" Width="1.5" PointX="5.25" PointY="142" />
+        <EntityTypeShape EntityType="ERPModel.Delivery_ShipmentOrder" Width="1.5" PointX="7.5" PointY="166.375" />
+        <EntityTypeShape EntityType="ERPModel.Delivery_ShipmentOrderCabinet" Width="1.5" PointX="12.75" PointY="168.75" />
+        <EntityTypeShape EntityType="ERPModel.Delivery_ShipmentOrderHistory" Width="1.5" PointX="15.75" PointY="161.875" />
+        <EntityTypeShape EntityType="ERPModel.Delivery_ShipmentOrderProduct" Width="1.5" PointX="33.75" PointY="146.125" />
+        <EntityTypeShape EntityType="ERPModel.Delivery_ShipmentRegisterFeesHistory" Width="1.5" PointX="18.75" PointY="165.875" />
+        <EntityTypeShape EntityType="ERPModel.DocumentsIndexing" Width="1.5" PointX="9.75" PointY="161.375" />
+        <EntityTypeShape EntityType="ERPModel.DocumentsIndexingHistory" Width="1.5" PointX="18" PointY="169.375" />
+        <EntityTypeShape EntityType="ERPModel.FinanceProduct" Width="1.5" PointX="21.75" PointY="170.375" />
+        <EntityTypeShape EntityType="ERPModel.HarmonizedSystem" Width="1.5" PointX="30.75" PointY="129.75" />
+        <EntityTypeShape EntityType="ERPModel.HS_Child" Width="1.5" PointX="33" PointY="130.625" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionClearance" Width="1.5" PointX="24.75" PointY="161.875" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionClearanceHis" Width="1.5" PointX="30" PointY="161" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionCustoms" Width="1.5" PointX="15.75" PointY="166.125" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionCustomsDetail" Width="1.5" PointX="18" PointY="177.875" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionCustomsHis" Width="1.5" PointX="30" PointY="165" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionCustomsProduct" Width="1.5" PointX="20.25" PointY="178.125" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionCustomsProduct2" Width="1.5" PointX="38" PointY="162.5" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionExchange" Width="1.5" PointX="27.75" PointY="156.75" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionExchangeHis" Width="1.5" PointX="36" PointY="147.625" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionReceipt" Width="1.5" PointX="33" PointY="137.875" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionReceiptHis" Width="1.5" PointX="38.25" PointY="143.875" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionReceiptList" Width="1.5" PointX="21.75" PointY="134.875" />
+        <EntityTypeShape EntityType="ERPModel.Inspection_InspectionReceiptProduct" Width="1.5" PointX="36" PointY="139.5" />
+        <EntityTypeShape EntityType="ERPModel.Orders_AcceptInformation" Width="1.5" PointX="13.5" PointY="162.75" />
+        <EntityTypeShape EntityType="ERPModel.Orders_Contacts" Width="1.5" PointX="13.5" PointY="158" />
+        <EntityTypeShape EntityType="ERPModel.Orders_Customers" Width="1.5" PointX="11.25" PointY="145.5" />
+        <EntityTypeShape EntityType="ERPModel.Orders_FreightRate" Width="1.5" PointX="13.5" PointY="155" />
+        <EntityTypeShape EntityType="ERPModel.Plan_ProducePlan" Width="1.5" PointX="24.75" PointY="136.875" />
+        <EntityTypeShape EntityType="ERPModel.Plan_ProducePlanHistory" Width="1.5" PointX="27" PointY="132.875" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_Contract" Width="1.5" PointX="13.5" PointY="137.75" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_ContractBatch" Width="1.5" PointX="15.75" PointY="186.5" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_ContractHistory" Width="1.5" PointX="15.75" PointY="133.25" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_ContractProduct" Width="1.5" PointX="27.75" PointY="165.75" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_OutContractHis" Width="1.5" PointX="39" PointY="147.125" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_OutContractProduct" Width="1.5" PointX="38.25" PointY="155.625" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_OutContracts" Width="1.5" PointX="30.75" PointY="145" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_OutContractsPacks" Width="1.5" PointX="35" PointY="168.375" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_PackProducts" Width="1.5" PointX="35" PointY="164.125" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_PackProductsUPC" Width="1.5" PointX="29.75" PointY="152.75" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_Packs" Width="1.5" PointX="15.75" PointY="189.75" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_PacksHis" Width="1.5" PointX="27.75" PointY="140.75" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_ShippingMarkHistory" Width="1.5" PointX="15.75" PointY="195" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_ThirdPartyVerification" Width="1.5" PointX="10.5" PointY="156.375" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_ThreeTimesQC" Width="1.5" PointX="18.75" PointY="130.375" />
+        <EntityTypeShape EntityType="ERPModel.Purchase_ThreeTimesQCHistory" Width="1.5" PointX="21" PointY="130.75" />
+        <EntityTypeShape EntityType="ERPModel.Quot_Quot" Width="1.5" PointX="22.5" PointY="140.125" />
+        <EntityTypeShape EntityType="ERPModel.Quot_QuotHistory" Width="1.5" PointX="24.75" PointY="142.125" />
+        <EntityTypeShape EntityType="ERPModel.Quot_QuotProduct" Width="1.5" PointX="16.5" PointY="137.25" />
+        <EntityTypeShape EntityType="ERPModel.Quot_QuotProductHistory" Width="1.5" PointX="32.75" PointY="151.875" />
+        <EntityTypeShape EntityType="ERPModel.Reg_Area" Width="1.5" PointX="9" PointY="138.125" />
+        <EntityTypeShape EntityType="ERPModel.Reg_Country" Width="1.5" PointX="6.75" PointY="138.25" />
+        <EntityTypeShape EntityType="ERPModel.Sale_ProductsSample" Width="1.5" PointX="27" PointY="152.625" />
+        <EntityTypeShape EntityType="ERPModel.Sale_SendSampleHis" Width="1.5" PointX="30" PointY="157" />
+        <EntityTypeShape EntityType="ERPModel.Sale_SendSamples" Width="1.5" PointX="24.75" PointY="150" />
+        <EntityTypeShape EntityType="ERPModel.Shipment_Agencies" Width="1.5" PointX="5.25" PointY="194.875" />
+        <EntityTypeShape EntityType="ERPModel.Shipment_AgentFees" Width="1.5" PointX="10.5" PointY="171" />
+        <EntityTypeShape EntityType="ERPModel.Shipment_Cabinet" Width="1.5" PointX="10.5" PointY="176.5" />
+        <EntityTypeShape EntityType="ERPModel.sysdiagram" Width="1.5" PointX="7.75" PointY="4.75" />
+        <EntityTypeShape EntityType="ERPModel.ThirdParty_Inspection" Width="1.5" PointX="27.75" PointY="145" />
+        <EntityTypeShape EntityType="ERPModel.ThirdParty_InspectionAuditNotice" Width="1.5" PointX="30" PointY="140.375" />
+        <EntityTypeShape EntityType="ERPModel.ThirdParty_InspectionAuditNoticeHistory" Width="1.5" PointX="7.75" PointY="7.75" />
+        <EntityTypeShape EntityType="ERPModel.ThirdParty_InspectionDetectNotice" Width="1.5" PointX="30" PointY="135.125" />
+        <EntityTypeShape EntityType="ERPModel.ThirdParty_InspectionDetectNoticeHistory" Width="1.5" PointX="4.75" PointY="8.75" />
+        <EntityTypeShape EntityType="ERPModel.ThirdParty_InspectionSamplingNotice" Width="1.5" PointX="30" PointY="168.625" />
+        <EntityTypeShape EntityType="ERPModel.ThirdParty_InspectionSamplingNoticeHistory" Width="1.5" PointX="9.75" PointY="4.75" />
+        <EntityTypeShape EntityType="ERPModel.UpLoadFile" Width="1.5" PointX="9.75" PointY="8.75" />
+        <EntityTypeShape EntityType="ERPModel.UserCustomerRelationship" Width="1.5" PointX="25.5" PointY="147.375" />
+        <EntityTypeShape EntityType="ERPModel.UserCustomPageSetting" Width="1.5" PointX="5.25" PointY="145.5" />
+        <EntityTypeShape EntityType="ERPModel.WorkflowDetail" Width="1.5" PointX="8" PointY="1" />
+        <EntityTypeShape EntityType="ERPModel.Workflow" Width="1.5" PointX="5.75" PointY="1" />
+        <EntityTypeShape EntityType="ERPModel.Z_Sequence" Width="1.5" PointX="10.75" PointY="0.75" />
+        <EntityTypeShape EntityType="ERPModel.AggregatedCounter" Width="1.5" PointX="11.75" PointY="3.75" />
+        <EntityTypeShape EntityType="ERPModel.Counter" Width="1.5" PointX="11.75" PointY="6.75" />
+        <EntityTypeShape EntityType="ERPModel.Hash" Width="1.5" PointX="6.75" PointY="11.75" />
+        <EntityTypeShape EntityType="ERPModel.Job" Width="1.5" PointX="0.75" PointY="2.25" />
+        <EntityTypeShape EntityType="ERPModel.JobParameter" Width="1.5" PointX="3" PointY="1.125" />
+        <EntityTypeShape EntityType="ERPModel.JobQueue" Width="1.5" PointX="11.75" PointY="9.75" />
+        <EntityTypeShape EntityType="ERPModel.List" Width="1.5" PointX="12.75" PointY="0.75" />
+        <EntityTypeShape EntityType="ERPModel.Schema" Width="1.5" PointX="2.75" PointY="12.75" />
+        <EntityTypeShape EntityType="ERPModel.Server" Width="1.5" PointX="8.75" PointY="12.75" />
+        <EntityTypeShape EntityType="ERPModel.Set" Width="1.5" PointX="10.75" PointY="12.75" />
+        <EntityTypeShape EntityType="ERPModel.State" Width="1.5" PointX="3" PointY="3.75" />
+        <EntityTypeShape EntityType="ERPModel.Classify" Width="1.5" PointX="5.25" PointY="179.375" />
+        <EntityTypeShape EntityType="ERPModel.Factory" Width="1.5" PointX="8.25" PointY="143" />
+        <EntityTypeShape EntityType="ERPModel.Product" Width="1.5" PointX="22.5" PointY="147.5" />
+        <EntityTypeShape EntityType="ERPModel.ProductFitting" Width="1.5" PointX="35.75" PointY="151.75" />
+        <EntityTypeShape EntityType="ERPModel.ProductIngredient" Width="1.5" PointX="12.75" PointY="12.75" />
+        <EntityTypeShape EntityType="ERPModel.Order" Width="1.5" PointX="5.25" PointY="148.875" />
+        <EntityTypeShape EntityType="ERPModel.OrderHistory" Width="1.5" PointX="7.5" PointY="157.25" />
+        <EntityTypeShape EntityType="ERPModel.OrderProduct" Width="1.5" PointX="19.5" PointY="137" />
+        <EntityTypeShape EntityType="ERPModel.ProductsSample" Width="1.5" PointX="13.75" PointY="3.75" />
+        <EntityTypeShape EntityType="ERPModel.SendSample" Width="1.5" PointX="0.75" PointY="14.75" />
+        <EntityTypeShape EntityType="ERPModel.Reg_City" Width="1.5" PointX="13.75" PointY="7.75" />
+        <EntityTypeShape EntityType="ERPModel.Reg_District" Width="1.5" PointX="2.75" PointY="14.75" />
+        <EntityTypeShape EntityType="ERPModel.MailHistory" Width="1.5" PointX="4.75" PointY="14.75" />
+        <AssociationConnector Association="ERPModel.FK_RolePermissions_ERPRoles" />
+        <AssociationConnector Association="ERPModel.FK_UserRoles_ERPRoles" />
+        <AssociationConnector Association="ERPModel.FK_Factory_Hierarchy" />
+        <AssociationConnector Association="ERPModel.FK_Hierarchy_Hierarchy" />
+        <AssociationConnector Association="ERPModel.FK_SystemUsers_Hierarchy" />
+        <AssociationConnector Association="ERPModel.FK_Classify_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_Encasement_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_EncasementHis_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentNotificationHistory_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentOrder_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentOrderHistory_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentRegisterFeesHistory_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_DocumentsIndexing_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_DocumentsIndexingHistory_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Factory_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionClearance_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionClearanceHis_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionCustoms_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionCustomsHis_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionExchange_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionExchangeHis_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionReceipt_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionReceiptHis_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionReceiptList_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Order_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_OrderProduct_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Orders_Customers_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Plan_ProducePlan_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Product_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_ProductFitting_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_AuditPacksHis_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_Contract_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_Contract_SystemUsers_ShippingMark" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_OutContractHis_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_OutContracts_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_ThirdPartyVerification_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_ThreeTimesQC_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Quot_Quot_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Sale_SendSampleHis_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Sale_SendSamples_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Shipment_Agencies_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Shipment_AgentFees_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_SystemUsers_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_ThirdParty_Inspection_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_UserCustomerRelationships_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_UserCustomPageSettings_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_UserRoles_SystemUsers" />
+        <AssociationConnector Association="ERPModel.FK_Customer_Commission_Customer_Commission" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_EncasementHis_Delivery_Encasement" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_EncasementProduct_Delivery_Encasement" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_Encasements_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_EncasementProduct_OrderProduct" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentNotificationHistory_Delivery_ShipmentOrder" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentOrder_Order" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentOrder_Shipment_Agencies" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentOrderCabinet_Delivery_ShipmentOrder" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentOrderHistory_Delivery_ShipmentOrder" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentRegisterFeesHistory_Delivery_ShipmentOrder" />
+        <AssociationConnector Association="ERPModel.FK_DocumentsIndexing_Delivery_ShipmentOrder" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionClearance_Delivery_ShipmentOrder" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionCustoms_Delivery_ShipmentOrder" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionExchange_Delivery_ShipmentOrder" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentOrderCabinet_Shipment_Cabinet" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentOrderProduct_Delivery_ShipmentOrderCabinet" />
+        <AssociationConnector Association="ERPModel.FK_Delivery_ShipmentOrderProduct_OrderProduct" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionCustomsProduct2_Delivery_ShipmentOrderProduct" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionReceiptProduct_Delivery_ShipmentOrderProduct" />
+        <AssociationConnector Association="ERPModel.FK_DocumentsIndexing_Order" />
+        <AssociationConnector Association="ERPModel.FK_DocumentsIndexingHistory_DocumentsIndexing" />
+        <AssociationConnector Association="ERPModel.FK_FinanceProduct_OrderProduct" />
+        <AssociationConnector Association="ERPModel.FK_HS_Child_HarmonizedSystem" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionReceipt_HarmonizedSystem" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionClearance_Orders_AcceptInformation" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionClearanceHis_Inspection_InspectionClearance" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionCustomsDetail_Inspection_InspectionCustoms" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionCustomsHis_Inspection_InspectionCustoms" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionCustomsProduct_Inspection_CombinedCustoms" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionCustomsProduct2_Inspection_InspectionCustomsProduct" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionExchange_Orders_AcceptInformation" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionExchangeHis_Inspection_InspectionExchange" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionReceipt_Inspection_InspectionReceiptList" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionReceiptHis_Inspection_InspectionReceipt" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionReceiptProduct_Inspection_InspectionReceipt" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_InspectionReceiptList_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_Orders_AcceptInformation_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_SendSamples_Orders_AcceptInformation" />
+        <AssociationConnector Association="ERPModel.FK_Orders_Contacts_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_Order_Order" />
+        <AssociationConnector Association="ERPModel.FK_Orders_Customers_Reg_Area" />
+        <AssociationConnector Association="ERPModel.FK_Orders_Customers_Reg_Country" />
+        <AssociationConnector Association="ERPModel.FK_Orders_FreightRate_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_Product_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_Contract_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_Quot_Quot_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_Quot_QuotProduct_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_Quot_QuotProductHistory_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_SendSamples_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_UserCustomerRelationships_Orders_Customers" />
+        <AssociationConnector Association="ERPModel.FK_Plan_ProducePlan_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_Plan_ProducePlanHistory_Plan_ProducePlan" />
+        <AssociationConnector Association="ERPModel.FK_Inspection_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_AuditPacksHis_Purchase_Contract1" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_Contract_Factory" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_ContractBatch_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_ContractHistory_Purchase_Contract1" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_OutContracts_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_PackProductsUPC_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_Packs_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_ShippingMarkHistory_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_ThreeTimesQC_Purchase_Contract" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_ContractProduct_Purchase_ContractBatch" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_ContractProduct_OrderProduct" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_OutContractHis_Purchase_OutContracts" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_OutContractProduct_OrderProduct" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_OutContractProduct_Purchase_OutContractsPacks" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_OutContracts_Factory" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_OutContractsPacks_Purchase_OutContracts" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_OutContractsPacks_Purchase_Packs" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_PackProducts_OrderProduct" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_PackProducts_Purchase_PackProductsUPC" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_PackProducts_Purchase_Packs" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_PackProductsUPC_OrderProduct" />
+        <AssociationConnector Association="ERPModel.FK_Purchase_ThirdPartyVerification_Order" />
+        <AssociationConnector Association="ERPModel.FK_ThreeTimesQCHistory_ThreeTimesQCHistory" />
+        <AssociationConnector Association="ERPModel.FK_Quot_QuotHistory_Quot_Quot" />
+        <AssociationConnector Association="ERPModel.FK_Quot_QuotProduct_Quot_Quot" />
+        <AssociationConnector Association="ERPModel.FK_Sale_SendSamples_Quot_Quot" />
+        <AssociationConnector Association="ERPModel.FK_Quot_QuotProduct_Factory" />
+        <AssociationConnector Association="ERPModel.FK_Quot_QuotProductHistory_Quot_QuotProduct" />
+        <AssociationConnector Association="ERPModel.FK_Quot_QuotProductHistory_Factory" />
+        <AssociationConnector Association="ERPModel.FK_Reg_Area_Reg_Country" />
+        <AssociationConnector Association="ERPModel.FK_Sale_ProductsSample_Sale_SendSamples" />
+        <AssociationConnector Association="ERPModel.FK_Sale_SendSampleHis_Sale_SendSamples" />
+        <AssociationConnector Association="ERPModel.FK_SendSamples_Factory" />
+        <AssociationConnector Association="ERPModel.FK_SendSamples_Order" />
+        <AssociationConnector Association="ERPModel.FK_Shipment_AgentFees_Shipment_Agencies" />
+        <AssociationConnector Association="ERPModel.FK_ThirdParty_InspectionAuditNotice_ThirdParty_InspectionAuditNotice" />
+        <AssociationConnector Association="ERPModel.FK_ThirdParty_InspectionDetectNotice_ThirdParty_Inspection" />
+        <AssociationConnector Association="ERPModel.FK_ThirdParty_InspectionSamplingNotice_ThirdParty_InspectionSamplingNotice" />
+        <AssociationConnector Association="ERPModel.FK_ERPWorkflowDetails_ERPWorkflows" />
+        <AssociationConnector Association="ERPModel.FK_HangFire_JobParameter_Job" />
+        <AssociationConnector Association="ERPModel.FK_HangFire_State_Job" />
+        <AssociationConnector Association="ERPModel.FK_Classify_Classify" />
+        <AssociationConnector Association="ERPModel.FK_Product_Classify" />
+        <AssociationConnector Association="ERPModel.FK_OrderProduct_Factory" />
+        <AssociationConnector Association="ERPModel.FK_Product_Factory" />
+        <AssociationConnector Association="ERPModel.FK_ProductFitting_Factory" />
+        <AssociationConnector Association="ERPModel.FK_Product_Product" />
+        <AssociationConnector Association="ERPModel.FK_Product_Product1" />
+        <AssociationConnector Association="ERPModel.FK_ProductFitting_Product" />
+        <AssociationConnector Association="ERPModel.FK_OrderHistory_OrderHistory" />
+        <AssociationConnector Association="ERPModel.FK_OrderProduct_Order" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

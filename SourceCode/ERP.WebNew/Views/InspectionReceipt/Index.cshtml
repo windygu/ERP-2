@@ -1,0 +1,83 @@
+﻿@model ERP.Models.InspectionReceipt.VMFilterInspectionReceipt
+@using ERP.Models.CustomEnums;
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@{
+    ViewBag.title = "待审核报检单据列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+
+        var tableName = "#MyGrid";
+
+        var showWatch = @(Model.PageElementPrivileges & (int)InspectionReceiptElementPrivileges.Watch);
+        var showReceipt = @(Model.PageElementPrivileges & (int)InspectionReceiptElementPrivileges.Receipt);
+        var showEdit = @(Model.PageElementPrivileges & (int)InspectionReceiptElementPrivileges.Edit);
+        var showAudit = @(Model.PageElementPrivileges & (int)InspectionReceiptElementPrivileges.Audit);
+        var PendingReceipt= @((int)InspectionReceiptStatusEnum.PendingMaintenance);
+        var OutLine= @((int)InspectionReceiptStatusEnum.OutLine);
+        var PendingCheck= @((int)InspectionReceiptStatusEnum.PendingCheck);
+        var NotPassCheck= @((int)InspectionReceiptStatusEnum.NotPassCheck);
+
+        function operationFormatter(val, row, index) {
+            var ops = "";
+            var StatusID = row.StatusID;
+
+            if(showWatch > 0 && StatusID != PendingReceipt){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionReceipt/Edit/"))" + row.ID + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showReceipt>0 && StatusID == PendingReceipt){
+                if (row.IsNeedInspection == null) {
+
+                    var HasRMBFactory = false;
+                    if (row.CurrencyName == "人民币") {
+                        HasRMBFactory=true;
+                    }
+                    ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='IsNeedInspection(" + row.ID + ","+ row.ShipmentOrderID + "," + HasRMBFactory + ")' href='javascript:void(0)' style='margin: 0 5px;'>报检</a>";
+
+                }else{
+                    ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionReceipt/Add/"))" + row.ID + "?Type=Add' style='margin: 0 5px;'>报检</a>";
+                }
+            }
+
+            if(showEdit>0&&(StatusID == OutLine || StatusID == NotPassCheck) ){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionReceipt/Edit/"))" + row.ID + "?Type=Edit' style='margin: 0 5px;'>编辑</a>";
+            }
+
+            if(showAudit>0 && StatusID == PendingCheck && row.IsHasApprovalPermission){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionReceipt/Edit/"))" + row.ID + "?Type=Approval' style='margin: 0 5px;'>审核</a>";
+            }
+
+            return ops;
+        }
+
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ID"]);
+        }
+
+        function IsNeedInspection(ID,ShipmentOrderID,HasRMBFactory) {
+            if (HasRMBFactory) {
+                $.messager.alert('提示', '该报检还有未确认是否需要我司报检报关的美金工厂。请操作该报检相关的美金工厂！');
+                return;
+            }
+            $.messager.confirm('提示', '是否需要我司报检报关？', function(r){
+                $.post("@(Url.Content("~/InspectionReceipt/IsNeedInspection"))",
+                    {
+                        ID:ID,
+                        ShipmentOrderID: ShipmentOrderID,
+                        IsNeedInspection:r
+                    }, function (data) {
+                        $(tableName).datagrid('reload');
+                    });
+            });
+
+        }
+    </script>
+}

@@ -1,0 +1,619 @@
+﻿@model ERP.Models.Product.VMProductInfo
+
+@{
+    ViewBag.Title = "查看混装产品信息";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@section styles
+{
+    <style>
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            border-top: 0;
+        }
+
+        .control-label {
+            padding: 0 !important;
+        }
+    </style>
+}
+
+<form id="frmEdit" class="form-horizontal" method="post">
+    <h3 class="popTitle">
+        基本信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label">货号：</td>
+                <td class="col-sm-3">@Model.No</td>
+                <td class="col-sm-2 control-label">客户：</td>
+                <td class="col-sm-3">@ViewBag.CustomerName</td>
+                <td class="col-sm-2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">工厂货号：</td>
+                <td>@Model.NoFactory</td>
+                <td class="control-label">工厂：</td>
+                <td>@ViewBag.FactoryName</td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        产品信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="control-label">品名：</td>
+                <td colspan="3">@Model.Name</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">Product Description：</td>
+                <td colspan="3">@Model.Desc</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">产品分类：</td>
+                <td>@ViewBag.ProductClassificationName</td>
+                <td class="control-label">单位：</td>
+                <td>@ViewBag.UnitName</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">款式：</td>
+                <td>@ViewBag.StyleName</td>
+                <td class="control-label">出运港：</td>
+                <td>@ViewBag.PortName</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">起订量：</td>
+                <td>@Model.MOQZh</td>
+                <td>&nbsp;</td>
+                <td colspan="2" rowspan="8">
+                    <a href="javascript:void(0)" id="img" class="help-block">
+                        <div class="ProductImageDiv" style="width: 250px; height: 250px; overflow: auto; border: 1px solid #ccc; line-height: 248px; margin:0;">
+                            <img id="ProductImage" src="@(string.IsNullOrEmpty(Model.Image) ? Url.Content("~/images/default/upload.jpg") : Model.Image)" class="form-control-static" style="width: 100%;" />
+                        </div>
+                        <br />
+                        (产品图片,jpg格式)
+                    </a>
+                    <input type="hidden" id="Image" name="Image" value="@Model.Image" />
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label">UPC：</td>
+                <td>@Model.UPC</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">长(CM)：</td>
+                <td>
+                    <span>@Model.Length / </span>
+                    <span>@Model.LengthIN (in)</span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">宽(CM)：</td>
+                <td>
+                    <span>@Model.Width / </span>
+                    <span>@Model.WidthIN (in)</span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">高(CM)：</td>
+                <td>
+                    <span>@Model.Height / </span>
+                    <span>@Model.HeightIN (in)</span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">重量(KGS)：</td>
+                <td>
+                    <span>@Model.Weight / </span>
+                    <span>@Model.WeightLBS (LBS)</span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">包装方式：</td>
+                <td>@ViewBag.PackingName</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">产品成分构成：</td>
+                <td>@Model.IngredientZh</td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">产品版权：</td>
+                <td>
+                    @{
+                        int ProductCopyRight = Model.ProductCopyRight ?? 1;
+                        string strProductCopyRight = "";
+                        switch (ProductCopyRight)
+                        {
+                            case 1:
+                                strProductCopyRight = "我方";
+                                break;
+                            case 2:
+                                strProductCopyRight = "客户";
+                                break;
+                            case 3:
+                                strProductCopyRight = "工厂";
+                                break;
+                            default:
+                                break;
+                        }}
+                    @strProductCopyRight
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+
+            <tr>
+                <td class="control-label">季节：</td>
+                <td>@Model.SeasonName</td>
+                <td class="control-label">颜色：</td>
+                <td>@Model.ColorName</td>
+                <td>&nbsp;</td>
+            </tr>
+
+            <tr>
+                <td class="col-sm-2 control-label"></td>
+                <td class="col-sm-3"></td>
+                <td class="col-sm-2 control-label"></td>
+                <td class="col-sm-3"></td>
+                <td class="col-sm-2">&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+    
+
+    <h3 class="popTitle">
+        混装产品信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="popContent select_table row chanpin">
+        
+        <div class="table-responsive">
+
+            <table id="ProductMixedDataList" class="easyui-datagrid" style="width:100%;overflow:auto;">
+                <thead data-options="frozen:true">
+                    <tr>
+                        <th data-options="field:'ID',checkbox:true,hidden:true"></th>
+                        <!--基本信息-->
+                        <th data-options="field:'No',width:100,sortable:true,align:'center',formatter:productNoFormatter">货号</th>
+                        <th data-options="field:'NoFactory',width:100,sortable:true,align:'center'">工厂货号</th>
+                        <th data-options="field:'Name',width:100,sortable:true,align:'center'">品名</th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <th data-options="field:'Qty',width:80,sortable:true">数量</th>
+                        <th data-options="field:'FactoryName',width:80,sortable:true">工厂</th>
+                        <th data-options="field:'Desc',width:130,sortable:true">Product Description</th>
+                        <!--产品信息-->
+                        <th data-options="field:'CustomerNo',width:110,sortable:true">客户</th>
+                        <th data-options="field:'IsProductFittingFormatter',width:60,align:'center'">配件产品</th>
+                        <th data-options="field:'UnitName',width:40,sortable:true">单位</th>
+                        <th data-options="field:'StyleName',width:40,sortable:true">款式</th>
+                        <th data-options="field:'Length',width:50,sortable:true">长/CM</th>
+                        <th data-options="field:'LengthIN',width:50,sortable:true">长/in</th>
+                        <th data-options="field:'Width',width:50,sortable:true">宽/CM</th>
+                        <th data-options="field:'WidthIN',width:60,sortable:true">宽/in</th>
+                        <th data-options="field:'Height',width:60,sortable:true">高/CM</th>
+                        <th data-options="field:'HeightIN',width:60,sortable:true">高/in</th>
+                        <th data-options="field:'Weight',width:90,sortable:true">产品重量KGS</th>
+                        <th data-options="field:'WeightLBS',width:90,sortable:true">产品重量LBS</th>
+                        <!--PDQ信息-->
+                        <th data-options="field:'PDQPackRate',width:70,sortable:true">PDQ装率</th>
+                        <th data-options="field:'PDQLength',width:70,sortable:true">PDQ长/CM</th>
+                        <th data-options="field:'PDQLengthIN',width:70,sortable:true">PDQ长/in</th>
+                        <th data-options="field:'PDQWidth',width:70,sortable:true">PDQ宽/CM</th>
+                        <th data-options="field:'PDQWidthIN',width:70,sortable:true">PDQ宽/in</th>
+                        <th data-options="field:'PDQHeight',width:70,sortable:true">PDQ高/CM</th>
+                        <th data-options="field:'PDQHeightIN',width:70,sortable:true">PDQ高/in</th>
+                        <!--内盒信息-->
+                        <th data-options="field:'InnerBoxRate',sortable:true,width:70">内盒率</th>
+                        <th data-options="field:'InnerLength',sortable:true,width:70">内盒长/CM</th>
+                        <th data-options="field:'InnerLengthIN',sortable:true,width:70">内盒长/in</th>
+                        <th data-options="field:'InnerWidth',sortable:true,width:70">内盒宽/CM</th>
+                        <th data-options="field:'InnerWidthIN',sortable:true,width:70">内盒宽/in</th>
+                        <th data-options="field:'InnerHeight',sortable:true,width:70">内盒高/CM</th>
+                        <th data-options="field:'InnerHeightIN',sortable:true,width:70">内盒高/in</th>
+                        <th data-options="field:'InnerVolume',sortable:true,width:70">内盒材积Cuft</th>
+                        <th data-options="field:'InnerWeight',sortable:true,width:90">内盒重量KGS</th>
+                        <th data-options="field:'InnerWeightLBS',sortable:true,width:90">内盒重量LBS</th>
+                        <!--外箱信息-->
+                        <th data-options="field:'OuterBoxRate',sortable:true,width:70">外箱率</th>
+                        <th data-options="field:'OuterLength',sortable:true,width:70">外箱长/CM</th>
+                        <th data-options="field:'OuterLengthIN',sortable:true,width:70">外箱长/in</th>
+                        <th data-options="field:'OuterWidth',sortable:true,width:70">外箱宽/CM</th>
+                        <th data-options="field:'OuterWidthIN',sortable:true,width:70">外箱宽/in</th>
+                        <th data-options="field:'OuterHeight',sortable:true,width:70">外箱高/CM</th>
+                        <th data-options="field:'OuterHeightIN',sortable:true,width:70">外箱高/in</th>
+                        <th data-options="field:'OuterVolume',sortable:true,width:70">外箱材积Cuft</th>
+                        <!--价格信息-->
+                        <th data-options="field:'PriceFactory',sortable:true,width:70">工厂价格</th>
+                        <th data-options="field:'CurrencyName',sortable:true,width:70">币种</th>
+                        <!--外箱信息-->
+                        <th data-options="field:'OuterWeightGross',sortable:true,width:90">外箱毛重KGS</th>
+                        <th data-options="field:'OuterWeightGrossLBS',sortable:true,width:70">外箱毛重LBS</th>
+                        <th data-options="field:'OuterWeightNet',sortable:true,width:90">外箱净重KGS</th>
+                        <th data-options="field:'OuterWeightNetLBS',sortable:true,width:70">外箱净重LBS</th>
+                        <!--产品信息-->
+                        <th data-options="field:'PortName',sortable:true,width:70">出运港</th>
+                        <th data-options="field:'PackingMannerZhName',sortable:true,width:110">包装方式</th>
+                        <th data-options="field:'IngredientZh',sortable:true,width:90">产品成分构成</th>
+                        <th data-options="field:'MOQZh',sortable:true,width:70">起订量</th>
+                        <!--备注信息-->
+                        <th data-options="field:'Comment',width:90">备注</th>
+                        <!--报价有效期-->
+                        <th data-options="field:'PriceInputDateFormat',width:90,sortable:true">价格输入日期</th>
+                        <th data-options="field:'ValidDateFormat',width:90,sortable:true">有效期</th>
+                        <th data-options="field:'DT_MODIFYDATE',width:150,sortable:true,formatter:formateDate">修改日期</th>
+                    </tr>
+                </thead>
+
+                <tbody data-bind="foreach: MyModel().list_ProductMixed">
+                    <tr>
+                        <td data-bind="text:ID"></td>
+                        <td data-bind="text:No"></td>
+                        <td data-bind="text:NoFactory"></td>
+                        <td data-bind="text:Name"></td>
+
+                        <td data-bind="text:Qty"></td>
+                        <td data-bind="text:FactoryName"></td>
+                        <td data-bind="text:Desc"></td>
+                        <!--产品信息-->
+                        <td data-bind="text:CustomerNo"></td>
+                        <td data-bind="text:IsProductFittingFormatter"></td>
+                        <td data-bind="text:UnitName"></td>
+                        <td data-bind="text:StyleName"></td>
+                        <td data-bind="text:Length"></td>
+                        <td data-bind="text:LengthIN"></td>
+                        <td data-bind="text:Width"></td>
+                        <td data-bind="text:WidthIN"></td>
+                        <td data-bind="text:Height"></td>
+                        <td data-bind="text:HeightIN"></td>
+                        <td data-bind="text:Weight"></td>
+                        <td data-bind="text:WeightLBS"></td>
+                        <!--PDQ信息-->
+                        <td data-bind="text:PDQPackRate"></td>
+                        <td data-bind="text:PDQLength"></td>
+                        <td data-bind="text:PDQLengthIN"></td>
+                        <td data-bind="text:PDQWidth"></td>
+                        <td data-bind="text:PDQWidthIN"></td>
+                        <td data-bind="text:PDQHeight"></td>
+                        <td data-bind="text:PDQHeightIN"></td>
+                        <!--内盒信息-->
+                        <td data-bind="text:InnerBoxRate"></td>
+                        <td data-bind="text:InnerLength"></td>
+                        <td data-bind="text:InnerLengthIN"></td>
+                        <td data-bind="text:InnerWidth"></td>
+                        <td data-bind="text:InnerWidthIN"></td>
+                        <td data-bind="text:InnerHeight"></td>
+                        <td data-bind="text:InnerHeightIN"></td>
+                        <td data-bind="text:InnerVolume"></td>
+                        <td data-bind="text:InnerWeight"></td>
+                        <td data-bind="text:InnerWeightLBS"></td>
+                        <!--外箱信息-->
+                        <td data-bind="text:OuterBoxRate"></td>
+                        <td data-bind="text:OuterLength"></td>
+                        <td data-bind="text:OuterLengthIN"></td>
+                        <td data-bind="text:OuterWidth"></td>
+                        <td data-bind="text:OuterWidthIN"></td>
+                        <td data-bind="text:OuterHeight"></td>
+                        <td data-bind="text:OuterHeightIN"></td>
+                        <td data-bind="text:OuterVolume"></td>
+                        <!--价格信息-->
+                        <td data-bind="text:PriceFactory"></td>
+                        <td data-bind="text:CurrencyName"></td>
+                        <!--外箱信息-->
+                        <td data-bind="text:OuterWeightGross"></td>
+                        <td data-bind="text:OuterWeightGrossLBS"></td>
+                        <td data-bind="text:OuterWeightNet"></td>
+                        <td data-bind="text:OuterWeightNetLBS"></td>
+                        <!--产品信息-->
+                        <td data-bind="text:PortName"></td>
+                        <td data-bind="text:PackingMannerZhName"></td>
+                        <td data-bind="text:IngredientZh"></td>
+                        <td data-bind="text:MOQZh"></td>
+                        <!--备注信息-->
+                        <td data-bind="text:Comment"></td>
+                        <!--报价有效期-->
+                        <td data-bind="text:PriceInputDateFormat"></td>
+                        <td data-bind="text:ValidDateFormat"></td>
+                        <td data-bind="text:DT_MODIFYDATE"></td>
+
+
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        PDQ信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label">PDQ装率：</td>
+                <td class="col-sm-3">@Model.PDQPackRate</td>
+                <td class="col-sm-2 control-label">长(CM)：</td>
+                <td class="col-sm-3">@Model.PDQLength</td>
+                <td class="col-sm-2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">宽(CM)：</td>
+                <td>
+                    <span>@Model.PDQWidth / </span>
+                    <span>@Model.PDQWidthIN (in)</span>
+                </td>
+                <td class="control-label">高(CM)：</td>
+                <td>
+                    <span>@Model.PDQHeight / </span>
+                    <span>@Model.PDQHeightIN (in)</span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        内盒信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label">内盒率：</td>
+                <td class="col-sm-3">@Model.InnerBoxRate</td>
+                <td class="col-sm-2 control-label">长(CM)：</td>
+                <td class="col-sm-3">
+                    <span>@Model.InnerLength / </span>
+                    <span>@Model.InnerLengthIN (in)</span>
+                </td>
+                <td class="col-sm-2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">内盒材积：</td>
+                <td>@(Model.InnerVolume)(Cuft)</td>
+                <td class="control-label">宽(CM)：</td>
+                <td>
+                    <span>@Model.InnerWidth / </span>
+                    <span>@Model.InnerWidthIN (in)</span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">内盒毛重(KGS)：</td>
+                <td>
+                    <span>@Model.InnerWeight / </span>
+                    <span>@Model.InnerWeightLBS (LBS)</span>
+                </td>
+                <td class="control-label">高(CM)：</td>
+                <td>
+                    <span>@Model.InnerHeight / </span>
+                    <span>@Model.InnerHeightIN (in)</span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+
+            <tr>
+                <td class="control-label">内盒净重(KGS)：</td>
+                <td>
+                    <span>@Model.InnerWeightGross / </span>
+                    <span>@Model.InnerWeightGrossLBS (LBS)</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        外箱信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label">外箱率：</td>
+                <td class="col-sm-3">@Model.OuterBoxRate</td>
+                <td class="col-sm-2 control-label">长(CM)：</td>
+                <td class="col-sm-3">
+                    <span>@Model.OuterLength / </span>
+                    <span>@Model.OuterLengthIN (in)</span>
+                </td>
+                <td class="col-sm-2">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">外箱材积：</td>
+                <td>@(Model.OuterVolume)(Cuft)</td>
+                <td class="control-label">宽(CM)：</td>
+                <td>
+                    <span>@Model.OuterWidth / </span>
+                    <span>@Model.OuterWidthIN (in)</span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">外箱毛重(KGS)：</td>
+                <td>
+                    <span>@Model.OuterWeightGross / </span>
+                    <span>@Model.OuterWeightGrossLBS (LBS)</span>
+                </td>
+                <td class="control-label">高(CM)：</td>
+                <td>
+                    <span>@Model.OuterHeight / </span>
+                    <span>@Model.OuterHeightIN (in)</span>
+                </td>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="control-label">外箱净重(KGS)：</td>
+                <td>
+                    <span>@Model.OuterWeightNet / </span>
+                    <span>@Model.OuterWeightNetLBS (LBS)</span>
+                </td>
+                <td class="control-label"></td>
+                <td></td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        价格信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label">工厂价格：</td>
+                <td class="col-sm-3">@Model.PriceFactory</td>
+                <td class="col-sm-2 control-label">币种：</td>
+                <td class="col-sm-3">
+                    @ViewBag.CurrencyName
+                </td>
+                <td class="col-sm-2">&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        报价有效期
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label">价格输入日期：</td>
+                <td class="col-sm-3">@Model.PriceInputDateFormat</td>
+                <td class="col-sm-2 control-label">有效期：</td>
+                <td class="col-sm-3">@Model.ValidDateFormat</td>
+                <td class="col-sm-2">&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        备注信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label">备注：</td>
+                <td class="col-sm-8">
+                    <p class="f_c wordbreak">@Model.Comment</p>
+                </td>
+                <td class="col-sm-2">&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        其他
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label">海关编码：</td>
+                <td class="col-sm-3">@(ViewBag.HTSName)</td>
+
+                <td class="col-sm-2 control-label">Duty：</td>
+                <td class="col-sm-3">@(Model.DutyPercent)</td>
+                <td class="col-sm-2">&nbsp;</td>
+
+            </tr>
+            <tr>
+
+                <td class="col-sm-2 control-label">报关编码：</td>
+                <td class="col-sm-3">@(ViewBag.HSCodeName) @(Model.IsNeedInspection ? "(需要报检)" : "")</td>
+
+                <td class="control-label">Material Composition：</td>
+                <td>@Model.IngredientEn</td>
+                <td class="control-label"></td>
+                <td></td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+    
+    <h3 class="popTitle">
+        产品成分信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table id="ProductIngredientDataList" class="easyui-datagrid" style="width:100%;"
+               data-options="singleSelect:true
+                       ,pageList:[10,20,50,100]
+                       ,pageSize:10
+                       ,pagination:false
+                       ,checkOnSelect:true">
+            <thead data-options="frozen:true">
+
+                <tr>
+                    <th data-options="field:'IngredientName',width:200,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,100]']}}">产品成分构成</th>
+                    <th data-options="field:'IngredientPercent',width:100,editor:{type:'numberbox',options:{required:true,precision:2}}">百分比(%)</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (var item_product in Model.list_ProductIngredient)
+                {
+                    <tr>
+                        <td>@item_product.IngredientName</td>
+                        <td>@item_product.IngredientPercent</td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+
+    <div class="popBtns">
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+    </div>
+</form>
+
+<script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+<script>
+    
+    function MyModel() {
+        this.list_ProductIngredient = ko.observableArray();
+        this.list_ProductMixed = ko.observableArray();
+    }
+
+    function MyModelViewModel() {
+        var self = this;
+
+        self.MyModel = ko.observable();
+        var currentMyModel = new MyModel();
+
+        currentMyModel.list_ProductIngredient(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_ProductIngredient))));
+        currentMyModel.list_ProductMixed(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_ProductMixed))));
+        self.MyModel(currentMyModel);
+
+        var checkSubmit = false;//防止重复提交
+    }
+    ko.applyBindings(new MyModelViewModel());
+    
+    function productNoFormatter(val, row, index) {
+        console.log(row.No);
+        return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ID, row.No);
+    }
+</script>

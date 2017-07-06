@@ -1,0 +1,22 @@
+﻿@model ERP.WebNew.Controllers.VMMailTest
+
+@{
+    ViewBag.Title = "MailTest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section styles{
+    <style type="text/css">
+        form input{
+            width:600px;
+        }
+    </style>
+}
+@using (Html.BeginForm("MailTest", "Account", null, FormMethod.Post))
+{
+    <div style="text-align: center !important; margin:0 auto; position:relative; left:20%;">
+        @Html.EditorForModel()
+
+        <button type="submit" class="btn btn-primary" >发送邮件</button>
+    </div>
+}

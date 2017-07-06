@@ -1,0 +1,107 @@
+﻿@model ERP.Models.AdminUser.VMChangePassword
+
+@{
+    ViewBag.Title = "激活账号";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using (Ajax.BeginForm("ActiveAccount", "Account", null, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit", @class = "form-horizontal bv-form" }))
+{
+    <div class="content-wrapper">
+        <br />
+        <br />
+        <p class="red">您尚未修改您的账号初始密码，请修改您的初始密码并激活账号：</p>
+        <br />
+        <div class="row col-sm-3">
+            <div class="form-group col-sm-12">
+                <label class="col-sm-5 control-label text-danger">新密码</label>
+                <div class="col-sm-7">
+                    @Html.PasswordFor(u => u.NewPassword, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group col-sm-12">
+                <label class="col-sm-5 control-label text-danger">再次输入新密码</label>
+                <div class="col-sm-7">
+                    <input type="password" id="pwdAgain" name="pwdAgain" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group col-sm-12">
+                <div class="popBtns">
+                    <button type="button" class="btn btn-danger" id="btnConfirm">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+                fields: {
+                    NewPassword: {
+                        validators: {
+                            notEmpty: { message: '密码不能为空' },
+                            stringLength: {
+                                min: 6,
+                                max: 50,
+                                message: '长度在6-50之间'
+                            },
+                        }
+                    },
+                    pwdAgain: {
+                        validators: {
+                            notEmpty: { message: '再次输入新密码不能为空' },
+                            stringLength: {
+                                min: 6,
+                                max: 50,
+                                message: '长度在6-50之间'
+                            },
+                        }
+                    }
+                }
+            }).on('success.form.bv', function (e) {
+                e.preventDefault();
+
+                var $form = $(e.target);
+                $("#btnConfirm").removeAttr("disabled");
+
+                $.post($form.attr('action'), $form.serialize(),
+                    function (result) {
+                        if (result) {
+                            $.messager.alert("成功", "修改成功！您需要重新登录后可继续使用系统！", null, function () {
+                                window.location.href = "/Account/Logout";
+                            });
+                        }
+                        else {
+                            $.messager.alert("失败", "修改失败！");
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    }, "text");
+            });
+
+            $("#btnConfirm").click(function () {
+                var pwd1 = $("#NewPassword").val();
+                var pwd2 = $("#pwdAgain").val();
+                if (pwd1 != pwd2) {
+                    $.messager.alert("提示", "您两次输入的密码不一致！");
+                    return;
+                }
+
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (!bootstrapValidator.isValid()) {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+                $("#btnConfirm").attr("disabled", "disabled");
+            });
+        });    </script>
+}

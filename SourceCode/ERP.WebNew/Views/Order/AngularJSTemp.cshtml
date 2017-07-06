@@ -1,0 +1,834 @@
+﻿@{
+    ViewBag.Title = "AngularJS";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+<script src="~/Scripts/angular.min-1.5.8.js"></script>
+<style>
+    .bs-callout {
+        padding: 20px;
+        margin: 20px 0;
+        border: 1px solid #808080;
+        border-left-width: 5px;
+        border-radius: 3px;
+        border-left-color: #5bc0de;
+    }
+
+    input.ng-invalid {
+        background-color: lightblue;
+    }
+</style>
+
+<style>
+    table, th, td {
+        border: 1px solid grey;
+        border-collapse: collapse;
+        padding: 5px;
+    }
+
+    /*table tr:nth-child(odd) {
+            background-color: #f1f1f1;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #ffffff;
+        }*/
+</style>
+
+<div ng-app="myApp">
+
+    <h3>AngularJS 表达式</h3>
+
+    <div class="bs-callout">
+        <div>
+            <p>名字 : <input type="text" ng-model="name"></p>
+            <h1>Hello {{name}}</h1>
+        </div>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-init="firstName='John2'">
+            <p>姓名为 <span ng-bind="firstName"></span></p>
+        </div>
+    </div>
+
+    <div class="bs-callout">
+        <div>
+            <p>我的第一个表达式： {{ 5 + 5 }}</p>
+        </div>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl">
+
+            名: <input type="text" ng-model="firstName"><br>
+            姓: <input type="text" ng-model="lastName"><br>
+            <br>
+            姓名: {{firstName + " " + lastName}}
+        </div>
+
+        <script>
+            var app = angular.module('myApp', []);
+            app.controller('myCtrl', function ($scope) {
+                $scope.firstName = "John3";
+                $scope.lastName = "Doe";
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-init="quantity=1;cost=5">
+            <p>总价： {{ quantity * cost }}</p>
+        </div>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-init="quantity=1;cost=5">
+            <p>总价： <span ng-bind="quantity * cost"></span></p>
+        </div>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-init="person={firstName:'John4',lastName:'Doe'}">
+            <p>姓为 {{ person.lastName }}</p>
+        </div>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-init="points=[1,2,3,4,5]">
+            <p>第4个数字： {{ points[3] }}</p>
+        </div>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-init="firstName='John5'">
+
+            <p>在输入框中尝试输入：</p>
+            <p>姓名：<input type="text" ng-model="firstName"></p>
+            <p>你输入的为： {{ firstName }}</p>
+        </div>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-init="quantity=1;price=5">
+            <h4>价格计算器</h4>
+            数量： <input type="number" ng-model="quantity">
+            价格： <input type="number" ng-model="price">
+
+            <p><b>总价：</b> {{ quantity * price }}</p>
+        </div>
+    </div>
+    <div class="bs-callout">
+        <div ng-init="names=['Jani','Hege','Kai']">
+            <p>使用 ng-repeat 来循环数组</p>
+            <ul>
+                <li ng-repeat="x in names">
+                    {{ x }}
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-init="names2=[
+             {name:'Jani',country:'Norway'},
+             {name:'Hege',country:'Sweden'},
+             {name:'Kai',country:'Denmark'}]">
+
+            <p>循环对象：</p>
+            <ul>
+                <li ng-repeat="x in names2">
+                    {{ x.name + ', ' + x.country }}
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <h3>创建自定义的指令</h3>
+
+    <div class="bs-callout">
+        restrict 值可以是以下几种:
+        E 作为元素名使用,
+        A 作为属性使用,
+        C 作为类名使用,
+        M 作为注释使用,
+        restrict 默认值为 EA, 即可以通过元素名和属性名来调用指令。
+
+        <runoob-directive></runoob-directive>
+        <script>
+            var app = angular.module("myApp");
+            app.directive("runoobDirective", function () {
+                return {
+                    restrict: "A",
+                    template: "<h1>自定义指令!</h1>"
+                };
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+
+        <div class="runoob-directive2"></div>
+
+        <script>
+            var app = angular.module("myApp");
+            app.directive("runoobDirective2", function () {
+                return {
+                    restrict: "C",//你必须设置 restrict 的值为 "C" 才能通过类名来调用指令。
+                    template: "<h1>自定义指令2!</h1>"
+                };
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+        <!-- directive: runoob-directive3 -->
+
+        <script>
+            var app = angular.module("myApp");
+            app.directive("runoobDirective3", function () {
+                return {
+                    restrict: "M",
+                    replace: true,
+                    template: "<h1>自定义指令3!</h1>"
+                };
+            });
+        </script>
+    </div>
+
+    <h3>ng-model 指令</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl">
+            名字：<input ng-model="name" />
+            <p>你输入了：{{name}}</p>
+        </div>
+        <script>
+            var app = angular.module("myApp");
+            app.controller("myCtrl", function ($scope) {
+                $scope.name = "哈哈";
+            });
+        </script>
+    </div>
+
+    <h3>验证用户输入</h3>
+
+    <div class="bs-callout">
+        <form name="myForm">
+            Email:
+            <input type="email" name="myAddress" ng-model="text" required>
+            <span ng-show="myForm.myAddress.$error.email">不是一个合法的邮箱地址</span>
+        </form>
+
+        <h1>状态</h1>
+        <p>Valid: {{myForm.myAddress.$valid}} (如果输入的值是合法的则为 true)。</p>
+        <p>Dirty: {{myForm.myAddress.$dirty}} (如果值改变则为 true)。</p>
+        <p>Touched: {{myForm.myAddress.$touched}} (如果通过触屏点击则为 true)。</p>
+    </div>
+
+    <h3>AngularJS Scope(作用域)、AngularJS 控制器</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl">
+            <h4>{{fullName()}}</h4>
+
+            <p>姓名为 {{ lastName | uppercase }}</p>
+            //uppercase 过滤器将字符串格式化为大写：
+        </div>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl', function ($scope, $rootScope) {
+                $scope.firstName = "Volvo";//当你在 AngularJS 创建控制器时，你可以将 $scope 对象当作一个参数传递:
+                $rootScope.lastName = "lastName";//$rootScope 可作用于整个应用中。
+                $scope.fullName = function () {
+                    return $scope.firstName + " " + $rootScope.lastName;
+                }
+            });
+        </script>
+    </div>
+
+    <h3>AngularJS 过滤器</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="costCtrl">
+            数量: <input type="number" ng-model="quantity">
+            价格: <input type="number" ng-model="price">
+
+            <p>总价 = {{ (quantity * price) | currency }}</p>
+        </div>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('costCtrl', function ($scope) {
+                $scope.quantity = 1;
+                $scope.price = 9.99;
+            });
+        </script>
+    </div>
+
+    <h3>添加排序</h3>
+
+    <div class="bs-callout">
+
+        <div ng-init="names2=[
+             {name:'Jani',country:'Norway'},
+             {name:'Hege',country:'Sweden'},
+             {name:'Kai',country:'Denmark'}]">
+
+            <p>循环对象：</p>
+            <ul>
+                <li ng-repeat="x in names2 | orderBy:'country'">
+                    {{ x.name + ', ' + x.country }}
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <h3>添加排序</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="namesCtrl">
+            <p>输入过滤:</p>
+            <p><input type="text" ng-model="test"></p>
+
+            <ul>
+                <li ng-repeat="x in names | filter:test | orderBy:'country'">
+                    {{ (x.name | uppercase) + ', ' + x.country }}
+                </li>
+            </ul>
+        </div>
+
+        <script>
+            angular.module('myApp').controller('namesCtrl', function ($scope) {
+                $scope.names = [
+                    { name: 'Jani', country: 'Norway' },
+                    { name: 'Hege', country: 'Sweden' },
+                    { name: 'Kaii', country: 'Denmark' }
+                ];
+            });
+        </script>
+    </div>
+
+    <h3>AngularJS 服务(Service)</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl6">
+            <p> 当前页面的url:</p>
+            <h3>{{myCtrl6}}</h3>
+        </div>
+
+        <p>该实例使用了内建的 $location 服务获取当前页面的 URL。</p>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl6', function ($scope, $location) {
+                $scope.myCtrl6 = $location.absUrl();
+            });
+        </script>
+    </div>
+
+    <h3>$timeout 服务</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl3">
+            <p>两秒后显示信息:</p>
+            <h1>{{myHeader}}</h1>
+        </div>
+
+        <p>$timeout 访问在规定的毫秒数后执行指定函数。</p>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl3', function ($scope, $timeout) {
+                $scope.myHeader = "Hello World!";
+                $timeout(function () {
+                    $scope.myHeader = "How are you today?";
+                }, 2000);
+            });
+        </script>
+    </div>
+
+    <h3>$interval 服务</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl4">
+            <p>现在时间是:</p>
+            <h1>{{theTime}}</h1>
+        </div>
+
+        <p>$interval 访问在指定的周期(以毫秒计)来调用函数或计算表达式。</p>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl4', function ($scope, $interval) {
+                $scope.theTime = new Date().toLocaleTimeString();
+                $interval(function () {
+                    $scope.theTime = new Date().toLocaleTimeString();
+                }, 1000);
+            });
+        </script>
+    </div>
+
+    <h3>自定义服务</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl5">
+            <p>255 的16进制是:</p>
+            <h1>{{hex}}</h1>
+        </div>
+
+        <p>$interval 访问在指定的周期(以毫秒计)来调用函数或计算表达式。</p>
+
+        <script>
+            var app = angular.module('myApp');
+
+            app.service("hexafy", function () {
+                this.myFunc = function (x) {
+                    return x.toString(16);
+                }
+            });
+
+            app.controller('myCtrl5', function ($scope, hexafy) {
+                $scope.hex = hexafy.myFunc(222);
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+
+        在过滤器中使用服务:
+        <h1>{{255 | myFormat}}</h1>
+
+        <script>
+            var app = angular.module('myApp');
+            app.service('hexafy', function () {
+                this.myFunc = function (x) {
+                    return x.toString(16);
+                }
+            });
+            app.filter('myFormat', ['hexafy', function (hexafy) {
+                return function (x) {
+                    return hexafy.myFunc(x);
+                };
+            }]);
+        </script>
+    </div>
+
+    <h3>AngularJS $http</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl2">
+            <ul>
+                <li ng-repeat="x in names">
+                    {{ x.CustomerCode + ', ' + x.MiscImportLoadAmount }}
+                </li>
+            </ul>
+        </div>
+
+        <script>
+            var app = angular.module('myApp');//对于angular.module方法，我们常用的方式有有种，分别为angular.module(‘com.ngbook.demo’, [可选依赖])和angular.module(‘com.ngbook.demo’)。请注意它是完全不同的方式，一个是声明创建module，而另外一个则是获取已经声明了的module。在应用程序中，对module的声明应该有且只有一次；对于获取module，则可以有多次。
+            app.controller('myCtrl2', function ($scope, $http) {
+                $http({
+                    method: 'GET',
+                    url: "@Url.Content("~/Quote/GetCustomer")",
+                    params: { CustomerID: 162, },
+                }).success(function (response) {
+                    $scope.names = response;
+                });
+            });
+        </script>
+    </div>
+
+    <h3>使用 ng-options 创建选择框</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl7">
+            <select ng-model="selectedSite" ng-options="x for x in names"></select>
+            <h4>你选择的是: {{selectedSite}}</h4>
+        </div>
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl7', function ($scope) {
+                $scope.names = ["Google", "Runoob", "Taobao"];
+            });
+        </script>
+    </div>
+
+    <h3>使用 ng-repeat 创建选择框</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl8">
+            <select ng-model="selectedSite">
+                <option ng-repeat="x in names" value="{{x.url}}">{{x.site}}</option>
+            </select>
+            <h4>你选择的是: {{selectedSite}}</h4>
+            ng-repeat 有局限性，选择的值是一个字符串:
+        </div>
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl8', function ($scope) {
+                $scope.names = [
+                    { site: "Google", url: "http://www.google.com" },
+	                { site: "Runoob", url: "http://www.runoob.com" },
+	                { site: "Taobao", url: "http://www.taobao.com" }
+                ];
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-controller="myCtrl7">
+            <select ng-model="selectedSite" ng-options="x.site for x in names"></select>
+            <h4>你选择的是:site= {{selectedSite.site}},url= {{selectedSite.url}}</h4>
+            使用 ng-options 指令，选择的值是一个对象
+        </div>
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl7', function ($scope) {
+                $scope.names = [
+                    { site: "Google", url: "http://www.google.com" },
+	                { site: "Runoob", url: "http://www.runoob.com" },
+	                { site: "Taobao", url: "http://www.taobao.com" }
+                ];
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+
+        <div ng-controller="myCtrl9">
+
+            <p>选择一辆车:</p>
+
+            <select ng-model="selectedCar" ng-options="x for (x, y) in cars"></select>
+
+            <select ng-model="selectedCar" ng-options="y.brand for (x, y) in cars"></select>
+
+            <h1>你选择的是: {{selectedCar.brand}}</h1>
+            <h2>模型: {{selectedCar.model}}</h2>
+            <h3>颜色: {{selectedCar.color}}</h3>
+
+            <p>注意选中的值是一个对象。</p>
+        </div>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl9', function ($scope) {
+                $scope.cars = {
+                    car01: { brand: "Ford", model: "Mustang", color: "red" },
+                    car02: { brand: "Fiat", model: "500", color: "white" },
+                    car03: { brand: "Volvo", model: "XC90", color: "black" }
+                }
+            });
+        </script>
+    </div>
+
+    <h3>AngularJS 表格</h3>
+
+    <div class="bs-callout">
+        <div ng-controller="customersCtrl">
+            <table>
+                <thead>
+                    <tr>
+                        <td>序号</td>
+                        <td>销售核算单号</td>
+                        <td>PO1</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="x in names|orderBy:'OrderNumber'">
+                        <td ng-if="$odd" style="background-color:#f1f1f1">{{ $index + 1 }}</td>
+                        <td ng-if="$even">{{ $index + 1 }}</td>
+
+                        <td ng-if="$odd" style="background-color:#f1f1f1">{{ x.OrderNumber }}</td>
+                        <td ng-if="$even">{{ x.OrderNumber }}</td>
+
+                        <td ng-if="$odd" style="background-color:#f1f1f1">{{ x.POID  | uppercase}}</td>
+                        <td ng-if="$even">{{ x.POID }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('customersCtrl', function ($scope, $http) {
+                $http.get("/Order/GetAll?PageType=7&&page=1&rows=50")
+                .success(function (response) { $scope.names = response.rows; });
+            });
+        </script>
+    </div>
+
+    <h3>AngularJS HTML DOM</h3>
+    <div class="bs-callout">
+        <div ng-init="mySwitch=true">
+            <p>
+                <button ng-disabled="mySwitch">点我!</button>
+            </p>
+            <p>
+                <input type="checkbox" ng-model="mySwitch" />按钮
+            </p>
+            <p>
+                状态：{{ mySwitch }}
+            </p>
+            ng-disabled 指令绑定应用程序数据 "mySwitch" 到 HTML 的 disabled 属性。
+        </div>
+    </div>
+
+    <h3>ng-show</h3>
+    <div class="bs-callout">
+        <p ng-show="true">我是可见的1。</p>
+
+        <p ng-show="false">我是不可见的。</p>
+        ng-show 指令根据 value 的值来显示（隐藏）HTML 元素。
+
+        <br />
+        <div ng-init="hour=13">
+            <p ng-show="hour > 12">我是可见的2。</p>
+        </div>
+    </div>
+
+    <h3>ng-hide</h3>
+
+    <div class="bs-callout">
+        <p ng-hide="true">我是不可见的。</p>
+        <p ng-hide="false">我是可见的3。</p>
+    </div>
+
+    <h3>AngularJS 事件</h3>
+
+    <h3>ng-click 指令</h3>
+    <div class="bs-callout">
+        <div ng-controller="myCtrl10">
+            <button ng-click="count = count + 1">点我！</button>
+            <p>{{ count }}</p>
+        </div>
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl10', function ($scope) {
+                $scope.count = 0;
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+        <div ng-controller="personCtrl">
+            <button ng-click="toggle()">隐藏/显示</button>
+            <p ng-hide="myVar">
+                名: <input type=text ng-model="firstName"><br>
+                姓: <input type=text ng-model="lastName"><br><br>
+                姓名: {{firstName + " " + lastName}}
+            </p>
+        </div>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('personCtrl', function ($scope) {
+                $scope.firstName = "John6";
+                $scope.lastName = "Doe";
+                $scope.myVar = false;
+                $scope.toggle = function () {
+                    $scope.myVar = !$scope.myVar;
+                }
+            });
+        </script>
+    </div>
+
+    <h3>AngularJS 表单</h3>
+
+    <div class="bs-callout">
+
+        <div ng-controller="formCtrl">
+            <form novalidate>
+                First Name:<br>
+                <input type="text" ng-model="user.firstName"><br>
+                Last Name:<br>
+                <input type="text" ng-model="user.lastName">
+                <br><br>
+                <button ng-click="reset()">RESET</button>
+            </form>
+            <p>form = {{user }}</p>
+            <p>master = {{master}}</p>
+        </div>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('formCtrl', function ($scope) {
+                $scope.master = { firstName: "John7", lastName: "Doe" };
+                $scope.reset = function () {
+                    $scope.user = angular.copy($scope.master);
+                };
+                $scope.reset();
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+
+        <h2>验证实例</h2>
+
+        <form ng-controller="validateCtrl" name="myForm" novalidate>
+            <p>
+                用户名:<br>
+                <input type="text" name="user" ng-model="user" required>
+                <span style="color:red" ng-show="myForm.user.$dirty && myForm.user.$invalid">
+                    <span ng-show="myForm.user.$error.required">用户名是必须的。</span>
+                </span>
+            </p>
+
+            <p>
+                邮箱:<br>
+                <input type="email" name="email" ng-model="email" required>
+                <span style="color:red" ng-show="myForm.email.$dirty && myForm.email.$invalid">
+                    <span ng-show="myForm.email.$error.required">邮箱是必须的。</span>
+                    <span ng-show="myForm.email.$error.email">非法的邮箱地址。</span>
+                </span>
+            </p>
+
+            <p>
+                <input type="submit" ng-disabled="myForm.user.$dirty && myForm.user.$invalid || myForm.email.$dirty && myForm.email.$invalid">
+            </p>
+        </form>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('validateCtrl', function ($scope) {
+                $scope.user = 'John Doe';
+                $scope.email = 'john.doe@gmail.com';
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+
+        <div ng-controller="myCtrl">
+            <p>{{ x1 }}</p>
+            <p>{{ x2 }}</p>
+            angular.lowercase()、angular.uppercase()、angular.isString()、angular.isNumber()
+        </div>
+
+        <script>
+            var app = angular.module('myApp');
+            app.controller('myCtrl', function ($scope) {
+                $scope.x1 = 123.66;
+                $scope.x2 = angular.isNumber($scope.x1);
+            });
+        </script>
+    </div>
+
+    <h3>使用 AngularJS, 你可以使用 ng-include 指令来包含 HTML 内容:</h3>
+    <br />
+    <br />
+    <h3>AngularJS 依赖注入</h3>
+
+    <div class="bs-callout">
+
+        <div ng-controller="CalcController">
+            <p>输入一个数字: <input type="number" ng-model="number" /></p>
+            <button ng-click="square()">X<sup>2</sup></button>
+            <p>结果: {{result}}</p>
+        </div>
+
+        <script>
+            var myApp = angular.module("myApp");
+
+            myApp.config(function ($provide) {
+                $provide.provider('MathService', function () {
+                    this.$get = function () {
+                        var factory = {};
+
+                        factory.multiply = function (a, b) {
+                            return a * b;
+                        }
+                        return factory;
+                    };
+                });
+            });
+
+            myApp.value("defaultInput", 5);//Value 是一个简单的 javascript 对象，用于向控制器传递值
+
+            myApp.factory('MathService', function () {
+                var factory = {};
+
+                factory.multiply = function (a, b) {
+                    return a * b;
+                }
+                return factory;
+            });
+
+            myApp.service('CalcService', function (MathService) {
+                this.square = function (a) {
+                    return MathService.multiply(a, a);
+                }
+            });
+
+            myApp.controller('CalcController', function ($scope, CalcService, defaultInput) {
+                $scope.number = defaultInput;
+                $scope.result = CalcService.square($scope.number);
+
+                $scope.square = function () {
+                    $scope.result = CalcService.square($scope.number);
+                }
+            });
+
+        </script>
+
+    </div>
+
+    <div class="bs-callout">
+        我喜欢的网站
+        <select ng-model="myVar">
+            <option value="runoob">www.runoob.com
+            <option value="google">www.google.com
+            <option value="taobao">www.taobao.com
+        </select>
+
+        <hr>
+        <div ng-switch="myVar">
+            <div ng-switch-when="runoob">
+                <h1>菜鸟教程</h1>
+                <p>欢迎访问菜鸟教程</p>
+            </div>
+            <div ng-switch-when="google">
+                <h1>Google</h1>
+                <p>欢迎访问Google</p>
+            </div>
+            <div ng-switch-when="taobao">
+                <h1>淘宝</h1>
+                <p>欢迎访问淘宝</p>
+            </div>
+            <div ng-switch-default>
+                <h1>切换</h1>
+                <p>选择不同选项显示对应的值。</p>
+            </div>
+        </div>
+        <hr>
+
+        <p> ng-switch 指令根据当前的值显示或隐藏对应部分。</p>
+
+    </div>
+
+    <div class="bs-callout">
+
+        <form ng-controller="myCtrl" ng-submit="myFunc()">
+            <input type="text">
+            <input type="submit">
+            <p>{{myTxt}}</p>
+        </form>
+
+        <p>以下实例演示了表单提交后 AngularJS 执行行。</p>
+
+        <script>
+            var app = angular.module("myApp");
+            app.controller("myCtrl", function ($scope) {
+                $scope.myTxt = "你还没有点击提交!";
+                $scope.myFunc = function () {
+                    $scope.myTxt = "你点击了提交!";
+                }
+            });
+        </script>
+    </div>
+
+    <div class="bs-callout">
+    </div>
+</div>

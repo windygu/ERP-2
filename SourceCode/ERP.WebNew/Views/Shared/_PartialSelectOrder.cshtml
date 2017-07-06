@@ -1,0 +1,110 @@
+﻿<!--采购合同 选择销售订单 Start-->
+@using ERP.Models.CustomEnums;
+
+<div class="modal fade" id="myModal3" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title">选择销售订单</h3>
+            </div>
+            <div class="modal-body">
+
+                <div class="search">
+                    <ul>
+                        <li>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label text-danger">客户</label>
+                                <div class="col-sm-10">
+                                    @InlineHelpers.GetSelectionForCustomers(ViewBag.CustomerInfos, "CustomerID", true, null)
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="width: 30%;">@ERP.Tools.Keys.CustomerPO</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" name="POID">
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">交货期</label>
+                                <div class="col-sm-10">
+                                    <div class="col-xs-5" style="padding: 0;">
+                                        <input class="form-control Wdate" name="DateStart" type="text" value="">
+                                    </div>
+                                    <div class="col-xs-1">-</div>
+                                    <div class="col-xs-5" style="padding: 0;">
+                                        <input class="form-control Wdate" name="DateEnd" type="text" value="">
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="form-group">
+                                <label class="col-sm-4 control-label" style="width: 30%;">销售订单编号</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" name="OrderNumber">
+                                </div>
+                            </div>
+                        </li>
+                        <li class="searchBtn">
+                            <button type="button" class="btn btn-info" onclick="loadOrderGrid()">查询</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="popConfirm" style="display:none;">
+                    <button type="button" class="btn btn-danger" onclick="confirmOrder()">确定</button>
+                </div>
+
+                <table id="modalGrid3" class="easyui-datagrid" data-options="singleSelect:true,pagelist: [10,20,50,100], pagesize:10,remotesort:true,multisort:true,pagination:true,method:'get'" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th data-options="field:'ck',checkbox:true"></th>
+                            <th data-options="field:'OrderNumber',sortable:true,width:150,align:'center'">销售订单编号</th>
+                            <th data-options="field:'POID',sortable:true,width:100,align:'center'">@ERP.Tools.Keys.CustomerPO</th>
+                            <th data-options="field:'CustomerNo',sortable:true,width:80,align:'center'">客户</th>
+                            <th data-options="field:'CustomerDate',sortable:true,width:100,align:'center'">客户下单日期</th>
+                            <th data-options="field:'OrderAmount',sortable:true,width:100,align:'center'">订单总金额($)</th>
+                            <th data-options="field:'OrderDateStart',sortable:true,width:100,align:'center'">开始交货日期</th>
+                            <th data-options="field:'OrderDateEnd',sortable:true,width:100,align:'center'">结束交货日期</th>
+                            <th data-options="field:'OrderOrigin',sortable:true,width:100,align:'center'">订单来源</th>
+                            <th data-options="field:'OrderStatusName',sortable:true,width:100,align:'center'">订单状态</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!--采购合同 选择销售订单 End-->
+<script>
+    var tableName3 = "#modalGrid3";
+
+    //加载表格内容
+    function loadOrderGrid() {
+        if (!checkEmpty(".search select[name=CustomerID]")) {
+            return;
+        }
+
+        $(tableName3).datagrid({
+            url: '@Url.Content("~/Order/SelectOrder")',
+            queryParams: {
+                usingOccasion: "@((int)SelectOrdersOccasion.NewPurContract)",
+                CustomerID: $(".search select[name=CustomerID]").val(),
+                POID: $(".search input[name=POID]").val(),
+                DateStart: $(".search input[name=DateStart]").val(),
+                DateEnd: $(".search input[name=DateEnd]").val(),
+                OrderNumber: $(".search input[name=OrderNumber]").val(),
+            },
+            onLoadSuccess: function () {
+                $(".modalGrid3,.popConfirm").fadeIn();
+            }
+        });
+    }
+    //$("select[name=CustomerID]").selectpicker(); //TODO 待完善
+    $("select[name=CustomerID]").css({ "width": "100%" });
+</script>

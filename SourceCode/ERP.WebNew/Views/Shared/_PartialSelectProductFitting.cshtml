@@ -1,0 +1,93 @@
+﻿<!--选择配件产品 Start-->
+@using ERP.Models.CustomEnums;
+
+<div class="modal fade" id="myModal4" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title">选择配件产品</h3>
+            </div>
+            <div class="modal-body">
+
+                <div class="search_Condition box_1k">
+                    <ul>
+                        <li>
+                            <label class="col-xs-2">货号</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="SelectProductFitting_No" />
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-5">工厂</label>
+                            <div class="col-sm-5" style="margin-left: 10px;">
+                                @InlineHelpers.GetSelectionForFactories(ViewBag.FactoryInfos, "SelectProductFitting_FactoryID", true, null)
+                            </div>
+                        </li>
+                        <li class="search">
+                            <button type="button" class="btn btn-info" onclick="loadOrderGrid()">查询</button>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="popConfirm" style="display:none;">
+                    <button id="btnConfirm_ProductFitting" type="button" class="btn btn-danger">提交产品</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+
+                <table id="modalGrid4" class="easyui-datagrid" data-options="singleSelect:false,pagelist: [10,20,50,100], pagesize:10,remotesort:true,multisort:true,pagination:true,method:'get'" style="display:none;">
+                    <thead data-options="frozen:true">
+                        <tr>
+                            <th data-options="field:'ID',checkbox:true"></th>
+                            <th data-options="field:'No',width:100,sortable:true,formatter:productNoFormatter2">货号</th>
+                            <th data-options="field:'Name',width:100,sortable:true,align:'center'">品名</th>
+                            <th data-options="field:'FactoryName',width:100,sortable:true,align:'center'">工厂</th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr>
+                            <th data-options="field:'Length',width:70,align:'center',sortable:true">长/CM</th>
+                            <th data-options="field:'Width',width:70,align:'center',sortable:true">宽/CM</th>
+                            <th data-options="field:'Height',width:70,align:'center',sortable:true">高/CM</th>
+                            <th data-options="field:'PriceFactory',sortable:true,width:70,align:'center'">工厂价格</th>
+                            <th data-options="field:'CurrencyName',sortable:true,width:70,align:'center'">币种</th>
+                            <th data-options="field:'Comment',width:90,align:'center'">备注</th>
+                            <th data-options="field:'DT_MODIFYDATE',width:150,sortable:true,formatter:formateDate,align:'center'">修改日期</th>
+                            <th data-options="field:'RootID',hidden:true"></th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!--选择配件产品 End-->
+<script>
+    var tableName4 = "#modalGrid4";
+
+    //加载表格内容
+    function loadOrderGrid() {
+        if (!checkEmpty(".search select[name=CustomerID]")) {
+            return;
+        }
+
+        $(tableName4).datagrid({
+            url: '@Url.Content("~/ProductFitting/GetAll")',
+            queryParams: {
+                No: $("#myModal4 input[name=SelectProductFitting_No]").val(),
+                FactoryID: $("#myModal4 select[name=SelectProductFitting_FactoryID]").val(),
+                isAll:true,
+            },
+            onLoadSuccess: function () {
+                $(".modalGrid4,.popConfirm").fadeIn();
+                InitPopover();
+            }
+        });
+    }
+    //$("select[name=CustomerID]").selectpicker(); //TODO 待完善
+    $("select[name=CustomerID]").css({ "width": "100%" });
+
+    function productNoFormatter2(val, row, index) {
+        return jav.GetProductHtml(row.Image, '@(Url.Content("~/ProductFitting/Edit/"))' + row.RootID + "?Type=Detail", row.No);
+    }
+</script>

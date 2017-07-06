@@ -1,0 +1,309 @@
+﻿@{
+    ViewBag.Title = "发送邮件给客户";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+@using ERP.Models.CustomEnums
+@{
+    ViewBag.SendEmail_type = UploadFileType.Quote;
+    ViewBag.SendEmail_ID = ViewBag.id;
+}
+
+<div id="frmEdit">
+    <div class="content-wrapper">
+        <form method="post" class="form-horizontal">
+            <input type="hidden" id="ID" value="@ViewBag.id" />
+
+            <h3 class="popTitle">报价单信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+            <!-- ko with: quot -->
+            <div class="popContent">
+                <div class="search_Condition">
+                    <ul>
+                        <li>
+                            <label class="col-xs-2">报价单号：</label>
+                            <div class="col-sm-10">
+                                <p data-bind="text: QuotNumber"></p>
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-2">报价日期：</label>
+                            <div class="col-sm-10">
+                                <p data-bind="text: moment(QuotDate).format('YYYY-MM-DD')"></p>
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-2">客户：</label>
+                            <div class="col-sm-10">
+                                <p data-bind="text: CustomerCode"></p>
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-2">制单人：</label>
+                            <div class="col-sm-10">
+                                <p data-bind="text: AuthorName"></p>
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-2">状态：</label>
+                            <div class="col-sm-10">
+                                <p data-bind="text: StatusName"></p>
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-2">重新报价次数：</label>
+                            <div class="col-sm-10">
+                                <p data-bind="text: QuotTimes"></p>
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-2">报价有效期：</label>
+                            <div class="col-sm-10">
+                                <p data-bind="text: moment(ValidDate).format('YYYY-MM-DD')"></p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <!-- /ko -->
+
+            <h3 class="popTitle">联系人信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+
+            <div class="popContent">
+                <!-- ko with: quot -->
+                <div class="table-responsive" style="margin-bottom: 20px">
+                    <table class="table table-striped table-bordered table-advance table-editable">
+                        <thead>
+                            <tr class="TH">
+                                @*<th>
+                                        <input id="chkAll" type="checkbox" onclick="btn_chkAll()">
+                                    </th>*@
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Title</th>
+                                <th>Tel.#</th>
+                                <th>Cell Phone#</th>
+                                <th>Fax.#</th>
+                                <th>Email Address</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: contacts">
+                            <tr>
+                                @*<td>
+                                        <input name="selectedID" type="checkbox" />
+                                    </td>*@
+                                <td data-bind="text: FirstName"></td>
+                                <td data-bind="text: LastName"></td>
+                                <td data-bind="text: Duty"></td>
+                                <td data-bind="text: TelPhone"></td>
+                                <td data-bind="text: MobilePhone"></td>
+                                <td data-bind="text: Fax"></td>
+                                <td data-bind="text: Email"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- /ko -->
+            </div>
+
+            @Html.Partial("_PartialSendEmail")
+
+            <div class="popBtns">
+                <div class="form-group" data-bind="with: quot">
+                    <div class="col-sm-12 text-right">
+                        <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, '1')">线下发送邮件</button>
+                        <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, '2')">系统发送邮件</button>
+                        <button type="button" onclick="OA.CloseMe()" class="btn btn-default">取消</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="beizhu red">
+                <strong>PS：</strong><span>@ERP.Tools.Keys.Tip_Email</span>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+<script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+<script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+
+@section scripts{
+    <script>
+        $("#trMakerExcel").show();
+
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                FromAddress: {
+                    validators: {
+                        notEmpty: { message: '发件人不能为空' },
+                        regexp: jav.emailValid,
+                    }
+                },
+                ToAddress: {
+                    validators: {
+                        notEmpty: { message: '收件人不能为空' },
+                        regexp: jav.emailValid,
+                    }
+                },
+                Subject: {
+                    validators: {
+                        notEmpty: { message: '主题不能为空' },
+                    }
+                },
+                CcAddress: {
+                    validators: {
+                        regexp: jav.emailValid,
+                    }
+                },
+                BccAddress: {
+                    validators: {
+                        regexp: jav.emailValid,
+                    }
+                },
+            }
+        });
+
+        function SendEmailModel() {
+            this.FromAddress = ko.observable("@ViewBag.FromAddress");
+            this.ToAddress = ko.observable();
+            this.CcAddress = ko.observable();
+            this.BccAddress = ko.observable();
+            this.Subject = ko.observable();
+            this.BodyContent = ko.observable();
+            this.Attachs = ko.observable();
+            this.IsContainMakerExcel = ko.observable();
+        }
+
+        function Quot(item) {
+            this.ValidDate = item.ValidDate;
+            this.CustomerCode = item.CustomerCode;
+
+            this.QuotNumber = item.QuotNumber;
+            this.QuotDate = item.QuotDate;
+            this.AuthorName = item.AuthorName;
+
+            this.StatusName = item.StatusName;
+            this.QuotTimes = item.QuotTimes;
+
+            this.ValidDate = item.ValidDate;
+            this.StatusID = ko.observable();
+
+            this.contacts = ko.observableArray();
+            this.SendEmail = ko.observableArray();
+        }
+
+        function QuotEditViewModel() {
+            var self = this;
+
+            var id = $('#ID').val();
+            self.quot = ko.observable();
+            $.get('/Quote/GetQuote/' + id).done(function (data) {
+                self.quot(new Quot(data));
+                $.get('/Quote/GetContacts/' + data.CustomerID).done(function (data) {
+                    var mapOptions = {};
+                    var ToAddressArray = [];
+                    $.each(data, function (index, value) {
+                        var mapped = ko.mapping.fromJS(value, mapOptions);
+                        self.quot().contacts.push(mapped);
+                        ToAddressArray.push(data[index].Email);
+                    });
+
+                    $("input[name=ToAddress]").val(ToAddressArray.join(';'));
+                });
+            });
+
+            self.SendEmail = ko.observableArray();
+            self.SendEmail(new SendEmailModel());
+
+            //提交
+            self.submit = function (StatusID) {
+
+                if (StatusID == 2) {
+                    var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                    bootstrapValidator.validate();
+
+                    if (!bootstrapValidator.isValid()) {
+                        return;
+                    }
+
+                    self.quot().SendEmail(self.SendEmail());
+                    self.quot().SendEmail().FromAddress($("input[name=FromAddress]").val());
+                    self.quot().SendEmail().ToAddress($("input[name=ToAddress]").val());
+                    self.quot().SendEmail().CcAddress($("input[name=CcAddress]").val());
+                    self.quot().SendEmail().BccAddress($("input[name=BccAddress]").val());
+                    self.quot().SendEmail().Subject($("input[name=Subject]").val());
+                    self.quot().SendEmail().BodyContent($("textarea[name=BodyContent]").val());
+                    self.quot().SendEmail().IsContainMakerExcel($("#trMakerExcel").is(":visible"));
+
+                    if ($("#fileListTable_Email tbody tr:visible .ServerFileName").length > 0) {
+                        var Attachs = [];//附件
+                        $("#fileListTable_Email tbody tr:visible").each(function () {
+                            var ServerFileName = $(this).find(".ServerFileName").val();
+                            if (ServerFileName != "undefined") {
+                                Attachs.push(ServerFileName);
+                            }
+                        });
+                        self.SendEmail().Attachs(Attachs.join(';'));
+                    }
+                }
+
+                loading();
+                self.quot().ID = id;
+                self.quot().StatusID = StatusID;
+                $.ajax({
+                    type: 'POST',
+                    contentType: 'application/json',
+                    url: '/Quote/SendEmail',
+                    data: ko.toJSON(self.quot)
+                }).done(function (data) {
+                    if (!data.Success) {
+                        completeLoading();
+                        $.messager.alert("提示", data.Info, "info");
+                        return;
+                    }
+                    $.messager.alert("成功", data.Info, "info", function () {
+                        parentGridReload();
+                        OA.CloseMe(true);
+                    });
+                });
+
+            }
+        }
+        ko.applyBindings(new QuotEditViewModel());
+
+        //function btn_chkAll() {
+        //    if ($("#chkAll").is(":checked")) {
+        //        $("input[name=selectedID]").attr("checked", "checked");
+        //    } else {
+        //        $("input[name=selectedID]").removeAttr("checked");
+        //    }
+        //}
+
+        //生成文件
+        function MakerExcel() {
+            loading();
+            $.ajax({
+                type: 'post',
+                contentType: 'application/json',
+                url: "@(Url.Content("~/Quote/MakeExcel/" + ViewBag.id))",
+                data: {}
+            }).done(function (data) {
+                completeLoading();
+                if (!data.IsSuccess) {
+                    $.messager.alert("出错了", data.Msg);
+                }
+                else {
+                    window.open("@Url.Content("~/Quote/Template/"+ViewBag.id)");
+                }
+            });
+        }
+    </script>
+}

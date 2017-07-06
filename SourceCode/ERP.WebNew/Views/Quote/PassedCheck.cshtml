@@ -1,0 +1,34 @@
+﻿@{
+    ViewBag.Title = "报价单审核";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@model ERP.Models.Quote.VMQuoteSearch
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts{
+    <script>
+        var tableName = "#MyGrid";
+
+        function operationFormatter(val, row, index) {
+            var rows = $(tableName).datagrid('getRows');
+            var row = rows[index];
+
+            var showView = @(Model.PageElementPrivileges & (int)QuoteElementPrivileges.View);
+            var showCheck = @(Model.PageElementPrivileges & (int)QuoteElementPrivileges.Check);
+
+            var ops = "";
+
+            if (showView > 0) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Quote/Edit/"))" + val + "?Type=Detail' style='margin:0 10px;'>查看</a>";
+            }
+            var IsHasApprovalPermission=row.IsHasApprovalPermission;
+            var StatusID = row.StatusID;
+            if (StatusID == 2 && showCheck > 0&&IsHasApprovalPermission) {//待审核
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Quote/Edit/"))" + val + "'>审核</a>";
+            }
+            return ops;
+        }
+    </script>
+}

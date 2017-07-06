@@ -1,0 +1,23 @@
+﻿@model ERP.Models.Sample.DTOSample
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>箱唛预览</title>
+</head>
+<body>
+    @if (Model.Manufactures != null)
+    {
+        foreach (var item in Model.Manufactures)
+        {
+            <div style='height:980px;'>@Html.Raw(item.SampleBoxMark)</div>
+        }
+    }
+</body>
+</html>

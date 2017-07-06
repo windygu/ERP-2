@@ -1,0 +1,69 @@
+﻿@model ERP.Models.InspectionReceipt.VMFilterInspectionReceipt
+@using ERP.Models.CustomEnums;
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@{
+    ViewBag.title = "已审核报检单据列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var ControllerURL="href='@(Url.Content("~/InspectionReceipt/"))";
+
+        var showWatch = @(Model.PageElementPrivileges & (int)InspectionReceiptElementPrivileges.Watch);
+        var showSending = @(Model.PageElementPrivileges & (int)InspectionReceiptElementPrivileges.Sending);
+        var showUploadFile = @(Model.PageElementPrivileges & (int)InspectionReceiptElementPrivileges.UploadFile);
+        var showDownLoad = @(Model.PageElementPrivileges & (int)InspectionReceiptElementPrivileges.DownLoad);
+
+        var PassedCheck = @((int)InspectionReceiptStatusEnum.PassedCheck);
+        var Sended = @((int)InspectionReceiptStatusEnum.Sended);
+        var Uploaded = @((int)InspectionReceiptStatusEnum.Uploaded);
+
+        function operationFormatter(val, row, index) {
+            var ops="";
+
+            if(showWatch>0){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionReceipt/Edit/"))" + row.ID + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showSending>0 && row.StatusID == PassedCheck){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionReceipt/SendEmail/"))" + row.ID + "' style='margin: 0 5px;'>发送工厂</a>";
+            }
+
+            if(showUploadFile>0 && (row.StatusID == Sended || row.StatusID == Uploaded)){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionReceipt/Upload/"))" + row.ID + "' style='margin: 0 5px;'>上传凭条</a>";
+            }
+
+            if(showDownLoad>0){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='DownLoad_PDFAndExcel("+row.ID+")' style='margin: 0 5px;'>下载</a>";
+            }
+
+            return ops;
+        }
+
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ID"]);
+        }
+
+        function DownLoad_PDFAndExcel(id) {
+            loading();
+            $.post("@(Url.Content("~/InspectionReceipt/DownLoad_PDFAndExcel"))", { "id": id }, function (data) {
+                completeLoading();
+
+                if (data.length>0) {
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i]!="") {
+                            window.open(data[i]);
+                        }
+                    }
+                }else {
+                    $.messager.alert("出错了", "暂时还没有该客人的模板！");
+                }
+            });
+        }
+    </script>
+}

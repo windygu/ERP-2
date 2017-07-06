@@ -1,0 +1,983 @@
+﻿@model ERP.Models.Packs.VMPacks
+@using ERP.Models.CustomEnums;
+
+@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+<form id="frmEdit" class="content-wrapper">
+    @Html.HiddenFor(d => d.PurchaseContractID)
+    @Html.HiddenFor(d => d.PacksStatusID)
+    @Html.HiddenFor(d => d.PageType)
+
+    <h3 class="popTitle">
+        基本信息<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div style="margin:0" class="popContent search_Condition box_1k p_t0">
+        <ul>
+            <li><label class="col-xs-2">采购合同编号：</label><div class="col-sm-10">@Model.PurchaseNumber</div></li>
+
+            <li><label class="col-xs-2">工厂简称：</label><div class="col-sm-10">@Model.FactoryAbbreviation</div></li>
+
+            <li><label class="col-xs-2">采购合同金额：</label><div class="col-sm-10">@Model.AllAmount</div></li>
+
+            <li><label class="col-xs-2">客户代号：</label><div class="col-sm-10">@Model.CustomerCode</div></li>
+
+            <li><label class="col-xs-2">采购合同日期：</label><div class="col-sm-10">@Model.PurchaseDate</div></li>
+
+        </ul>
+    </div>
+
+    @if (Model.PageType == PageTypeEnum.Edit)
+    {
+        <h3 class="popTitle">标签资料组成<a class="table_toggle fa fa-2 fa-chevron-down"></a></h3>
+        <div class="popContent table-responsive">
+            <div class="form-group">
+                @if (Model.PageType != PageTypeEnum.Details)
+                {
+                    <button id="btnDelete" type="button" onclick="deleteSelected()" class="btn btn-danger" style="margin-bottom: 5px;">删除选中标签</button>
+                }
+            </div>
+
+            <table id="MyPopGrid" class="easyui-datagrid" style="width:100%;overflow:auto;">
+                <thead data-options="frozen:true">
+                    <tr>
+                        <th data-options="field:'ck',checkbox:true"></th>
+                        <th data-options="field:'TagName',width:100,align:'center'">标签种类</th>
+                        <th data-options="field:'TagDescribe',width:150,align:'center',editor:{type:'validatebox'}">标签品名及规格</th>
+                    </tr>
+                </thead>
+                <thead>
+                    <tr>
+                        <th data-options="field:'ServerFileName',width:100,align:'center',formatter:formatUpLoadFile">标签样张</th>
+                        <th data-options="field:'IsOutsourcing',width:100,align:'center',formatter:formatStatus,editor:{type:'checkbox',options:{on:'true',off:'false'}}">是否代印</th>
+                        <th data-options="field:'OrderProductName',width:150,align:'center'">添加的产品</th>
+                        <th data-options="field:'PacksRemark',width:150,align:'center',editor:{type:'validatebox'}">备注</th>
+                        <th data-options="field:'ID',width:200,align:'center',formatter:operationFormatter">操作</th>
+
+                        <th data-options="field:'TagID',width:100,align:'center',hidden:true"></th>
+                        <th data-options="field:'OrderProductID',width:100,align:'center',hidden:true"></th>
+                        <th data-options="field:'TagSample',width:100,align:'center',hidden:true"></th>
+                        <th data-options="field:'DisplayFileName',width:100,align:'center',hidden:true"></th>
+                    </tr>
+                </thead>
+                @if (Model.PacksStatusID != (int)PurchasePacksStatusEnum.PendingMaintenance)
+                {
+                    <tbody data-bind="foreach: MyModel().PacksList">
+                        <tr>
+                            <td></td>
+                            <td data-bind="text:TagName"></td>
+                            <td data-bind="text:TagDescribe"></td>
+                            <td data-bind="text:ServerFileName"></td>
+                            <td data-bind="text:IsOutsourcing"></td>
+                            <td data-bind="text:OrderProductName"></td>
+                            <td data-bind="text:PacksRemark"></td>
+                            <td data-bind="text:ID"></td>
+
+                            <td data-bind="text:TagID"></td>
+                            <td data-bind="text:OrderProductID"></td>
+                            <td data-bind="text:TagSample"></td>
+                            <td data-bind="text:DisplayFileName"></td>
+                        </tr>
+                    </tbody>
+                }
+            </table>
+
+            <div style="padding-top:10px;">
+                <label class="col-sm-2 control-label text-danger">选择标签种类</label>
+
+                <div class="col-sm-3">@InlineHelpers.GetSelectForTags(ViewBag.Packing, "TagsID", true, 0)</div>
+
+                <div class="col-sm-3">
+                    <button type="button" id="bntAddTag" name="bntAddTag" class="btn btn-info">添加标签行</button>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="popTitle">编辑采购合同产品信息<a class="table_toggle fa fa-2 fa-chevron-down"></a></h3>
+        <div class="popContent table-responsive">
+            <div class="history_box">
+                <table id="tblProductsUPC" class="easyui-datagrid" style="width:100%;">
+                    <thead data-options="frozen:true">
+                        <tr>
+                            <th data-options="field:'OrderProductNO',width:100,align:'center',formatter:productNoFormatter2">产品货号</th>
+                            <th data-options="field:'OrderProductName',width:150,align:'center'">产品品名</th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr>
+                            <th data-options="field:'SkuNumber',width:100,align:'center'">客户SKU#</th>
+                            <th data-options="field:'ProductUPC',width:100,align:'center',editor:{type:'validatebox'}">产品UPC</th>
+                            <th data-options="field:'InnerUPC',width:100,align:'center',editor:{type:'validatebox'}">内盒UPC</th>
+                            <th data-options="field:'OuterUPC',width:100,align:'center',editor:{type:'validatebox'}">外箱UPC</th>
+
+                            <th data-options="field:'ProductImage',width:100,align:'center',hidden:true"></th>
+                            <th data-options="field:'ProductID',width:100,align:'center',hidden:true"></th>
+                            <th data-options="field:'OrderProductID',width:100,align:'center',hidden:true"></th>
+                            <th data-options="field:'PPPUPCID',width:100,align:'center',hidden:true"></th>
+                            <th data-options="field:'ContractsID',width:100,align:'center',hidden:true"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody data-bind="foreach: MyModel().PHProductsUPC">
+                        <tr>
+                            <td data-bind="text:OrderProductNO"></td>
+                            <td data-bind="text:OrderProductName"></td>
+                            <td data-bind="text:SkuNumber"></td>
+                            <td data-bind="text:ProductUPC"></td>
+                            <td data-bind="text:InnerUPC"></td>
+                            <td data-bind="text:OuterUPC"></td>
+
+                            <td data-bind="text:ProductImage"></td>
+                            <td data-bind="text:ProductID"></td>
+                            <td data-bind="text:OrderProductID"></td>
+                            <td data-bind="text:PPPUPCID"></td>
+                            <td data-bind="text:ContractsID"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="popBtns">
+            <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, 1)">保存标签及产品信息</button>
+        </div>
+    }
+
+    <h3 class="popTitle">产品包装资料清单<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+
+    <div class="popContent table-responsive" style="overflow:auto">
+        <table id="tblProducts" class="easyui-datagrid" style="width:100%;">
+            <thead data-options="frozen:true">
+                <tr>
+                    <th data-options="field:'OrderProductNO',width:100,align:'center',formatter:productNoFormatter2">产品货号</th>
+                    <th data-options="field:'SkuNumber',width:100,align:'center'">客户SKU#</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr>
+                    <th data-options="field:'Description',width:150,align:'center'">Description</th>
+                    <th data-options="field:'OrderProductFPrice',width:100,align:'center'">产品零售价</th>
+                    <th data-options="field:'TagName',width:100,align:'center',formatter:formatUpLoadFile2">产品标签种类</th>
+                    <th data-options="field:'TagFlag',width:100,align:'center'">标签分类</th>
+                    <th data-options="field:'IsOutsourcing',width:100,align:'center'">是否代购</th>
+                    <th data-options="field:'TagDescribe',width:100,align:'center'">标签品名及规格</th>
+                    <th data-options="field:'ProductTagsNumber',width:100,align:'center',editor:{type:'numberbox',options:{precision:0}}">产品标签数量</th>
+                    <th data-options="field:'InnerBoxRate',width:100,align:'center'">内盒率</th>
+                    <th data-options="field:'InnerUPC',width:100,align:'center'">内盒UPC</th>
+                    <th data-options="field:'InnerTagsNumber',width:100,align:'center',editor:{type:'numberbox',options:{precision:0}}">内盒标签数量</th>
+                    <th data-options="field:'OuterBoxRate',width:100,align:'center'">外箱率</th>
+                    <th data-options="field:'OuterUPC',width:100,align:'center'">外箱UPC</th>
+                    <th data-options="field:'OutTagsNumber',width:100,align:'center',editor:{type:'numberbox',options:{precision:0}}">外箱标签数量</th>
+                    <th data-options="field:'PDQPackRate',width:100,align:'center'">PDQ装率</th>
+
+                    <th data-options="field:'PackProductsID',width:100,align:'center',hidden:true"></th>
+                    <th data-options="field:'ProductImage',width:100,align:'center',hidden:true"></th>
+                    <th data-options="field:'ProductID',width:100,align:'center',hidden:true"></th>
+                    <th data-options="field:'DownloadFilePath',width:100,align:'center',hidden:true"></th>
+                </tr>
+            </thead>
+
+            <tbody data-bind="foreach: MyModel().PacksProducts">
+                <tr>
+                    <td data-bind="text:OrderProductNO"></td>
+                    <td data-bind="text:SkuNumber"></td>
+
+                    <td data-bind="text:Description"></td>
+                    <td data-bind="text:OrderProductFPrice"></td>
+                    <td data-bind="text:TagName"></td>
+                    <td data-bind="text:TagFlag"></td>
+                    <td data-bind="text:IsOutsourcing"></td>
+                    <td data-bind="text:TagDescribe"></td>
+                    <td data-bind="text:ProductTagsNumber"></td>
+                    <td data-bind="text:InnerBoxRate"></td>
+                    <td data-bind="text:InnerUPC"></td>
+                    <td data-bind="text:InnerTagsNumber"></td>
+                    <td data-bind="text:OuterBoxRate"></td>
+                    <td data-bind="text:OuterUPC"></td>
+                    <td data-bind="text:OutTagsNumber"></td>
+                    <td data-bind="text:PDQPackRate"></td>
+
+                    <td data-bind="text:PackProductsID"></td>
+                    <td data-bind="text:ProductImage"></td>
+                    <td data-bind="text:ProductID"></td>
+                    <td data-bind="text:DownloadFilePath"></td>
+                </tr>
+            </tbody>
+
+        </table>
+    </div>
+
+    @if (Model.PageType == PageTypeEnum.Approval)
+    {
+        <h3 class="popTitle">
+            审核意见
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            @Html.TextAreaFor(d => d.AuditPacksIdea, new { @class = "form-control" })
+        </div>
+    }
+
+    <div class="popBtns">
+        @switch (Model.PageType)
+        {
+            case PageTypeEnum.Add:
+            case PageTypeEnum.Edit:
+                <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)PurchasePacksStatusEnum.OutLine))">保存为草稿</button>
+                <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)PurchasePacksStatusEnum.PendingCheck))">保存并提交审核</button>
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                break;
+            case PageTypeEnum.Details:
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">关闭</button>
+                break;
+            case PageTypeEnum.Approval:
+                <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)PurchasePacksStatusEnum.PassedCheck))">审批通过</button>
+                <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)PurchasePacksStatusEnum.NotPassCheck))">驳回重审</button>
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                break;
+            default:
+                break;
+
+        }
+    </div>
+
+    <h3 class="popTitle">
+        历史记录
+        <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+    </h3>
+    <div style="display:none;" class="popContent">
+        <div class="history_box">
+            <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                <thead>
+                    <tr class="TH">
+                        <th width="20%">审批日期</th>
+                        <th width="20%">审批人</th>
+                        <th width="20%">状态</th>
+                        <th width="40%">审批意见</th>
+                    </tr>
+                </thead>
+
+                @foreach (var item1 in Model.AuditPacksHisList.OrderByDescending(d => d.AuditCreateDate))
+                {
+                    <tr>
+                        <td>@item1.AuditCreateDate</td>
+                        <td>@item1.AuditUserName</td>
+                        <td>@item1.PacksStatus</td>
+                        <td>@item1.AuditPacksIdea</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+
+</form>
+
+<!--选择采购合同产品信息，用于标签添加产品使用-->
+<div class="row">
+    <div id="dvQueryProductsPC" data-backdrop="static" class="modal adjoined-bottom">
+        <div class="modal-dialog modal-lg">
+            <div style="height:500px;" class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                    <h3 class="modal-title">选择采购合同产品信息</h3>
+                </div>
+
+                <div class="modal-body">
+                    <div class="popConfirm">
+                        <button id="bntSave" type="button" onclick="BindProductList();" style="float:right" class="btn btn-danger">确定</button>
+                    </div>
+
+                    <table id="tblQueryProductsPC" class="easyui-datagrid" style="width:100%;"
+                           data-options="singleSelect:false,pageList: [10,20,50,100], pageSize:10,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/Packs/GetPurchaseProducts/" + Model.PurchaseContractID)',method:'get'">
+
+                        <thead>
+                            <tr>
+                                <!--标签资料信息-->
+                                <th data-options="field:'OrderProductID',checkbox:true"></th>
+                                <th data-options="field:'ProductID',hidden:true"></th>
+                                <th data-options="field:'ProductImage',hidden:true"></th>
+
+                                <th data-options="field:'OrderProductNO',width:100,align:'center',formatter:productNoFormatter2">产品货号</th>
+                                <th data-options="field:'OrderProductName',width:200,align:'center'">产品品名</th>
+                                <th data-options="field:'OrderProductFPrice',width:100">工厂价格</th>
+                                <th data-options="field:'OrderProductPackingZH',width:150,align:'center'">包装方式</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 上传图片弹出框 -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="myModalLabel">上传标签样张</h3>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+
+                    <form id="uploadForm" action="#" method="post">
+                        <div class="row">
+                            <input type="file" width="500" name="fileSelect" id="fileSelect" value="" />
+                        </div>
+                        <div class="row">
+                            预览：
+                            <span id="uploadProgress" class="upload_progress"></span>
+                            <div class="imgPreviewDiv">
+                                <img id="imgPreview" src="@(Url.Content("~/images/default/upload.jpg"))" />
+                            </div>
+                        </div>
+
+                        <div class="row" style="text-align: right; margin-top: 15px;">
+                            <input type="button" id="fileSubmit" class="btn btn-success" value="确认上传图片" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="@Url.Content("~/Scripts/h5uploader.js?v=20170608")" type="text/javascript" charset="utf-8"></script>
+<script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+<script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+<script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+
+<script>
+
+    var UrlGetProductDetail='@(Url.Content("~/Product/Details/"))'
+    var objPackRow = null;
+    var AuditPacksDataList = "#MyGrid";//待审核包装资料列表数据的table.id
+    var DataTableName = "#MyPopGrid";
+    var SelectProductsTableName = "#tblQueryProductsPC";
+    var GstrIsChangeTagInfo=false;
+
+    $(function () {
+        $("#MyPopGrid").datagrid({
+            checkOnSelect:true,
+            onBeforeEdit:onBeforeEdit,
+            onAfterEdit:onAfterEdit,
+            onCancelEdit:onCancelEdit,
+            onLoadSuccess:onLoadSuccess,
+            onClickCell: @(Model.PageType == PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+            showFooter: true,
+            onBeginEdit:onBeginEdit,
+        });
+
+        $("#tblProductsUPC").datagrid({
+            checkOnSelect:true,
+            onBeforeEdit:onBeforeEdit,
+            onAfterEdit:onAfterEdit,
+            onCancelEdit:onCancelEdit,
+            onLoadSuccess:onLoadSuccess,
+            onClickCell: @(Model.PageType == PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+            showFooter: true,
+            onBeginEdit:onBeginEdit,
+
+        });
+
+        //请求包装资料产品可编辑列表，数据用模板填充
+        if ($("#PacksStatusID").val()!="1") {
+            GetPacksProductList();
+        }
+
+        //绑定添加标签行的Onclick事件
+        appendTemplate();
+
+        $("#bntAddTag").prop("disabled", true);
+
+        $("#TagsID").on("change", function () {
+            var a = $("#TagsID").val();
+            if (a == "") {
+                $("#bntAddTag").prop("disabled", true);
+            } else {
+                $("#bntAddTag").prop("disabled", false);
+            }
+
+        });
+    });
+
+    function formatStatus(value,row,index){
+        if (value=="true") {
+            return "是";
+        }
+        else {
+            return "否";
+        }
+    }
+
+    function formatUpLoadFile(value,row,index){
+        if (row.DisplayFileName==undefined) {
+            return "";
+        }
+        return jav.GetProductHtml(row.ServerFileName, row.ServerFileName, row.DisplayFileName);
+    }
+    
+    function formatUpLoadFile2(value,row,index){
+        if (row.DownloadFilePath==undefined) {
+            return "";
+        }
+        return jav.GetProductHtml(row.DownloadFilePath, row.DownloadFilePath, row.TagName);
+    }
+
+    function operationFormatter(val, row, index) {
+        var ops = "";
+        ops += "<a class='btn btn-default btn-xs w_auto' onclick='UploadFile(" + index + ")' href='javascript:void(0)' style='margin: 0 5px;padding: 1px 4px;'>上传标签样张</a>";
+
+        ops += "<a class='btn btn-default btn-xs w_auto' onclick='selectProducts()' href='javascript:void(0)' style='margin: 0 5px;padding: 1px 4px;'>选择产品</a>";
+
+        return ops;
+    }
+
+    //请求包装资料产品可编辑列表，数据用模板填充
+    function GetPacksProductList(){
+        $.post('@(Url.Content("~/Packs/GetPacksProductList"))', { ContractID: $("#PurchaseContractID").val() }, function (data) {
+            $("#tblProducts").datagrid({
+                data:data.PacksProducts,
+                checkOnSelect:true,
+                onBeforeEdit:onBeforeEdit,
+                onAfterEdit:onAfterEdit,
+                onCancelEdit:onCancelEdit,
+                onLoadSuccess:onLoadSuccess,
+                onClickCell: @(Model.PageType == PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+                showFooter: true,
+                onBeginEdit:onBeginEdit,
+            });
+
+        });
+    }
+
+    //判断输入是否为数字
+    function KeyupTagsNumber(e) {
+        var val = $(e)[0].currentTarget.value;//产品单价输入框id
+
+        if (jav.IsFigure(val) || val == "0") {
+            val = parseFloat(val);
+
+        } else {
+            $(e)[0].currentTarget.value = "";//产品单价
+            $.messager.alert('提示', '必须输入数字', 'info');
+            return false;
+        }
+
+    }
+
+    //用指定模板行添加可编辑、操作的带有模型对象绑定的HTML行
+    function appendTemplate() {
+        $("#bntAddTag").on('click', function () {
+            var a = $("#TagsID").val();
+            var b = $("#TagsID")[0].selectedIndex;
+            b = $("#TagsID")[0].options[b].text;
+
+            $('#MyPopGrid').datagrid('appendRow', {
+                ID: -1,
+                TagID: a,
+                TagName:b,
+                TagDescribe:"",
+                ServerFileName:"",
+                IsOutsourcing:false,
+                OrderProductName:"",
+                PacksRemark:"",
+                OrderProductID:"",
+                TagSample:"",
+                DisplayFileName:"",
+            });
+
+            GstrIsChangeTagInfo=true;//标签数据在前台有变化
+
+        });
+    }
+
+    function deleteSelected() {
+        $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+            if (r) {
+                var idArray = [];
+                var rows = $("#MyPopGrid").datagrid('getSelections');
+                for (var i = 0; i < rows.length; i++) {
+                    var rowIndex=$('#MyPopGrid').datagrid('getRowIndex',rows[i]);
+                    if (rowIndex >= 0) {
+                        $('#MyPopGrid').datagrid('deleteRow', rowIndex);
+                    }
+                }
+                editIndex = undefined;
+            }
+        });
+
+    }
+
+    function UploadFile(index){
+        $('#myModal').modal();
+
+        var thisRow = $("#MyPopGrid").datagrid("getRows")[index];
+
+        $("#uploadForm").attr("action","@Url.Content("~/FileUploader/PacksImg")?type=@UploadFileType.Packs&id="+thisRow.ID);
+        $("#imgPreview").attr("src",thisRow.ServerFileName);
+        Init_h5uploader(index);
+    }
+
+    //根据采购合同自编号选择产品
+    function selectProducts() {
+        $("#dvQueryProductsPC").modal();
+        //objPackRow = html;//标签行选择产品时所在行的对象
+
+        $(SelectProductsTableName).datagrid({
+            url: '@Url.Content("~/Packs/GetPurchaseProducts/" + Model.PurchaseContractID)',
+            onLoadSuccess:function(row){
+                SelectedRowData(row);
+                InitPopover();
+            }
+        });
+    }
+
+    //当打开选择采购合同产品数据列表时，把已选择的行选中
+    function SelectedRowData(row) {
+        if (row != null) {
+            var thisRow = $("#MyPopGrid").datagrid("getRows")[editIndex];
+            var productIds=thisRow.OrderProductID;
+            if (productIds != undefined || productIds != "") {
+                var arrProductID = [];
+                if (productIds!=null) {
+                    if (productIds.indexOf(",")>0) {
+                        arrProductID = productIds.split(",");
+                    }else {
+                        arrProductID.push(productIds);
+                    }
+                }
+                for (var i = 0; i < row.rows.length; i++) {
+                    $.each(arrProductID, function (index, value) {
+                        if (value == row.rows[i].OrderProductID) {
+                            //选中数据行
+                            $(SelectProductsTableName).datagrid("selectRow", i);
+                            return false;
+                        }
+                    });
+
+                }
+            }
+
+        }
+    }
+
+    //选择产品后，追加到包装资料标签行中
+    function BindProductList() {
+        var getDataList = $(SelectProductsTableName).datagrid("getSelections");
+        if (getDataList.length == 0) {
+            $.messager.alert('提示', '没有选择数据', 'info'); return;
+        }
+        var thisRows = $("#MyPopGrid").datagrid("getRows");
+        //是：遍历当前列表行的产品OrderProductID控件值（用,拼接的）是否有重复，是：出提示
+        //否直接覆盖产品至当前行的产品OrderProductID控件
+        //var b = $(a).parents("table.table-striped").find("tr.PacksTableTr");//当前列表行集合
+
+        var f = [];
+        var arrOldOPID = [];
+        if (CheckRepetition(thisRows)) {
+            for (var i = 0; i < thisRows.length; i++) {
+                if (thisRows[editIndex].TagID == thisRows[i].TagID) {
+                    var temp = thisRows[i].OrderProductID;                    
+                    if (temp!="") {
+                        if (temp.indexOf(",")>0) {
+                            temp = temp.split(',');
+                            for (var i = 0; i < temp.length; i++) {
+                                f.push(parseInt(temp[i]));    
+                            }
+                        }else {    
+                            f.push(temp);
+                        }
+
+                        for (var j = 0; j < f.length; j++) {
+                            arrOldOPID.push(f[j]);
+                        }
+                    }
+                }
+
+            }
+
+            $.each(getDataList, function (i, j) {
+                arrOldOPID.push(j.OrderProductID);
+            });
+            var arrSort = arrOldOPID.sort();
+            for (var i = 0; i < arrOldOPID.length; i++) {
+                if (arrSort[i] == arrSort[i + 1]) {
+                    $.messager.alert('提示', '相同标签不能选择重复产品', 'info'); return;
+                }
+            }
+        }
+
+        var arrOrderProductIDs = [], arrOrderProductNames = [];
+
+        $.each(getDataList, function (i, j) {
+            arrOrderProductIDs.push(j.OrderProductID);
+            arrOrderProductNames.push(j.OrderProductNO);
+        });
+
+        thisRows[editIndex].OrderProductID = arrOrderProductIDs.toString();
+        thisRows[editIndex].OrderProductName = arrOrderProductNames.toString();
+
+        $("#MyPopGrid").datagrid('acceptChanges');
+        $("#MyPopGrid").datagrid('refreshRow', editIndex);
+        editIndex = undefined;
+
+        GstrIsChangeTagInfo=true;//标签数据在前台有变化
+
+        $(".modal-header .close").click();//关闭选择产品的弹出页面
+
+    }
+
+    function CheckRepetition(a) {
+        var b = a.length;
+        //只有一个数据行时，无需判断是否相同标签
+        if(b<=1){
+            return false;
+        }
+        var arrTagIDs = [];//存放标签ID的数组
+
+        for (var i = 0; i < b; i++) {
+            arrTagIDs.push(a[i].TagID);
+        }
+        var bResult=false;
+        var arrSort = arrTagIDs.sort();
+        for (var i = 0; i < arrTagIDs.length; i++) {
+            if (arrSort[i] == arrSort[i + 1]) {
+                bResult=true;
+                break;
+            }
+        }
+        return bResult;
+    }
+
+    function KOModel(item) {
+        this.ID = ko.observable(item.ID);
+        this.PurchaseContractID = ko.observable(item.PurchaseContractID);
+        this.PageType = ko.observable(item.PageType);
+        this.PacksStatusID = ko.observable(item.PacksStatusID);
+        this.AuditPacksIdea = ko.observable(item.AuditPacksIdea);
+
+        this.PacksList = ko.observableArray();
+        this.PHProductsUPC = ko.observableArray();
+        this.PacksProducts = ko.observableArray();
+    }
+
+    function KOViewModel() {
+        var self = this;
+
+        self.MyModel = ko.observable();
+        self.MyModel(new KOModel(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model)))));
+        self.MyModel().PacksList(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.PacksList))));
+        self.MyModel().PHProductsUPC(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.PHProductsUPC))));
+
+        var checkSubmit = false;//防止重复提交
+        //提交
+        self.submit = function (StatusID) {
+            //debugger;
+            var iMessage = "";
+
+            var NotPassCheck= @((int)PurchasePacksStatusEnum.NotPassCheck);
+            if (StatusID == NotPassCheck && $.trim($("#AuditPacksIdea").val()) == "") {
+                $.messager.alert("提示", "请输入审核意见！", "info", function () {
+                    $("#AuditPacksIdea").focus();
+                });
+                return false;
+            }
+
+            if (editIndex != undefined) {
+                $.messager.confirm("提示", "发现您有正在编辑状态的产品，是否保存？", function(r){
+                    if(r){
+                        endEditingInfo();
+                    }
+                });
+                return false;
+            }
+
+            if ($("#PacksStatusID").val()=="1" || $("#PacksStatusID").val()=="2"|| $("#PacksStatusID").val()=="4") {
+                var thisRows = $(DataTableName).datagrid("getRows");//当前列表行集合
+                if (thisRows.length == 0) {
+                    $.messager.alert('提示', '没有任何标签行数据，不需要保存', 'info');
+                    return false;
+                }
+
+                //=1表示提交上部标签信息
+                if(StatusID==1){
+                    for (var i = 0; i < thisRows.length; i++) {
+                        if (thisRows[i].OrderProductID == "") {
+                            var temp=i+1;
+                            iMessage += "、" + temp;
+                        }
+                    }
+
+                    if (iMessage != "") {
+                        iMessage = iMessage.substr(1, iMessage.length);
+                        $.messager.alert('提示', '第' + iMessage + "行没有选择产品", 'info');
+                        return false;
+
+                    }
+
+                    //提交下部标签产品清单可输入项
+                }else{
+
+                    if(GstrIsChangeTagInfo){
+                        $.messager.alert('提示', '标签行数据有修改，请先保存标签及产品信息', 'info');
+                        StatusID=1;
+                        return false;
+
+                    }
+                    var rows = $("#tblProducts").datagrid("getRows");
+                    if (rows && rows.length > 0) {
+                        for (var i = 0; i < rows.length; i++) {
+                            if (rows[i].ProductTagsNumber == "" && rows[i].InnerTagsNumber == "" && rows[i].OutTagsNumber == "") {
+                                iMessage="产品、内盒、外箱标签数量必填";
+                                break;
+                            }
+                            if (rows[i].ProductTagsNumber == 0 && rows[i].InnerTagsNumber == 0 && rows[i].OutTagsNumber == 0) {
+                                iMessage="产品、内盒、外箱标签数量不能都等于0";
+                                break;
+                            }
+                        }
+                    }
+
+                    if (iMessage != "") {
+                        $.messager.alert('提示', iMessage, 'info');
+                        return false;
+                    }
+
+                }
+
+
+                var rows = $("#MyPopGrid").datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.MyModel().PacksList(rows);
+                }
+
+                var rows = $("#tblProductsUPC").datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.MyModel().PHProductsUPC(rows);
+                }
+            }
+
+            var rows = $("#tblProducts").datagrid("getRows");
+            if (rows && rows.length > 0) {
+                self.MyModel().PacksProducts(rows);
+            }
+
+            self.MyModel().PurchaseContractID($("#PurchaseContractID").val());
+            if (StatusID==1) {
+                self.MyModel().PacksStatusID($("#PacksStatusID").val());
+                self.MyModel().PageType("Add");
+            }else {
+                self.MyModel().PacksStatusID(StatusID);
+                self.MyModel().PageType("Edit");
+            }
+            self.MyModel().AuditPacksIdea($("#AuditPacksIdea").val());
+
+            if (checkSubmit) {
+                $.messager.alert("提示", "请勿重复提交！");
+                return;
+            }
+            checkSubmit = true;
+            loading();
+
+            $.ajax({
+                type: 'post',
+                contentType: 'application/json',
+                url: '@Url.Content("~/Packs/Save")',
+                data: ko.toJSON(self.MyModel)
+            }).done(function (data) {
+                checkSubmit = false;
+                completeLoading();
+
+                if (data == 0) {
+                    $.messager.alert('提示', '提交出错', 'info');
+                    return;
+
+                } else if (data == 1) {
+                    if(StatusID==1){
+                        GstrIsChangeTagInfo=false;
+
+                        //请求包装资料产品可编辑列表，数据用模板填充
+                        GetPacksProductList();
+                        $.messager.alert('提示', '保存成功', 'info');
+                    }else{
+                        OA.CloseMe(true);
+                        parent.$(AuditPacksDataList).datagrid("reload");
+                    }
+
+                } else {
+                    $.messager.alert('提示', '没有更新任何数据', 'info'); return;
+
+                }
+            });
+        }
+    }
+
+    var KOViewModel = new KOViewModel();
+    ko.applyBindings(KOViewModel);
+    
+    function getRowIndex(target) {
+        var tr = $(target).closest('tr.datagrid-row');
+        return parseInt(tr.attr('datagrid-row-index'));
+    }
+
+    var editIndex = undefined;
+    var editGrid = "";
+
+    function onBeforeEdit(index, row) {
+        row.editing = true;
+        updateActionsInfo(index);
+    }
+
+    function onAfterEdit(index, row) {
+        row.editing = false;
+        updateActionsInfo(index);
+
+    }
+    function onCancelEdit(index, row) {
+        row.editing = false;
+        updateActionsInfo(index);
+    }
+    function endEditingInfo() {
+        if (editIndex == undefined) { return true }
+        if ($(editGrid).datagrid('validateRow', editIndex)) {
+            $(editGrid).datagrid('endEdit', editIndex);
+            editIndex = undefined;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    function updateActionsInfo(index) {
+        $(editGrid).datagrid('refreshRow', index);
+        //jav.initGridCellTooltips(["OrderID"]);
+        InitPopover();
+
+    }
+
+    function acceptInfo(target) {
+        editIndex = getRowIndex(target);
+        if (endEditingInfo()) {
+            $(editGrid).datagrid('acceptChanges');
+            if (editGrid!="#tblProducts") {
+                GstrIsChangeTagInfo=true;
+            }
+        }
+    }
+
+    function onClickCell(index, field,a,b,c) {
+        if (editGrid !="#" +$(this)[0].id && endEditingInfo()) {
+            editIndex = undefined;
+        }
+
+        editGrid = "#" + $(this)[0].id;
+        if (editIndex != index) {
+            if (endEditingInfo()) {
+                $(editGrid).datagrid('selectRow', index).datagrid('beginEdit', index);
+                var ed = $(editGrid).datagrid('getEditor', { index: index, field: field });
+                if (ed) {
+                    ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                }
+                editIndex = index;
+            } else {
+                setTimeout(function () {
+                    $(editGrid).datagrid('selectRow', editIndex);
+                }, 0);
+            }
+        }
+        RemovePopover();
+    }
+
+    function productNoFormatter(val, row, index) {
+        return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+    }
+
+    function productNoFormatter2(val, row, index) {
+        return jav.GetProductHtml(row.ProductImage, UrlGetProductDetail + row.ProductID, row.OrderProductNO);
+    }
+
+    function onBeginEdit(index, row) {
+        $(".datagrid-editable-input,.validatebox-text").on("keypress",function(e){
+            if (e.keyCode == 13) {
+                acceptInfo(row);
+            }
+        });
+    }
+
+    function emptyFunc() {
+
+    }
+
+    function onLoadSuccess(){
+        InitPopover();
+    }
+
+    function Init_h5uploader(index){
+        // 上传文件
+        var params = {
+            fileInput: document.getElementById("fileSelect"),
+            upButton: document.getElementById("fileSubmit"),
+            url: $("#uploadForm").attr("action"),
+            filter: function (file) {
+                //console.log(file.type);
+                var f = null;
+                if (file.type.indexOf("image") == 0) {
+                    if (file.size >= 3600000) {	// 3M
+                        $.messager.alert("提示", '您这张"' + file.name + '"图片大小过大,请不要超过3M');
+                    } else {
+                        f = file;
+                    }
+                } else {
+                    $.messager.alert("提示", '文件"' + file.name + '"不是图片。');
+                }
+                return f;
+            },
+            onSelect: function (file) {
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("#imgPreview").attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(file);
+                }
+                else {
+                    $("#imgPreview").attr('src', '');
+                }
+                $("#uploadProgress").hide();
+            },
+            onProgress: function (file, loaded, total) {
+                //var eleProgress = $("#uploadProgress"), percent = (loaded / total * 100).toFixed(2) + '%';
+                //eleProgress.show().html(percent);
+            },
+            onSuccess: function (file, response) {
+                var result = JSON.parse(response);
+                if (result.ok) {
+
+                    var thisRow = $("#MyPopGrid").datagrid("getRows")[index];
+                    thisRow.ServerFileName=result.data.ServerFileName;
+                    thisRow.DisplayFileName=result.data.DisplayFileName;
+
+                    $("#MyPopGrid").datagrid('acceptChanges');
+                    $("#MyPopGrid").datagrid('refreshRow', index);
+
+                    editIndex = undefined;
+
+                    GstrIsChangeTagInfo=true;//标签数据在前台有变化
+
+                    InitPopover();
+
+                    $('#myModal').modal('hide');
+                }
+            },
+            onFailure: function (file) {
+                $("#uploadProgress").html('失败');
+                $.messager.alert("提示", '上传失败');
+            },
+        };
+        h5uploader = $.extend(h5uploader, params);
+        h5uploader.init();
+    }
+</script>

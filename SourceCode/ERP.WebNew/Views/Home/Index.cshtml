@@ -1,0 +1,123 @@
+﻿@{
+    ViewBag.Title = "Jet·运营管理系统";
+}
+
+@section styles{
+    <style type="text/css">
+        .index-wrapper {
+            padding: 20px 15px;
+        }
+
+        .dashboard-stat {
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .dashboard-stat .visual > i {
+            margin-left: -27px;
+            font-size: 110px;
+            line-height: 110px;
+            color: white;
+            opacity: 0.3;
+            filter: alpha(opacity=30);
+        }
+
+        .dashboard-stat .details {
+            position: absolute;
+            right: 15px;
+            padding-right: 15px;
+        }
+
+        .dashboard-stat .details .number {
+            padding-top: 25px;
+            text-align: right;
+            font-size: 34px;
+            line-height: 36px;
+            letter-spacing: -1px;
+            margin-bottom: 0;
+            font-weight: 300;
+        }
+
+        .dashboard-stat .details .desc {
+            text-align: right;
+            font-size: 16px;
+            letter-spacing: 0;
+            font-weight: 300;
+        }
+
+        .dashboard-stat .more {
+            clear: both;
+            display: block;
+            padding: 6px 10px 6px 10px;
+            position: relative;
+            text-transform: uppercase;
+            font-weight: 300;
+            font-size: 11px;
+            opacity: 0.7;
+            filter: alpha(opacity=70);
+        }
+
+        .dashboard-stat .more:hover {
+            text-decoration: none;
+            opacity: 0.9;
+            filter: alpha(opacity=90);
+        }
+
+        .dashboard-stat .more > i {
+            display: inline-block;
+            margin-top: 1px;
+            float: right;
+        }
+    </style>
+}
+
+<div class="index-wrapper">
+    <div class="row" id="stat">
+        <div v-for="stat in stats" track-by='$index' class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
+            <div class="dashboard-stat" v-bind:style="'background-color:'+stat.bgColor">
+                <div class="visual">
+                    <i class="{{stat.icon}}"></i>
+                </div>
+                <div class="details">
+                    <div class="number">
+                        {{stat.num}}
+                    </div>
+                    <div class="desc">
+                        {{stat.desc}}
+                    </div>
+                </div>
+                <a class="more" href="{{stat.href}}" v-bind:style="'background-color:'+stat.bottomColor">
+                    详情
+                    <i class="fa fa-arrow-circle-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Scripts/vue-v1.0.12.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+        var dashboardStat = new Vue({
+            el: '#stat',
+            data: {
+                stats: []
+            },
+        });
+
+        queryStat();
+
+        function queryStat() {
+            $.getJSON("/Home/GetDashboardStat", function (data) {
+                if (data.StatList) {
+                    dashboardStat.stats = data.StatList;
+                    // 间隔30秒刷新一次
+                    setTimeout(function () {
+                        queryStat();
+                    }, 30000);
+                }
+            })
+        }
+    </script>
+}
+

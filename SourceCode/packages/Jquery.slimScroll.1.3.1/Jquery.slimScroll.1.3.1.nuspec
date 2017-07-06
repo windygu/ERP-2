@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Jquery.slimScroll</id>
+    <version>1.3.1</version>
+    <title>Jquery slim Scroll</title>
+    <authors>Farshid Mirzagholi</authors>
+    <owners>Farshid Mirzagholi</owners>
+    <projectUrl>https://github.com/rochal/jQuery-slimScroll/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>My package description.</description>
+    <tags>Jquery slim Scroll</tags>
+  </metadata>
+</package>

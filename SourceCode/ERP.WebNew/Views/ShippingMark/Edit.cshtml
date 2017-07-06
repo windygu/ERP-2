@@ -1,0 +1,502 @@
+﻿@using ERP.Models.CustomEnums
+@model ERP.Models.Purchase.VMPurchase
+
+@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+<div id="frmEdit" class="content-wrapper">
+    <input id="purchaseID" type="hidden" value="@Model.ID" />
+
+    <div id="inline">
+        @Html.Partial("_PartialPurchaseContract", Model)
+
+        @if (Model.SelectCustomer == SelectCustomerEnum.S188.ToString() || Model.SelectCustomer == SelectCustomerEnum.S220.ToString())
+        {
+            string str = "";
+            if (Model.SelectCustomer == SelectCustomerEnum.S188.ToString())
+            {
+                str = "外箱条码标";
+            }
+            else if (Model.SelectCustomer == SelectCustomerEnum.S220.ToString())
+            {
+                str = "产品设计图";
+            }
+            if (Model.PageType != PageTypeEnum.Details)
+            {
+                <h3 class="popTitle">
+                    @str（根据上传的货号名称对应上面的产品）
+                    <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+                </h3>
+                <div class="row popContent" style="overflow: inherit;">
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">
+                            上传@(str)：
+                        </label>
+                        <div class="col-sm-8 control-label">
+                            <div class="uploadify">
+                                <input type="file" name="uploadify" id="uploadify" />
+                                <a class="a_upload" onclick="UpLoadFile()">上传</a>
+                                <div class="fileQueue">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <h3 class="popTitle">
+                已上传的@(str)
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="row popContent">
+                <div class="history_box">
+                    <table id="fileListTable" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                        <thead>
+                            <tr class="t_bg">
+                                <td width="50%">附件名称</td>
+                                <td width="20%">上传时间</td>
+                                <td width="30%">操作</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.ShippingMark_UpLoadFileList != null)
+                            {
+                                int i = 0;
+                                foreach (var item in Model.ShippingMark_UpLoadFileList.OrderByDescending(d => d.DT_CREATEDATE))
+                                {
+                                    <tr>
+                                        <td class="hide">
+                                            <input name="ShippingMark_UpLoadFileList[@(i)].ID" type="hidden" value="@item.ID" class="UpLoadFileListID" />
+                                            <input class="IsDelete" name="ShippingMark_UpLoadFileList[@(i)].IsDelete" type="hidden" value="@item.IsDelete" />
+                                            <input class="ServerFileName" name="ShippingMark_UpLoadFileList[@(i)].ServerFileName" type="hidden" value="@item.ServerFileName" />
+                                            <input class="DisplayFileName" name="ShippingMark_UpLoadFileList[@(i)].DisplayFileName" type="hidden" value="@item.DisplayFileName" />
+                                        </td>
+                                        <td>@item.DisplayFileName</td>
+                                        <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                        <td>
+                                            <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+                                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                        </td>
+                                    </tr>
+                                    ++i;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        }
+
+        <h3 class="popTitle">
+            生成唛头资料
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent" style="overflow: inherit;">
+            @*@if (Model.SelectCustomer == SelectCustomerEnum.S10.ToString())
+                {*@
+            <div class="form-group col-sm-6 has-feedback div_ShippingMark_AcceptInformationID" style="display:none;">
+                <label class="col-sm-5 control-label">Ship To：</label>
+                <div class="col-sm-7 control-label" style="padding-left: 30px;">
+                    @if (ViewBag.PageTypeID == PageTypeEnum.Details)
+                    {
+                        @Html.DropDownListFor(n => n.ShippingMark_AcceptInformationID, ViewBag.AcceptInformations as SelectList, new { @class = "form-control btn dropdown-toggle border_color easyui-combobox ShipTo", multiline = "true", style = "width:280px;height:60px;", disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.DropDownListFor(n => n.ShippingMark_AcceptInformationID, ViewBag.AcceptInformations as SelectList, new { @class = "form-control btn dropdown-toggle border_color easyui-combobox ShipTo", multiline = "true", style = "width:280px;height:60px;" })
+                    }
+
+                </div>
+            </div>
+
+            <div class="form-group col-sm-6 has-feedback div_ShippingMark_AcceptInformationID" style="height: 70px;display:none;">
+                <label class="col-sm-4 control-label">&nbsp;</label>
+                <div class="col-sm-8 control-label">&nbsp;</div>
+            </div>
+            @*}*@
+
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-5 control-label text-danger">选择shipping mark模板：</label>
+                <div class="col-sm-7 control-label">
+                    <div class="col-sm-7 control-label">
+                        @if (Model.PageType == PageTypeEnum.Details)
+                        {
+                            @Html.DropDownListFor(d => d.ShippingMark_CustomerID, ViewBag.ShippingMarkInfos as SelectList, new { @class = "form-control", disabled = "disabled" })
+                        }
+                        else
+                        {
+                            @Html.DropDownListFor(d => d.ShippingMark_CustomerID, ViewBag.ShippingMarkInfos as SelectList, new { @class = "form-control" })
+                        }
+                    </div>
+                    <div class="col-sm-5 control-label">
+                        @if (Model.PageType != PageTypeEnum.Details)
+                        {
+                            <button type="button" class="btn btn-success" data-bind="click: $root.CreateShippingMark.bind($data)">生成唛头</button>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 control-label">
+                <a id="btnPreview" href="@Model.ShippingMark_PDF" target="_blank" class="btn btn-primary" style="@(Model.ShippingMark_PDF == null ? "display:none;":"")">预览</a>
+            </div>
+
+        </div>
+
+        @if (Model.PageType == PageTypeEnum.Approval || Model.PageType == PageTypeEnum.Details)
+        {
+            <h3 class="popTitle">
+                审批意见
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="popContent">
+                @if (Model.PageType == PageTypeEnum.Details || Model.ShippingMark_StatusID == (int)ShippingMarkStatusEnum.NotPassCheck)
+                {
+                    @Html.TextAreaFor(d => d.ShippingMark_Comment, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    Model.ShippingMark_Comment = "";
+                    @Html.TextAreaFor(d => d.ShippingMark_Comment, new { @class = "form-control" })
+                }
+            </div>
+        }
+
+        <div class="popBtns">
+            @switch (Model.PageType)
+            {
+                case PageTypeEnum.Add:
+                case PageTypeEnum.Edit:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)ShippingMarkStatusEnum.OutLine))">保存</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)ShippingMarkStatusEnum.PendingCheck))">保存并提交审批</button>
+                    <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                    break;
+                case PageTypeEnum.Details:
+                    <button type="button" class="btn btn-default" onclick="OA.CloseMe()">关闭</button>
+                    break;
+                case PageTypeEnum.Approval:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)ShippingMarkStatusEnum.PassedCheck))">审批通过</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)ShippingMarkStatusEnum.NotPassCheck))">驳回重审</button>
+                    <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                    break;
+                default:
+                    break;
+
+            }
+        </div>
+        @if (Model.ShippingMark_StatusID != (int)ShippingMarkStatusEnum.PendingMaintenance)
+        {
+            <h3 class="popTitle">
+                历史记录
+                <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+            </h3>
+            <div class="popContent" style="display:none;">
+                <div class="history_box">
+                    <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                        <tbody>
+                            <tr class="t_bg">
+                                <td width="20%">日期</td>
+                                <td width="20%">操作者</td>
+                                <td width="30%">状态</td>
+                                <td width="30%">意见/备注</td>
+                            </tr>
+                            @foreach (var item_history in Model.list_history.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                                <tr>
+                                    <td>@ERP.Tools.Utils.DateTimeToStr2(item_history.DT_CREATEDATE)</td>
+                                    <td>@item_history.ST_CREATEUSER</td>
+                                    <td>@item_history.Comment</td>
+                                    <td>@item_history.CheckSuggest</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section scripts{
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+    <script src="@Url.Content("~/Scripts/PurchaseContract_ProductMixed.js")"></script>
+
+    <script>
+
+        uploadifyInitial();
+
+        function uploadifyInitial() {
+            $("#uploadify").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@UploadFileType.ShippingMark_For188&id=@Model.ID', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+                fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                //uploadLimit: 10, //同时上传多小个文件
+                sizeLimit: 100000000, //限制上传大小10M
+                //queueSizeLimit: 10, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) { }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) { }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    var count = $("#fileListTable tr:not(:first)").length;
+                    var serverFileName = $.parseJSON(response).data.NewFilePath;
+                    var displayFileName = $.parseJSON(response).data.OldFileName;
+                    var fileListStr = '<tr>';
+                    fileListStr += '<td class="hide"><input name="ShippingMark_UpLoadFileList[' + count + '].DisplayFileName" type="hidden" value="' + displayFileName + '" class="DisplayFileName" /><input name="ShippingMark_UpLoadFileList[' + count + '].ServerFileName" type="hidden" value="' + serverFileName + '" class="ServerFileName" /><input name="ShippingMark_UpLoadFileList[' + count + '].DT_CREATEDATE" class="DT_CREATEDATE" type="hidden" value="' + formateDate2(new Date()) + '" /><input class="IsDelete" name="ShippingMark_UpLoadFileList[' + count + '].IsDelete" type="hidden" /></td>';
+                    fileListStr += '<td>' + displayFileName + '</td>';
+                    fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                    fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button><button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+                    fileListStr += '</tr>';
+                    $("#fileListTable").prepend(fileListStr);
+                }  //当单个文件上传成功后激发的事件
+            });
+        }
+
+        //上传
+        function UpLoadFile() {
+            $('#uploadify').uploadifyUpload('*');
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+
+        //删除
+        function DeleteFile(e, path) {
+            $(e).closest("tr").find(".IsDelete").val(true);
+            $(e).closest("tr").hide();
+        }
+        
+        function KOModel() {
+            this.ID = ko.observable(@(Model.ID));
+            this.ShippingMark_StatusID = ko.observable();
+            this.ShippingMark_CustomerID = ko.observable();
+            this.ShippingMark_Comment = ko.observable();
+            this.ImageList_ServerFileName = ko.observable();
+            this.ImageList_DisplayFileName = ko.observable();
+
+            this.ShippingMark_UpLoadFileList = ko.observableArray();
+
+            this.list_batch = ko.observableArray();
+            this.ShippingMark_AcceptInformationID = ko.observable();
+        }
+
+        function ShippingMark_UpLoadFileList_Model(ID,DisplayFileName,ServerFileName,DT_CREATEDATE,IsDelete){
+            this.ID = ko.observable(ID);
+            this.DisplayFileName = ko.observable(DisplayFileName);
+            this.ServerFileName = ko.observable(ServerFileName);
+            this.DT_CREATEDATE = ko.observable(DT_CREATEDATE);
+            this.IsDelete = ko.observable(IsDelete);
+        }
+
+        function KOViewModel() {
+            var self = this;
+
+            self.MyModel = ko.observable();
+            self.MyModel(new KOModel(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model)))));
+            self.MyModel().list_batch(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_batch))));
+
+            var checkSubmit = false;//防止重复提交
+            //提交
+            self.submit = function (StatusID) {
+
+                endEditingInfo();
+
+                var ShippingMark_CustomerID = $("#ShippingMark_CustomerID").val();
+                if (ShippingMark_CustomerID == "") {
+                    $.messager.alert("提示", "请选择shipping mark模板！","info",function() {
+                        $("#ShippingMark_CustomerID").focus();
+                    });
+                    return;
+                }
+
+                var ShippingMark_AcceptInformationID = $('#ShippingMark_AcceptInformationID').combogrid('getValue');
+
+                var btnPreview = $("#btnPreview").attr("href");
+                if (btnPreview == null) {
+                    $.messager.alert("提示", "请生成唛头资料！点击生成唛头按钮！","info",function() {
+                        $("#btnPreview").focus();
+                    });
+                    return;
+                }
+
+                var NotPassCheck= @((int)ShippingMarkStatusEnum.NotPassCheck);
+                if (StatusID == NotPassCheck && $.trim($("#ShippingMark_Comment").val()) == "") {
+                    $.messager.alert("提示", "请输入审核意见！", "info", function () {
+                        $("#ShippingMark_Comment").focus();
+                    });
+                    return false;
+                }
+
+                self.MyModel().ShippingMark_StatusID(StatusID);
+                self.MyModel().ShippingMark_CustomerID(ShippingMark_CustomerID);
+                self.MyModel().ShippingMark_Comment($("#ShippingMark_Comment").val());
+                self.MyModel().ShippingMark_AcceptInformationID(ShippingMark_AcceptInformationID);
+
+                var ShippingMark_UpLoadFileList = [];
+                if ($("#fileListTable tbody tr .ServerFileName").length > 0) {
+
+                    $("#fileListTable tbody tr").each(function () {
+                        var UpLoadFileListID = $(this).find(".UpLoadFileListID").val();
+                        var ServerFileName = $(this).find(".ServerFileName").val();
+                        var DisplayFileName = $(this).find(".DisplayFileName").val();
+                        var DT_CREATEDATE = $(this).find(".DT_CREATEDATE").val();
+                        var IsDelete = $(this).find(".IsDelete").val();
+                        if (ServerFileName != "undefined") {
+                            ShippingMark_UpLoadFileList.push(new ShippingMark_UpLoadFileList_Model(UpLoadFileListID,DisplayFileName,ServerFileName,DT_CREATEDATE,IsDelete));
+                        }
+                    });
+                    self.MyModel().ShippingMark_UpLoadFileList(ShippingMark_UpLoadFileList);
+                }
+
+                var rows = $("#MyPopGrid").datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.MyModel().list_batch()[0].listProduct = ko.observableArray();
+                    self.MyModel().list_batch()[0].listProduct(rows);
+                }
+
+
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/ShippingMark/Edit")',
+                    data: ko.toJSON(self.MyModel)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    completeLoading();
+                    if (!data.IsSuccess) {
+                        $.messager.alert("提示", "失败了！");
+                        return;
+                    } else {
+                        parentGridReload();
+                        OA.CloseMe(true);
+                    }
+                });
+            },
+            self.CreateShippingMark = function () {
+
+                endEditingInfo();
+
+                var ShippingMark_CustomerID = $("#ShippingMark_CustomerID").val();
+                if (ShippingMark_CustomerID == "") {
+                    $.messager.alert("提示", "请选择shipping mark模板！","info",function() {
+                        $("#ShippingMark_CustomerID").focus();
+                    });
+                    return;
+                }
+
+                var ImageList_ServerFileName = "";
+                var ImageList_DisplayFileName = "";
+                if ($("#fileListTable tbody tr:visible .ServerFileName").length > 0) {
+
+                    var Attachs_ServerFileName = [];//附件
+                    var Attachs_DisplayFileName = [];//附件
+                    $("#fileListTable tbody tr:visible").each(function () {
+                        var ServerFileName = $(this).find(".ServerFileName").val();
+                        var DisplayFileName = $(this).find(".DisplayFileName").val();
+                        if (ServerFileName != "undefined") {
+                            Attachs_ServerFileName.push(ServerFileName);
+                            Attachs_DisplayFileName.push(DisplayFileName);
+                        }
+                    });
+                    ImageList_ServerFileName = Attachs_ServerFileName.join(';');
+                    ImageList_DisplayFileName = Attachs_DisplayFileName.join(';');
+                }
+
+                self.MyModel().ShippingMark_CustomerID(ShippingMark_CustomerID);
+                self.MyModel().ImageList_ServerFileName(ImageList_ServerFileName);
+                self.MyModel().ImageList_DisplayFileName(ImageList_DisplayFileName);
+
+                var rows = $("#MyPopGrid").datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.MyModel().list_batch()[0].listProduct = ko.observableArray();
+                    self.MyModel().list_batch()[0].listProduct(rows);
+                }
+
+                self.MyModel().ShippingMark_AcceptInformationID($('#ShippingMark_AcceptInformationID').combogrid('getValue'));
+
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/ShippingMark/CreateShippingMark")',
+                    data: ko.toJSON(self.MyModel)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    completeLoading();
+                    if (!data.IsSuccess) {
+                        $.messager.alert("提示", "失败了！"+data.Msg);
+                        return;
+                    }
+                    if (data.identity=="该产品没有季节！") {
+                        alert("失败了！"+data.identity);    
+                    }
+                    $("#btnPreview").show().attr("href",data.Msg);
+                    window.open(data.Msg);
+
+                });
+
+
+            }
+
+        }
+
+        var KOViewModel = new KOViewModel();
+        ko.applyBindings(KOViewModel);
+
+
+        $(function(){
+            $("#ShippingMark_AcceptInformationID").combobox('setValues', "@(Model.ShippingMark_AcceptInformationID)");
+
+            if ($("#ShippingMark_CustomerID option:selected").text()=="S10") {
+                $(".div_ShippingMark_AcceptInformationID").show();
+            }else {
+                $(".div_ShippingMark_AcceptInformationID").hide();
+
+            }
+
+            $("#ShippingMark_CustomerID").change(function(){
+                if ($("#ShippingMark_CustomerID option:selected").text()=="S10") {
+                    $(".div_ShippingMark_AcceptInformationID").show();
+                }else {
+                    $(".div_ShippingMark_AcceptInformationID").hide();
+
+                }
+            });
+        });
+        
+        $(function () {
+            BindSubDatagrid();
+            UpdateExpander();
+        });
+    </script>
+}

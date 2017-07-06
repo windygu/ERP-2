@@ -1,0 +1,571 @@
+﻿@{
+    ViewBag.Title = "第三方检测费用";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+@model ERP.Models.Inspection.VMInspection
+@using ERP.Models.CustomEnums
+@using ERP.Models.Common
+
+@section styles{
+
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+    <style type="text/css">
+        .box_1k {
+            margin-top: 0;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+    </style>
+}
+
+@using (Ajax.BeginForm("InputDetectFees", "Inspection", null, new AjaxOptions() { HttpMethod = "Post", OnBegin = "return OnBegin()", OnSuccess = "OnSuccess()" }, new { id = "frmEdit" }))
+{
+    @Html.HiddenFor(d => d.ID)
+
+    <input type="hidden" value="@ViewBag.status" id="status" />
+    <!-- ko with: Inspection -->
+    <h3 class="popTitle">
+        基本信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">采购单号：</label>
+            <div class="col-sm-8 control-label">
+                <label class="control-label" data-bind="text:PurchaseNumber()"></label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">工厂：</label>
+            <div class="col-sm-8 control-label">
+                <label class="control-label" data-bind="text:FactoryName()"></label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">第三方名称：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:InspectionName()"></label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="stree col-sm-4 control-label">联系邮箱：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:InspectionEmail()"></label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">联系电话：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:InspectionPhoneNumber()"></label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">传真：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:InspectionFax()"></label>
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">检测时间：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:StartTime()"></label>
+                -
+                <label class="control-label" data-bind="text:EndTime()"></label>
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">我司承担费用：</label>
+            <div class="col-sm-8 control-label ">
+                <div class="col-sm-1 control-label ">
+                    @Model.CurrencySign
+                </div>
+                <div class="col-sm-10 control-label ">
+                    <input id="InspectionDetectFee" type="text" class="form-control" name="InspectionDetectFee" data-bind="value:InspectionDetectFee()" disabled="disabled" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger"></label>
+            <div class="col-sm-8 control-label ">
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">工厂承担费用：</label>
+            <div class="col-sm-8 control-label ">
+                <div class="col-sm-1 control-label ">
+                    @Model.CurrencySign
+                </div>
+                <div class="col-sm-10 control-label ">
+                    <input id="InspectionDetectFee_ForFactory" type="text" class="form-control" name="InspectionDetectFee_ForFactory" data-bind="value:InspectionDetectFee_ForFactory()" disabled="disabled" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+    <h3 class="popTitle">
+        检测内容
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+
+        <table id="ContactsDataList" class="easyui-datagrid" style="width:100%;">
+            <thead data-options="frozen:true">
+                <tr>
+                    <th data-options="field:'ID',width:100,formatter:actionsFormatterContacts,hidden:true">操作</th>
+                    <th data-options="field:'No',width:100">货号</th>
+                    <th data-options="field:'Qty',width:100">检测样品数量</th>
+                    <th data-options="field:'Comment',width:300">备注</th>
+                    <th data-options="field:'ProductDetectFee',width:100,editor:{type:'validatebox',options:{required:true}}">我司承担费用</th>
+                    <th data-options="field:'ProductDetectFee_ForFactory',width:100,editor:{type:'validatebox',options:{required:true}}">工厂承担费用</th>
+                </tr>
+            </thead>
+
+            <tbody data-bind="foreach: Inspection().list_InspectionDetectNotice">
+                <tr>
+                    <td data-bind="text: ID"></td>
+                    <td data-bind="text: No"></td>
+                    <td data-bind="text: Qty"></td>
+                    <td data-bind="text: Comment"></td>
+                    <td data-bind="text: ProductDetectFee"></td>
+                    <td data-bind="text: ProductDetectFee_ForFactory"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-group text-right tijiao">
+        <button id="bntSave" type="button" class="btn btn-primary" data-loading-text="Loading..." data-bind="click: $root.save.bind($data, @(Model.StatusID))">保存</button>
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <h3 class="popTitle">
+        历史记录
+        <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+    </h3>
+    <div class="popContent" style="display:none;">
+        <div class="history_box">
+            <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                <tbody>
+                    <tr class="t_bg">
+                        <td width="20%">日期</td>
+                        <td width="20%">操作者</td>
+                        <td width="20%">状态</td>
+                        <td width="40%">意见/备注</td>
+                    </tr>
+                    @if (Model.list_InspectionDetectNoticeHistory != null)
+                    {
+                        foreach (var item_history in Model.list_InspectionDetectNoticeHistory.OrderByDescending(d => d.DT_CREATEDATE))
+                        {
+                            <tr>
+                                <td>@item_history.DT_CREATEDATE</td>
+                                <td>@item_history.ST_CREATEUSER</td>
+                                <td>@item_history.StatusName</td>
+                                <td>@Html.Raw(item_history.Comment)</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="beizhu red">
+        <strong>PS：</strong><span>字体颜色为红色是必填项。</span>
+    </div>
+
+}
+
+@section scripts{
+
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+            $("#frmEdit").attr("disabled", "disabled");
+
+            $("#ContactsDataList").datagrid({
+                rownumbers: true,
+                checkOnSelect: true,
+                onBeforeEdit: onBeforeEditContacts,
+                onAfterEdit: onAfterEditContacts,
+                onCancelEdit: onCancelEditContacts,
+                onClickCell: onClickCell,
+                onBeginEdit: onBeginEdit,
+            });
+        });
+
+        function InspectionModel() {
+            this.PurchaseNumber = ko.observable("@(Model.PurchaseNumber)");
+            this.FactoryName = ko.observable("@(Model.FactoryName)");
+            this.InspectionName = ko.observable("@(Model.InspectionName)");
+            this.InspectionEmail = ko.observable("@(Model.InspectionEmail)");
+            this.InspectionPhoneNumber = ko.observable("@(Model.InspectionPhoneNumber)");
+            this.InspectionFax = ko.observable("@(Model.InspectionFax)");
+            this.StartTime = ko.observable("@(Model.StartTime)");
+            this.EndTime = ko.observable("@(Model.EndTime)");
+            this.InspectionDetectFee = ko.observable("@(Model.InspectionDetectFee)");
+            this.InspectionDetectFee_ForFactory = ko.observable("@(Model.InspectionDetectFee_ForFactory)");
+            this.StatusID = ko.observable();
+
+            this.list_InspectionDetectNotice = ko.observableArray();
+        }
+
+        function CustomerViewModel() {
+            var self = this;
+
+            self.Inspection = ko.observableArray();
+            self.Inspection(new InspectionModel());
+
+            self.Inspection().list_InspectionDetectNotice(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_InspectionDetectNotice))));
+
+            self.save = function (status) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (bootstrapValidator.isValid()) {
+                    self.Inspection().InspectionDetectFee($("input[name=InspectionDetectFee]").val());
+                    self.Inspection().InspectionDetectFee_ForFactory($("input[name=InspectionDetectFee_ForFactory]").val());
+
+                    $("#bntSave").removeAttr("disabled");
+
+                    if (editIndexContacts != undefined) {
+                        $.messager.confirm("提示", "发现您有正在编辑状态的产品，是否保存？", function(r){
+                            if(r){
+                                endEditingContact();
+                            }
+                        });
+                        return false;
+                    }
+
+                    var contactInfos = $('#ContactsDataList').datagrid("getRows");
+                    if (contactInfos && contactInfos.length > 0) {
+                        self.Inspection().list_InspectionDetectNotice(contactInfos);
+                    }
+                    else {
+                        self.Inspection().list_InspectionDetectNotice(null);
+                        $.messager.alert("提示", "请输入检测内容！");
+                        return;
+                    }
+
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@Url.Content("~/Inspection/InputDetectFees/" + Model.ID)",
+                        data: ko.toJSON(self.Inspection())
+                    }).done(function (data) {
+                        if (data == 0) {
+                            $.messager.alert("出错了", "出错了！");
+                        }
+                        else {
+                            parentGridReload();
+                            OA.CloseMe(true);
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    });
+                }
+                else {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            };
+
+        };
+        ko.applyBindings(new CustomerViewModel());
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndexContacts = undefined;
+        function onBeforeEditContacts(index, row) {
+            row.editing = true;
+            updateActionsContact(index);
+        }
+        function onAfterEditContacts(index, row) {
+            row.editing = false;
+            updateActionsContact(index);
+        }
+        function onCancelEditContacts(index, row) {
+            row.editing = false;
+            updateActionsContact(index);
+        }
+        function endEditingContact() {
+            //var isView = ((bool)ViewData["IsView"] ? 1 : 0);
+            //if(isView === 1){
+            //    return false;
+            //}
+            if (editIndexContacts == undefined) { return true }
+            if ($('#ContactsDataList').datagrid('validateRow', editIndexContacts)) {
+                $('#ContactsDataList').datagrid('endEdit', editIndexContacts);
+                editIndexContacts = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editContact(target) {
+            acceptContact(target);
+            $('#ContactsDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendContact() {
+            if (endEditingContact()) {
+                $('#ContactsDataList').datagrid('appendRow', { ID: -1 });
+                editIndexContacts = $('#ContactsDataList').datagrid('getRows').length - 1;
+                $('#ContactsDataList').datagrid('selectRow', editIndexContacts)
+                        .datagrid('beginEdit', editIndexContacts);
+            }
+        }
+        function removeitContact() {
+            if (editIndexContacts == undefined) { return }
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#ContactsDataList').datagrid('cancelEdit', editIndexContacts)
+                        .datagrid('deleteRow', editIndexContacts);
+                    editIndexContacts = undefined;
+                } else {
+                    return;
+                }
+            });
+        }
+        function removeContact(target) {
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#ContactsDataList').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+
+        function onBeginEdit(index, row) {
+            $(".datagrid-editable-input").on("keypress", function (e) {
+                if (e.keyCode == 13) {
+                    editAcceptInfo(row);
+                    return false;
+                }
+            });
+        }
+
+        function onClickCell(index, field) {
+            if (editIndexContacts != index) {
+                if (endEditingContact()) {
+                    $('#ContactsDataList').datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $('#ContactsDataList').datagrid('getEditor', { index: index, field: field });
+                    if (ed) {
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndexContacts = index;
+                } else {
+                    setTimeout(function () {
+                        $('#ContactsDataList').datagrid('selectRow', editIndexContacts);
+                    }, 0);
+                }
+            }
+        }
+
+        function acceptContact(target) {
+            editIndexContacts = getRowIndex(target);
+
+            if (endEditingContact()) {
+                $('#ContactsDataList').datagrid('acceptChanges');
+            }
+
+        }
+        function rejectContact() {
+            $('#ContactsDataList').datagrid('rejectChanges');
+            editIndexContacts = undefined;
+        }
+        function actionsFormatterContacts(value, row, index) {
+            if (row.editing) {
+                var s = '<input type="button" onclick="acceptContact(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectContact()" value="Cancel" style="width:40px"></input>';
+                return s + c;
+            } else {
+                var e = '<input type="button" onclick="editContact(this)" value="Edit" style="width:40px"></input>';
+                //var d = '&nbsp;<input type="button" onclick="removeContact(this)" value="Delete" style="width:40px"></input>';
+                return e;
+            }
+        }
+        function updateActionsContact(index) {
+            $('#ContactsDataList').datagrid('refreshRow', index);
+        }
+
+        var editIndexAcceptInfo = undefined;
+        function onBeforeEditAcceptInfo(index, row) {
+            editIndexAcceptInfo = index;
+            row.editing = true;
+            updateActionsAcceptInfo(index);
+        }
+        function onAfterEditAcceptInfo(index, row) {
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function onCancelEditAcceptInfo(index, row) {
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function endEditingAcceptInfo() {
+            //var isView =
+            if (isView === 1) {
+                return false;
+            }
+            if (editIndexAcceptInfo == undefined) { return true }
+            if ($('#AcceptInfoDataList').datagrid('validateRow', editIndexAcceptInfo)) {
+                $('#AcceptInfoDataList').datagrid('endEdit', editIndexAcceptInfo);
+                editIndexAcceptInfo = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editAcceptInfo(target) {
+            acceptAcceptInfo(target);
+            $('#AcceptInfoDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendAcceptInfo() {
+            if (endEditingAcceptInfo()) {
+                $('#AcceptInfoDataList').datagrid('appendRow', { ID: -1 });
+                editIndexAcceptInfo = $('#AcceptInfoDataList').datagrid('getRows').length - 1;
+                $('#AcceptInfoDataList').datagrid('selectRow', editIndexAcceptInfo)
+                        .datagrid('beginEdit', editIndexAcceptInfo);
+            }
+        }
+        function removeitAcceptInfo() {
+            if (editIndexAcceptInfo == undefined) { return }
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#AcceptInfoDataList').datagrid('cancelEdit', editIndexAcceptInfo)
+                    .datagrid('deleteRow', editIndexAcceptInfo);
+                    editIndexAcceptInfo = undefined;
+                }
+                else {
+                    return;
+                }
+            });
+        }
+        function removeAcceptInfo(target) {
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#AcceptInfoDataList').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptAcceptInfo(target) {
+            editIndexAcceptInfo = getRowIndex(target);
+
+            if (endEditingContact()) {
+                $('#ContactsDataList').datagrid('acceptChanges');
+            }
+            CalculatorFees();
+        }
+
+        //计算我司承担费用、工厂承担费用
+        function CalculatorFees() {
+            var rows = $('#ContactsDataList').datagrid('getRows');
+            var InspectionDetectFee = 0;
+            var InspectionDetectFee_ForFactory = 0;
+            for (var i = 0; i < rows.length; i++) {
+
+                if (rows[i].ProductDetectFee != parseFloat(rows[i].ProductDetectFee)) {
+                    rows[i].ProductDetectFee = 0;
+                }
+                if (rows[i].ProductDetectFee_ForFactory != parseFloat(rows[i].ProductDetectFee_ForFactory)) {
+                    rows[i].ProductDetectFee_ForFactory = 0;
+                }
+
+                InspectionDetectFee += parseFloat(rows[i].ProductDetectFee);
+                InspectionDetectFee_ForFactory += parseFloat(rows[i].ProductDetectFee_ForFactory);
+            }
+            $("#InspectionDetectFee").val(NumberToRound(InspectionDetectFee, 2));
+            $("#InspectionDetectFee_ForFactory").val(NumberToRound(InspectionDetectFee_ForFactory, 2));
+        }
+
+        function rejectAcceptInfo() {
+            $('#AcceptInfoDataList').datagrid('rejectChanges');
+            editIndexAcceptInfo = undefined;
+        }
+        function actionsFormatterAcceptInfo(value, row, index) {
+            if (row.editing) {
+                var s = '<input type="button" onclick="acceptAcceptInfo(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectAcceptInfo()" value="Cancel" style="width:40px"></input>';
+                return s + c;
+            } else {
+                var e = '<input type="button" onclick="editAcceptInfo(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeAcceptInfo(this)" value="Delete" style="width:40px"></input>';
+                return e + d;
+            }
+        }
+        function updateActionsAcceptInfo(index) {
+            $('#AcceptInfoDataList').datagrid('refreshRow', index);
+        }
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                InspectionDetectFee: {
+                    validators: {
+                        notEmpty: { message: '我司承担费用不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                InspectionDetectFee_ForFactory: {
+                    validators: {
+                        notEmpty: { message: '工厂承担费用不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                }
+            }
+        });
+
+        var checkSubmit = false;//防止重复提交
+        function OnBegin() {
+            return false;
+        }
+
+        function OnSuccess() {
+            checkSubmit = false;
+
+            parentGridReload();
+            OA.CloseMe(true);
+        }
+    </script>
+}

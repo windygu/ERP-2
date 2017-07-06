@@ -1,0 +1,798 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+@model List<ERP.Models.ShipmentOrder.VMShipmentOrder>
+@using ERP.Models.CustomEnums
+
+@section styles{
+    <style type="text/css">
+        .paddingTop15 {
+            padding-top: 15px;
+        }
+    </style>
+}
+
+<script>
+
+    function uploadifyInitial(thisIndex, cabinetID, thisCabinet) {
+        $("#uploadify" + thisIndex).uploadify({
+            swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+            uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@(UploadFileType.ShipmentNotification_DeliveryNotification)&id=' + cabinetID, //Post文件到指定的处理文件
+            postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+            auto: false,
+            buttonClass: 'JQButton', //浏览按钮的class
+            buttonText: '浏览', //浏览按钮的Text
+            cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+            //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+            fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+            height: 40, //浏览按钮高
+            width: 50, //浏览按钮宽
+            multi: true, //是否允许多文件上传
+            //uploadLimit: 10, //同时上传多小个文件
+            sizeLimit: 100000000, //限制上传大小10M
+            //queueSizeLimit: 10, //队列允许的文件总数
+            removeCompleted: true, //当上传成功后是否将该Item删除
+            onSelect: function (file) { }, //选择文件时触发事件
+            onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+            onUploadComplete: function (file) { }, //上传成功触发事件
+            onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+            onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+            onUploadStart: function (file) { }, //上传开始触发事件
+            onUploadSuccess: function (event, response, status) {
+                var count = $("#fileListTable" + thisIndex + " tr:not(:first)").length;
+                var serverFileName = $.parseJSON(response).data.NewFilePath;
+                var displayFileName = $.parseJSON(response).data.OldFileName;
+                var fileListStr = '<tr>';
+                var thisUpLoadFileList = thisCabinet + '.UpLoadFileList[' + count + ']';
+
+                fileListStr += '<td class="hide"><input name="' + thisUpLoadFileList + '.DisplayFileName" type="hidden" value="' + displayFileName + '" /><input name="' + thisUpLoadFileList + '.ServerFileName" type="hidden" value="' + serverFileName + '" /><input name="' + thisUpLoadFileList + '.DT_CREATEDATE" type="hidden" value="' + formateDate2(new Date()) + '" /><input class="IsDelete" name="' + thisUpLoadFileList + '.IsDelete" type="hidden" /></td>';
+                fileListStr += '<td>' + displayFileName + '</td>';
+                fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button><button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+                fileListStr += '</tr>';
+                $("#fileListTable" + thisIndex).prepend(fileListStr);
+            }  //当单个文件上传成功后激发的事件
+        });
+    }
+</script>
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    string OrderIDList = string.Join(",", Model.Select(d => d.OrderID).ToArray());
+    string OrderNumberList = string.Join(",", Model.Select(d => d.OrderNumber).ToArray());
+    string PO1List = string.Join(",", Model.Select(d => d.POID).ToArray());
+    string EHIPOList = string.Join(",", Model.Select(d => d.EHIPO).ToArray());
+}
+
+@using (Ajax.BeginForm("Edit", "ShipmentNotification", null, new AjaxOptions() { HttpMethod = "Post", OnBegin = "return OnBegin()", OnSuccess = "OnSuccess(data)" }, new { id = "frmEdit" }))
+{
+    @Html.HiddenFor(d => d.FirstOrDefault().ID)
+    @Html.HiddenFor(d => d.FirstOrDefault().OrderID)
+    @Html.HiddenFor(d => d.FirstOrDefault().OrderIDList)
+
+    <h3 class="popTitle">
+        销售订单信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">销售订单编号：</label>
+            <div class="col-sm-8 control-label">
+                @OrderNumberList
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">@ERP.Tools.Keys.CustomerPO：</label>
+            <div class="col-sm-8 control-label">
+                @PO1List
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">@ERP.Tools.Keys.ECHPO：</label>
+            <div class="col-sm-8 control-label">
+                @EHIPOList
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">DESTINATION：</label>
+            <div class="col-sm-8 control-label">
+
+                @FirstModel.DestinationPortName
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">船运公司：</label>
+            <div class="col-sm-8 control-label">
+                @FirstModel.Shipment_AgencyName
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        订舱信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="popContent">
+        <input id="CabinetCount" type="hidden" value="@(FirstModel.list_cabinet.Count)" />
+        @{
+            int thisIndex = 0;
+        }
+        @foreach (var item_cabinet in FirstModel.list_cabinet.OrderByDescending(d => d.CarbinetIndex))
+        {
+            bool valid = true;
+            if (item_cabinet.GatherType != (short)GatherTypeEnum.PullCabinet && ViewBag.PageType == PageTypeEnum.RegisterFees)
+            {
+                valid = false;//如果是拉柜登记费用，只显示拉柜的内容
+            }
+            if (valid)
+            {
+                string thisCabinet = "list_cabinet[" + thisIndex + "]";
+                <div class="Factory">
+                    <div class="modal-title" style="margin-bottom:0;">
+                        <span>@(item_cabinet.CabinetName + " [" + item_cabinet.CabinetSize + "] Ship To:" + item_cabinet.ShipToPortName)</span>
+                        <a class="table_toggle fa fa-2 fa-chevron-up" style="float:right;"></a>
+                    </div>
+                    <div class="history_box">
+                        <table id="ChooseSubCabinet@(thisIndex)" class="dg" style="display:none;">
+                            <thead data-options="frozen:true">
+                                <tr>
+                                    <th data-options="field:'OrderProductID',checkbox:true,hidden:true"></th>
+                                    <th data-options="field:'OrderNumber',width:100,align:'center'">销售订单编号</th>
+                                    <th data-options="field:'No',width:100,align:'center',formatter:productNoFormatter">JK_NO</th>
+                                    <th data-options="field:'SkuNumber',width:100,align:'center',hidden:true">SKU#</th>
+                                    <th data-options="field:'FactoryAbbreviation',width:100,align:'center'">FTY</th>
+                                </tr>
+                            </thead>
+                            <thead>
+                                <tr class="t_bg">
+                                    <th data-options="field:'Desc',width:100,align:'center'">Description</th>
+                                    <th data-options="field:'HTS',width:100,align:'center',hidden:true">海关编码</th>
+                                    <th data-options="field:'HSCode',width:100,align:'center'">报关编码</th>
+                                    <th data-options="field:'InnerBoxRate',width:50,align:'center'">内盒率</th>
+                                    <th data-options="field:'OuterBoxRate',width:50,align:'center'">外箱率</th>
+                                    <th data-options="field:'OuterLength',width:65,align:'center'">外箱长(cm)</th>
+                                    <th data-options="field:'OuterWidth',width:65,align:'center'">外箱宽(cm)</th>
+                                    <th data-options="field:'OuterHeight',width:65,align:'center'">外箱高(cm)</th>
+                                    <th data-options="field:'SumOuterVolume',width:80,align:'center'">总体积(M3)</th>
+                                    <th data-options="field:'SumBoxQty',width:55,align:'center'">总箱数</th>
+                                    <th data-options="field:'Qty',width:50,align:'center'">总数量</th>
+                                    <th data-options="field:'OuterWeightGross',width:55">单箱毛重</th>
+                                    <th data-options="field:'SumOuterWeightGross',width:55">总毛重</th>
+                                    <th data-options="field:'OuterWeightNet',width:55">单箱净重</th>
+                                    <th data-options="field:'SumOuterWeightNet',width:55">总净重</th>
+                                    <th data-options="field:'SelectBoxQty',width:80,align:'center'">当前订舱箱数</th>
+                                    <th data-options="field:'SelectVolume',width:130,align:'center'">当前订舱体积(M3)</th>
+
+                                    <th data-options="field:'ProductID',width:80,align:'center',hidden:true"></th>
+                                    <th data-options="field:'Image',width:80,align:'center',hidden:true"></th>
+                                    <th data-options="field:'IsProductMixed',width:80,align:'center',hidden:true"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item_product in item_cabinet.list_product)
+                                {
+                                    <tr>
+                                        <td>@item_product.OrderProductID</td>
+                                        <td>@item_product.OrderNumber</td>
+                                        <td>@item_product.No</td>
+                                        <td>@item_product.SkuNumber</td>
+                                        <td>@item_product.FactoryAbbreviation</td>
+
+                                        <td>@item_product.Desc</td>
+                                        <td>@item_product.HTS</td>
+                                        <td>@item_product.HSCode</td>
+                                        <td>@item_product.InnerBoxRate</td>
+                                        <td>@item_product.OuterBoxRate</td>
+                                        <td>@item_product.OuterLength</td>
+                                        <td>@item_product.OuterWidth</td>
+                                        <td>@item_product.OuterHeight</td>
+                                        <td>@item_product.SumOuterVolume</td>
+                                        <td>@item_product.SumBoxQty</td>
+                                        <td>@item_product.Qty</td>
+                                        <td>@item_product.OuterWeightGross</td>
+                                        <td>@item_product.SumOuterWeightGross</td>
+                                        <td>@item_product.OuterWeightNet</td>
+                                        <td>@item_product.SumOuterWeightNet</td>
+                                        <td>@item_product.SelectBoxQty</td>
+                                        <td>@item_product.SelectVolume</td>
+
+                                        <td>@item_product.ProductID</td>
+                                        <td>@item_product.Image</td>
+                                        <td>@item_product.IsProductMixed</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+
+                        @{
+                            ++thisIndex;
+                            bool isPullCabinet = item_cabinet.GatherType == (short)GatherTypeEnum.PullCabinet;
+                            }
+
+                        <div class="paddingTop15">
+                            <input type="hidden" name="@(thisCabinet).ID" value="@item_cabinet.ID" />
+                            <div class="form-group col-sm-6 has-feedback">
+                                <label class="col-sm-4 control-label">类型：</label>
+                                <div class="col-sm-8 control-label">
+                                    @if (ViewBag.PageType == PageTypeEnum.Details || ViewBag.PageType == PageTypeEnum.RegisterFees)
+                                    {
+                                        @(isPullCabinet ? "拉柜" : "入仓")
+                                    }
+                                    else
+                                    {
+                                        <select class="form-control GatherType" name="@(thisCabinet).GatherType">
+                                            <option value="@((short)GatherTypeEnum.PullCabinet)" @(isPullCabinet ? "selected='selected'" : "")>拉柜</option>
+                                            <option value="@((short)GatherTypeEnum.PutInStorage)" @(!isPullCabinet ? "selected='selected'" : "")>入仓</option>
+                                        </select>
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-6 has-feedback">
+                                <label class="col-sm-4 control-label lable_GatherDateFormatter">@(isPullCabinet ? "装柜时间" : "入仓时间")：</label>
+                                <div class="col-sm-8 control-label">
+                                    @if (ViewBag.PageType == PageTypeEnum.Details || ViewBag.PageType == PageTypeEnum.RegisterFees)
+                                    {
+                                        @(item_cabinet.GatherDateFormatter + " - " + item_cabinet.GatherEndDateFormatter)
+                                    }
+                                    else
+                                    {
+                                        <div class="col-sm-12" style="padding:0;">
+                                            <div class="col-sm-5" style="padding:0;">
+                                                <input type='text' class='Wdate form-control' name="@(thisCabinet).GatherDateFormatter" value="@item_cabinet.GatherDateFormatter" style="padding-right: 0;">
+                                            </div>
+                                            <div class="col-sm-1">
+                                                -
+                                            </div>
+                                            <div class="col-sm-5" style="padding:0;">
+                                                <input type='text' class='Wdate form-control' name="@(thisCabinet).GatherEndDateFormatter" value="@item_cabinet.GatherEndDateFormatter" style="padding-right: 0;">
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-6 has-feedback">
+                                <label class="col-sm-4 control-label lable_GatherAddress">@(isPullCabinet ? "装柜地点" : "入仓地址")：</label>
+                                <div class="col-sm-8 control-label">
+                                    @if (ViewBag.PageType == PageTypeEnum.Details || ViewBag.PageType == PageTypeEnum.RegisterFees)
+                                    {
+                                        @item_cabinet.GatherAddress
+                                    }
+                                    else
+                                    {
+                                        <input type='text' class="form-control" name="@(thisCabinet).GatherAddress" value="@item_cabinet.GatherAddress">
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="form-group col-sm-6 has-feedback">
+                                <label class="col-sm-4 control-label">发货日期：</label>
+                                <div class="col-sm-8 control-label">
+                                    @if (ViewBag.PageType == PageTypeEnum.Details || ViewBag.PageType == PageTypeEnum.RegisterFees)
+                                    {
+                                        @(item_cabinet.ShippingDateStartFormatter + " - " + item_cabinet.ShippingDateEndFormatter)
+                                    }
+                                    else
+                                    {
+                                        <div class="col-sm-12" style="padding:0;">
+                                            <div class="col-sm-5" style="padding:0;">
+                                                <input type='text' class='Wdate form-control' name="@(thisCabinet).ShippingDateStartFormatter" value="@item_cabinet.ShippingDateStartFormatter" style="padding-right: 0;">
+                                            </div>
+                                            <div class="col-sm-1">
+                                                -
+                                            </div>
+                                            <div class="col-sm-5" style="padding:0;">
+                                                <input type='text' class='Wdate form-control' name="@(thisCabinet).ShippingDateEndFormatter" value="@item_cabinet.ShippingDateEndFormatter" style="padding-right: 0;">
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="form-group col-sm-12 has-feedback div_GatherDescription" style="@(isPullCabinet ? "" : "display:none;")">
+                                <label class="col-sm-2 control-label" style="width:16.1%;">拉柜描述：</label>
+                                <div class="col-sm-10 control-label" style="width:83.9%;margin-bottom: 3px;">
+                                    @if (ViewBag.PageType == PageTypeEnum.Details || ViewBag.PageType == PageTypeEnum.RegisterFees)
+                                    {
+                                        @item_cabinet.GatherDescription
+                                    }
+                                    else
+                                    {
+                                        <textarea rows='2' class="form-control" name="@(thisCabinet).GatherDescription">@item_cabinet.GatherDescription</textarea>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="form-group col-sm-6 has-feedback">
+                                <label class="col-sm-4 control-label">Ocean Vessel / Voy No.：</label>
+                                <div class="col-sm-8 control-label">
+                                    @if (ViewBag.PageType == PageTypeEnum.Details || ViewBag.PageType == PageTypeEnum.RegisterFees)
+                                    {
+                                        @item_cabinet.OceanVessel
+                                    }
+                                    else
+                                    {
+                                        <input type='text' class="form-control" name="@(thisCabinet).OceanVessel" value="@item_cabinet.OceanVessel">
+                                    }
+                                </div>
+                            </div>
+
+                            @if (ViewBag.PageType != PageTypeEnum.Details && ViewBag.PageType != PageTypeEnum.RegisterFees)
+                            {
+                                <div class="form-group col-sm-12 has-feedback UpLoadFile" style="margin-top: 5px;">
+                                    <label class="col-sm-2 control-label" style="width:16.1%;">配仓单：</label>
+                                    <div class="col-sm-10 control-label" style="width:83.9%;">
+                                        <div class="uploadify">
+                                            <input type="file" name="uploadify@(thisIndex)" id="uploadify@(thisIndex)" />
+                                            <a class="a_upload" onclick="UpLoadFile(@(thisIndex))">上传</a>
+                                            <div class="fileQueue">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <script>
+                                    uploadifyInitial("@(thisIndex)", "@item_cabinet.ID", "@thisCabinet");
+                                </script>
+                            }
+
+                            <div class="form-group col-sm-12 has-feedback UpLoadFile">
+
+                                <h3 class="popTitle">
+                                    已上传的配仓单信息
+                                    <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+                                </h3>
+                                <div class="row popContent">
+                                    <table id="fileListTable@(thisIndex)" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                                        <thead>
+                                            <tr class="t_bg">
+                                                <td width="50%">附件名称</td>
+                                                <td width="20%">上传时间</td>
+                                                <td width="30%">操作</td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (item_cabinet.UpLoadFileList != null)
+                                            {
+                                                int j = 0;
+                                                foreach (var item in item_cabinet.UpLoadFileList.OrderByDescending(d => d.DT_CREATEDATE))
+                                                {
+                                                    <tr>
+                                                        <td class="hide">
+                                                            <input name="@(thisCabinet).UpLoadFileList[@(j)].ID" type="hidden" value="@item.ID" />
+                                                            <input class="IsDelete" name="@(thisCabinet).UpLoadFileList[@(j)].IsDelete" type="hidden" value="@item.IsDelete" />
+                                                        </td>
+                                                        <td>@item.DisplayFileName</td>
+                                                        <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+                                                            @if (ViewBag.PageType != PageTypeEnum.Details && ViewBag.PageType != PageTypeEnum.RegisterFees)
+                                                            {
+                                                                <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                    ++j;
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            @if (ViewBag.PageType == PageTypeEnum.RegisterFees)
+                            {
+                                <div class="form-group col-sm-6 has-feedback" style="margin-top: 10px;">
+                                    <label class="col-sm-4 control-label text-danger">拉柜登记费用：</label>
+                                    <div class="col-sm-8 control-label">
+                                        <div class="col-sm-1">
+                                            @ERP.Tools.Keys.RMB_Sign
+                                        </div>
+                                        <div class="col-sm-10">
+                                            @if (ViewBag.Page == "View_RegisterFees")
+                                            {
+                                                @item_cabinet.RegisterFees
+                                            }
+                                            else
+                                            {
+                                                <input type='text' class="form-control RegisterFees" name="@(thisCabinet).RegisterFees" value="@item_cabinet.RegisterFees">
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                                }
+                            }
+    </div>
+
+                            if (FirstModel.NotificationStatusID == (short)ShipmentOrderStatusEnum.PendingCheck || ViewBag.PageType == PageTypeEnum.Details)
+                            {
+                                <h3 class="popTitle">
+                                    审核意见
+                                    <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+                                </h3>
+                                <div class="popContent">
+                                    <div class="form-group col-sm-12 has-feedback">
+                                        <label class="control-label col-sm-2">审核意见：</label>
+                                        <div class="col-sm-10 control-label">
+                                            @if (ViewBag.PageType == PageTypeEnum.Details || FirstModel.StatusID == (int)ShipmentNotificationStatusEnum.NotPassCheck)
+                                            {
+                                                @Html.TextAreaFor(d => d.FirstOrDefault().NotificationCheckSuggest, new { @class = "form-control", disabled = "disabled" })
+                                            }
+                                            else
+                                            {
+                                                FirstModel.NotificationCheckSuggest = null;
+                                                @Html.TextAreaFor(d => d.FirstOrDefault().NotificationCheckSuggest, new { @class = "form-control" })
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="popBtns">
+                                <div class="form-group">
+                                    @if (ViewBag.PageType == PageTypeEnum.Edit)
+                                    {
+                                        <div class="text-right">
+                                            <button type="submit" class="btn btn-primary" name="NotificationStatusID" value="@((int)ShipmentOrderStatusEnum.OutLine)">保存为草稿</button>
+                                            <button type="submit" class="btn btn-danger" name="NotificationStatusID" value="@((int)ShipmentOrderStatusEnum.PendingCheck)">保存并提交审核</button>
+                                            <button type="button" onclick="OA.CloseMe()" class="btn btn-default">取消</button>
+                                        </div>
+                                    }
+                                    else if (ViewBag.PageType == PageTypeEnum.Check)
+                                    {
+                                        <div class="text-right">
+                                            <button type="submit" class="btn btn-primary" name="NotificationStatusID" value="@((int)ShipmentOrderStatusEnum.PassedCheck)">审核通过</button>
+                                            <button type="submit" class="btn btn-danger" name="NotificationStatusID" value="@((int)ShipmentOrderStatusEnum.NotPassCheck)">驳回重审</button>
+                                            <button type="button" onclick="OA.CloseMe()" class="btn btn-default">取消</button>
+                                        </div>
+                                    }
+                                    else if (ViewBag.PageType == PageTypeEnum.Details)
+                                    {
+                                        <div class="text-right">
+                                            <button type="button" onclick="OA.CloseMe()" class="btn btn-default">取消</button>
+                                        </div>
+                                    }
+                                    else if (ViewBag.PageType == PageTypeEnum.RegisterFees)
+                                    {
+                                        <div class="text-right">
+                                            @if (ViewBag.Page == "Maintenance_RegisterFees" || ViewBag.Page == "Edit_RegisterFees")
+                    {
+                                                <button type="submit" class="btn btn-primary" name="RegisterFeesStatusID" value="@((int)ShipmentRegisterFeesStatusEnum.OutLine)">保存为草稿</button>
+                                                <button type="submit" class="btn btn-danger" name="RegisterFeesStatusID" value="@((int)ShipmentRegisterFeesStatusEnum.PassedCheck)">已登记</button>
+                                            }
+                                            <button type="button" onclick="OA.CloseMe()" class="btn btn-default">取消</button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <h3 class="popTitle">
+                                历史记录
+                                <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+                            </h3>
+                            <div class="popContent" style="display:none;">
+                                <div class="history_box">
+                                    <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                                        <tbody>
+                                            <tr class="t_bg">
+                                                <td width="20%">日期</td>
+                                                <td width="20%">操作者</td>
+                                                <td width="30%">状态</td>
+                                                <td width="30%">意见/备注</td>
+                                            </tr>
+                                            @if (ViewBag.PageType == PageTypeEnum.RegisterFees)
+                                            {
+                                                if (FirstModel.list_historyRegister != null)
+                                                {
+                                                    var list_historyRegister = FirstModel.list_historyRegister.OrderByDescending(d => d.DT_CREATEDATE);
+                                                    foreach (var item_history in list_historyRegister)
+                                                    {
+                                                        <tr>
+                                                            <td>@ERP.Tools.Utils.DateTimeToStr2(item_history.DT_CREATEDATE)</td>
+                                                            <td>@item_history.ST_CREATEUSER</td>
+                                                            <td>@item_history.StatusName</td>
+                                                            <td>@item_history.CheckSuggest</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (FirstModel.list_NotificationHistory != null)
+                                                {
+                                                    var list_NotificationHistory = FirstModel.list_NotificationHistory.OrderByDescending(d => d.DT_CREATEDATE);
+                                                    foreach (var item_history in list_NotificationHistory)
+                                                    {
+                                                        <tr>
+                                                            <td>@ERP.Tools.Utils.DateTimeToStr2(item_history.DT_CREATEDATE)</td>
+                                                            <td>@item_history.ST_CREATEUSER</td>
+                                                            <td>@item_history.StatusName</td>
+                                                            <td>@item_history.CheckSuggest</td>
+                                                        </tr>
+                                                    }
+                                                }
+
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            }
+
+@section scripts{
+    <script>
+        $(function () {
+            $(".GatherType").change(function () {
+                var $this = $(this);
+                var $paddingTop15 = $this.closest(".paddingTop15");
+                if ($this.val() == "@((short)GatherTypeEnum.PullCabinet)") {
+                    $paddingTop15.find(".lable_GatherDateFormatter").text("装柜时间：");
+                    $paddingTop15.find(".lable_GatherAddress").text("装柜地址：");
+                    $paddingTop15.find(".div_GatherDescription").show();
+                    //$paddingTop15.find(".UpLoadFile").hide();
+                } else {
+                    $paddingTop15.find(".lable_GatherDateFormatter").text("入仓时间：");
+                    $paddingTop15.find(".lable_GatherAddress").text("入仓地址：");
+                    $paddingTop15.find(".div_GatherDescription").hide();
+                    //$paddingTop15.find(".UpLoadFile").show();
+
+                }
+            });
+
+        });
+
+        //上传
+        function UpLoadFile(thisIndex) {
+            $('#uploadify' + thisIndex).uploadifyUpload('*');
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+
+        //删除
+        function DeleteFile(e, path) {
+            $(e).closest("tr").find(".IsDelete").val(true);
+            $(e).closest("tr").hide();
+        }
+
+        $(function () {
+            $(".dg").datagrid();
+            jav.initGridCellTooltips();
+            $('#Shipment_AgencyID').combogrid('setValue', '@FirstModel.Shipment_AgencyName');
+            InitPopover();
+        });
+
+        var checkSubmit = false;//防止重复提交
+
+        function productNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+        }
+
+        function OnBegin() {
+            var bool_RegisterFees = "@(ViewBag.PageType == PageTypeEnum.RegisterFees)";
+            if (bool_RegisterFees == "True") {
+                var validEmpty = true;
+                var validNumber = true;
+                $(".Factory").each(function () {
+                    var $this = $(this);
+                    var RegisterFees = $this.find(".RegisterFees").val();
+                    if (RegisterFees == "") {
+                        validEmpty = false;
+                    } else if (RegisterFees != parseFloat(RegisterFees) || RegisterFees <= 0) {
+                        validNumber = false;
+                    }
+                });
+                if (!validEmpty) {
+                    $.messager.alert("提示", "请输入拉柜登记费用！");
+                    return false;
+                }
+                if (!validNumber) {
+                    $.messager.alert("提示", "拉柜登记费用必须为大于0的数字！");
+                    return false;
+                }
+            }
+
+            if (checkSubmit) {
+                //$.messager.alert("提示", "请勿重新提交！");
+                return false;
+            }
+            checkSubmit = true;
+            loading();
+            return true;
+
+        }
+
+        function OnSuccess(data) {
+            completeLoading();
+            checkSubmit = false;
+            if (data.IsSuccess) {
+                parentGridReload();
+                OA.CloseMe(true);
+            } else {
+                $.messager.alert("提示", data.Msg);
+            }
+        }
+
+
+        function Calculate_SumOuterVolume(OuterLength, OuterWidth, OuterHeight, SumBoxQty) {
+            return NumberToRound((OuterLength * OuterWidth * OuterHeight / 1000000 * SumBoxQty), 2);
+        }
+
+        var decimals = 0;
+        var SelectCustomer = "@(FirstModel.SelectCustomer)";
+        if (SelectCustomer == "S135") {
+            decimals = 2;
+        }
+
+        function Calculate_SelectSumOuterWeightGross(SelectBoxQty, OuterWeightGross) {
+            return NumberToRound(SelectBoxQty * OuterWeightGross, decimals);
+        }
+
+        function Calculate_SelectSumOuterWeightNet(SelectBoxQty, OuterWeightNet) {
+            return NumberToRound((SelectBoxQty * OuterWeightNet), decimals);
+        }
+
+        $(function () {
+            var CabinetCount = parseInt($("#CabinetCount").val());
+            for (var i = 0; i < CabinetCount; i++) {
+                var thisSubCabinet = "ChooseSubCabinet" + i;
+
+                //TODO
+                //BindSubDatagrid("#" + thisSubCabinet);
+                //UpdateExpander("#" + thisSubCabinet);
+            }
+        });
+
+        var temp3 = 0;
+
+        function UpdateSubDatagrid(DataGridName, index, row) {
+            //debugger;
+            var ddvID = GetddvID(DataGridName, index);
+
+            //console.log("temp3 "+temp3);
+
+            var $thisDatagrid = $(ddvID);
+            if (temp3 == 0) {
+                $thisDatagrid.datagrid();
+                temp3++;
+            }
+
+            var rows = $thisDatagrid.datagrid("getRows");
+            if (rows && rows.length > 0) {
+                for (var i = 0; i < rows.length; i++) {
+                    rows[i].Qty = parseInt(row.Qty) * parseInt(rows[i].Qty2);
+                    if (rows[i].InnerBoxRate != null && rows[i].InnerBoxRate != "") {
+                        rows[i].Qty = parseInt(row.Qty) * parseInt(rows[i].Qty2) * parseInt(row.OuterBoxRate) / parseInt(row.InnerBoxRate);
+                    }
+                    rows[i].OuterVolume = NumberToRound(rows[i].OuterVolume, 2);
+                    rows[i].ActualVolume = rows[i].OuterVolume;
+
+                    //rows[i].SumBoxQty = rows[i].Qty / rows[i].OuterBoxRate;
+                    rows[i].SumBoxQty = parseInt(row.SumBoxQty);
+                    //rows[i].RemainedBoxQty = row.RemainedBoxQty;
+
+                    var volume = ((rows[i].OuterLength * rows[i].OuterWidth * rows[i].OuterHeight) / 1000000);
+                    rows[i].ActualVolume = parseFloat(volume * 35.315).toFixed(2);//实际单箱材积
+                    rows[i].SumOuterVolume = (volume * rows[i].SumBoxQty).toFixed(2);//计算输入后当前行的“实际总体积”
+                    rows[i].OuterBoxSum = (rows[i].OuterLength * rows[i].OuterWidth * rows[i].OuterHeight / 1000000).toFixed(4);//计算外箱体积(m³)
+
+
+                    //总毛重=单箱毛重×产品箱数
+                    WeightGross = parseFloat(rows[i].OuterWeightGross, decimals);
+                    var result = WeightGross * rows[i].SumBoxQty;
+
+                    rows[i].SumOuterWeightGross = NumberToRound(result, decimals);
+
+                    //总净重=单箱净重×产品箱数
+                    WeightNet = parseFloat(rows[i].OuterWeightNet, decimals);
+                    var result = WeightNet * rows[i].SumBoxQty;
+
+                    rows[i].SumOuterWeightNet = NumberToRound(result, decimals);
+
+                    rows[i].SelectBoxQty = row.SelectBoxQty;
+                    rows[i].SelectVolume = Calculate_SumOuterVolume(rows[i].OuterLength, rows[i].OuterWidth, rows[i].OuterHeight, rows[i].SelectBoxQty);
+                    //rows[i].SelectQty = rows[i].SelectBoxQty * rows[i].OuterBoxRate;
+
+                    //rows[i].SelectSumOuterWeightGross = Calculate_SelectSumOuterWeightGross(rows[i].SelectBoxQty, rows[i].OuterWeightGross);
+                    //rows[i].SelectSumOuterWeightNet = Calculate_SelectSumOuterWeightNet(rows[i].SelectBoxQty, rows[i].OuterWeightNet);
+
+
+                    $thisDatagrid.datagrid('acceptChanges');
+                    $thisDatagrid.datagrid('refreshRow', i);
+                }
+            }
+
+        }
+
+        function GetddvID(DataGridName, index) {
+            var ddvID = "";
+            if (DataGridName == '#MyPopGrid') {
+                ddvID = "#ddv-" + index;
+            } else {
+                ddvID = "#ddv-" + DataGridName.substring(DataGridName.length - 1) + "-" + index;
+            }
+            //console.log(ddvID);
+            return ddvID;
+        }
+
+        function BindSubDatagrid(DataGridName) {
+
+            $(DataGridName).datagrid({
+                view: detailview,
+                detailFormatter: function (index, row) {
+                    var ddvID = GetddvID(DataGridName, index);
+                    if ($(ddvID).html() != undefined) {
+                        return;
+                    }
+                    return '<div style="padding:2px"><table id="' + ddvID.substring(1) + '"></table></div>';
+                },
+                onExpandRow: function (index, row) {
+                    var ddvID = GetddvID(DataGridName, index);
+                    if ($(ddvID).html() != "") {
+                        return;
+                    }
+
+                    $(ddvID).datagrid({
+                        url: '/Order/GetProducts_Mixed/' + row.OrderProductID,
+                        method: 'get',
+                        fitColumns: false,
+                        singleSelect: true,
+                        rownumbers: false,
+                        loadMsg: '',
+                        height: 'auto',
+                        frozenColumns: [[
+                        ]],
+                        columns: [[
+                            { field: 'No', width: 100, align: 'center', title: 'JK_NO' },
+                            { field: 'SkuNumber', width: 100, align: 'center', hidden: true, title: 'SKU#' },
+                            { field: 'FactoryName', width: 100, align: 'center', title: 'FTY' },
+                            { field: 'Desc', width: 100, align: 'center', title: 'Description' },
+                            { field: 'HTS', width: 100, align: 'center', hidden: true, title: '海关编码' },
+                            { field: 'HSCode_Name', width: 100, align: 'center', title: '报关编码' },
+                            { field: 'InnerBoxRate', width: 50, align: 'center', title: '内盒率' },
+                            { field: 'OuterBoxRate', width: 50, align: 'center', title: '外箱率' },
+                            { field: 'OuterLength', width: 65, align: 'center', title: '外箱长(cm)' },
+                            { field: 'OuterWidth', width: 65, align: 'center', title: '外箱宽(cm)' },
+                            { field: 'OuterHeight', width: 65, align: 'center', title: '外箱高(cm)' },
+                            { field: 'SumOuterVolume', width: 80, align: 'center', title: '总体积(M3)' },
+                            { field: 'SumBoxQty', width: 55, align: 'center', title: '总箱数' },
+                            { field: 'Qty', width: 50, align: 'center', title: '总数量' },
+                            { field: 'OuterWeightGross', width: 55, title: '单箱毛重' },
+                            { field: 'SumOuterWeightGross', width: 55, title: '总毛重' },
+                            { field: 'OuterWeightNet', width: 55, title: '单箱净重' },
+                            { field: 'SumOuterWeightNet', width: 55, title: '总净重' },
+                            { field: 'SelectBoxQty', width: 80, align: 'center', title: '当前订舱箱数' },
+                            { field: 'SelectVolume', width: 130, align: 'center', title: '当前订舱体积(M3)' },
+                            { field: 'ProductID', width: 80, align: 'center', hidden: true },
+                            { field: 'Image', width: 80, align: 'center', hidden: true },
+                            { field: 'IsProductMixed', width: 80, align: 'center', hidden: true },
+                            { field: 'Qty2', hidden: true },
+                        ]],
+                        onResize: function () {
+                            $(DataGridName).datagrid('fixDetailRowHeight', index);
+                        },
+                        onLoadSuccess: function () {
+                            setTimeout(function () {
+                                $(DataGridName).datagrid('resize');
+                                $(DataGridName).datagrid('fixDetailRowHeight', index);
+
+                                //temp3=0;
+                                UpdateSubDatagrid(DataGridName, index, row);
+                            }, 0);
+                        }
+                    });
+                    $(DataGridName).datagrid('fixDetailRowHeight', index);
+
+                }
+            });
+        }
+        
+    </script>
+}

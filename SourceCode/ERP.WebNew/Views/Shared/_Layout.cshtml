@@ -1,0 +1,297 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/bundles/CommonCSS", "~/bundles/AppCSS")
+    @*@Scripts.Render("~/bundles/modernizr")*@
+    <link href="@System.Web.Optimization.BundleTable.Bundles.ResolveBundleUrl("~/Content/themes/default.css")" rel="stylesheet" type="text/css" id="main_style_color" />
+    <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" type="text/css" id="main_style_color" />
+
+    @RenderSection("styles", required: false)
+    <script type="text/javascript" src="~/Scripts/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="~/Content/bootstrap/js/bootstrap.min.js"></script>
+    @* !IMPORTANT by daniel: 不要使用压缩版的min.js，因为在框架代码中修复了加载空的datagrid时，js报错的bug *@
+    <script type="text/javascript" src="~/Scripts/jquery.easyui-1.4.3.js"></script>
+    <script src="@Url.Content("~/Scripts/jquery.easyui.datagrid-detailview.js")"></script>
+    <script src="@Url.Content("~/Scripts/Site.js?v=20170608")"></script>
+</head>
+@using ERP.BLL;
+@helper ShowAllHeaderSubMenus(IEnumerable<ERP.Models.AdminUser.DTOAdminUserMenus> menus)
+{
+    foreach (var m in menus)
+    {
+        if (m.SubMenus.Count == 0)
+        {
+            if (m.WinType == "idialog" || m.WinType == "iwin" || m.WinType == "dialog" || m.WinType == "win")
+            {
+                <li class="nowrap">
+                    <a href="@(string.IsNullOrEmpty(m.PageURL) ? "#" : Url.Content(m.PageURL))" winsize="@m.WinSize" wintype="@m.WinType" onclick="return OA.i(this)">@m.Name</a>
+                </li>
+            }
+            else
+            {
+                <li class="nowrap">
+                    <a href="@(string.IsNullOrEmpty(m.PageURL) ? "#" : Url.Content(m.PageURL))" title="@m.Name">@m.Name</a>
+                </li>
+            }
+        }
+        else
+        {
+            @ShowAllHeaderSubMenus(m.SubMenus);
+        }
+    }
+}
+@helper ShowAllHomeSubMenus(IEnumerable<ERP.Models.AdminUser.DTOAdminUserMenus> menus)
+{
+    if (menus != null && menus.Count() > 0)
+    {
+        <ul class="sub-menu" style="@(menus.FirstOrDefaultFromMany(p => p.SubMenus, p => p.PageURL == Request.CurrentExecutionFilePath) != null ? "display:block !important;" : "")">
+            @foreach (var m in menus)
+            {
+                <li class="@((m.SubMenus.FirstOrDefaultFromMany(p => p.SubMenus, p => p.PageURL == Request.CurrentExecutionFilePath) != null || m.PageURL == Request.CurrentExecutionFilePath) ? "open" : "")" menuid="@m.MenuID">
+                    @if (m.WinType == "idialog" || m.WinType == "iwin" || m.WinType == "dialog" || m.WinType == "win")
+                    {
+                        <a href="@(string.IsNullOrEmpty(m.PageURL) ? "#" : Url.Content(m.PageURL))" winsize="@m.WinSize" wintype="@m.WinType" onclick="return OA.i(this)">
+                            <i class="@m.Icons"></i>
+                            <span class="badge badge-danger"></span>
+                            <span class="title">@m.Name</span>
+                        </a>
+                        if (m.SubMenus.Count > 0)
+                        {
+                            @ShowAllHomeSubMenus(m.SubMenus);
+                        }
+                    }
+                    else
+                    {
+                        <a href="@(string.IsNullOrEmpty(m.PageURL) ? "#" : Url.Content(m.PageURL))" @(string.IsNullOrEmpty(m.WinType) ? "" : "target='" + m.WinType + "'")>
+                            <i class="@m.Icons"></i>
+                            <span class="badge badge-danger"></span>
+                            <span class="title">@m.Name</span>
+                        </a>
+                        if (m.SubMenus.Count > 0)
+                        {
+                            @ShowAllHomeSubMenus(m.SubMenus);
+                        }
+                    }
+                </li>
+            }
+        </ul>
+    }
+}
+@{
+    ViewBag.UserHeaderSysMenus = ERP.WebNew.Service.CurrentUserServices.Menus;
+    ViewBag.CurrentUser = ERP.WebNew.Service.CurrentUserServices.Me;
+}
+<body class="page-header-fixed page-sidebar-fixed main">
+    <div class="header navbar navbar-inverse navbar-fixed-top">
+        <div class="header-inner">
+            <div class="sidebar-toggler hidden-phone" title="收/展导航菜单"></div>
+            <a href="javascript:;" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <img src="@Url.Content("~/images/menu-toggler.png")" />
+            </a>
+            <ul class="nav navbar-nav pull-right">
+                <!--用户快捷系统菜单-->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" title="系统快捷菜单" data-toggle="dropdown" data-hover="dropdown"
+                       data-close-others="true">
+                        <i class="fa fa-th-list"></i>
+                    </a>
+                    <ul class="dropdown-menu extended userNavList" style="overflow-y:auto;height:400px;">
+                        <li id='userHeaderSysMenu'>
+                            @if (ViewBag.UserHeaderSysMenus != null)
+                            {
+                                foreach (var menu in ViewBag.UserHeaderSysMenus)
+                                {
+                                    if (menu.SubMenus.Count > 0)
+                                    {
+                                        <p title="@menu.Name">
+                                            <i class="@menu.Icons"></i> @menu.Name
+                                        </p>
+
+                                        <ul class="col col5">
+                                            @ShowAllHeaderSubMenus(@menu.SubMenus)
+                                        </ul>
+                                    }
+                                }
+                            }
+                        </li>
+                    </ul>
+                </li>
+                <li class="dropdown user">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" data-hover="dropdown" data-close-others="true">
+                        <img id="userAvata" height="32" width="32" src="@(string.IsNullOrEmpty(ViewBag.CurrentUser.Portrait) ? "/data/uphoto/default.jpg" : ViewBag.CurrentUser.Portrait)" />
+                        欢迎
+                        <span class="username"
+                              uid="@ViewBag.CurrentUser.UserID"
+                              id="My_User_Info">@(ViewBag.CurrentUser != null ? ViewBag.CurrentUser.DisplayName : string.Empty)</span>
+                            <i class="fa fa-angle-down"></i>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a href="@(Url.Content("~/Account/ChangePwd"))"><i class="fa fa-lock"></i>修改密码</a></li>
+                            <li><a href="#" onclick="quit();"><i class="fa fa-arrow-circle-o-right"></i>退出系统</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="page-container">
+            <div class="page-sidebar navbar-collapse collapse">
+                <div id="page_left">
+                    <!-- 导航菜单 -->
+                    <!-- 公司LOGO -->
+                    <a href="@Url.Content("~")" title="Jet·运营管理系统">
+                        <img src="@Url.Content("~/images/logo_s1.jpg")" alt="logo" class="img-sidebar-logo img-responsive" />
+                    </a>
+                    <!-- LOGO结果 -->
+                    <ul class="page-sidebar-menu" id="homeMainNavMenu">
+                        <li class="start active ">
+                            <a href="@Url.Content("~")">
+                                <i class="fa fa-home"></i>
+                                <span class="title">首页</span>
+                                <span class="selected"></span>
+                            </a>
+                        </li>
+
+                        @if (ViewBag.UserHeaderSysMenus != null)
+                        {
+                            for (int i = 0; i < ViewBag.UserHeaderSysMenus.Count; i++)
+                            {
+                                var menu = ViewBag.UserHeaderSysMenus[i];
+                                if (menu.SubMenus.Count > 0)
+                                {
+                                    <li menuid="@menu.MenuID" class="@(((ERP.Models.AdminUser.DTOAdminUserMenus)menu).SubMenus.FirstOrDefaultFromMany(p => p.SubMenus, p => p.PageURL == Request.CurrentExecutionFilePath) != null ? "open" : "")">
+                                        <a href="#" title="">
+                                            <i class="@menu.Icons"></i>
+                                            <span class="badge badge-danger"></span>
+                                            <span class="title">@menu.Name</span>
+                                            <span class="arrow @(((ERP.Models.AdminUser.DTOAdminUserMenus)menu).SubMenus.FirstOrDefaultFromMany(p => p.SubMenus, p => p.PageURL == Request.CurrentExecutionFilePath) != null ? "open" : "")"></span>
+                                        </a>
+                                        @ShowAllHomeSubMenus(menu.SubMenus)
+                                    </li>
+                                }
+                            }
+                        }
+                    </ul>
+                    <!-- 结束导航菜单 -->
+                </div>
+            </div>
+            <!-- 导航栏-->
+            <div class="page-content">
+                <div id="page_right">
+                    <!-- BEGIN PAGE HEADER-->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div style="width: 100%">
+                                <div id="sliderbarToogler">
+                                    <span class="arr_l"></span>
+                                </div>
+                                <div class="clearfix"></div>
+                            </div>
+                        </div>
+                        <!-- END PAGE HEADER-->
+                        <div style="width: 100%">
+                            @RenderBody()
+                        </div>
+                    </div>
+                </div>
+                <!-- END PAGE -->
+            </div>
+            <!-- END CONTAINER -->
+            <!-- BEGIN FOOTER -->
+            @*<div class="footer">
+                    <div class="footer-inner">
+                        2015 - @DateTime.Now.Year &copy; 格致优品电子商务有限公司
+                        技术支持： Thyiad，
+                        业务支持： John Luo，
+                        反馈信息：BUG、建议
+                    </div>
+                    <div class="footer-tools">
+                        <span class="go-top">
+                            <i class="fa fa-angle-up"></i>
+                        </span>
+                    </div>
+                </div>*@
+
+            @Scripts.Render("~/bundles/CommonJS", "~/bundles/AppJS")
+            @RenderSection("scripts", required: false)
+
+            <script type="text/javascript">
+                $().ready(function () {
+                    App.init("@Url.Content("~/Content/themes/default.css").Replace("/Content/themes/default.css", string.Empty)");
+
+                    //日期控件
+                    $(".Wdate").click(function () {
+                        WdatePicker();
+                    });
+
+                    //展开 收缩
+                    $(".table_toggle").parent().click(function () {
+                        var $this = $(this).find(".table_toggle");
+                        if ($this.hasClass("fa-chevron-up")) {
+                            $this.data("up", false).removeClass("fa-chevron-up").addClass("fa-chevron-down");
+                        } else {
+                            $this.data("up", true).removeClass("fa-chevron-down").addClass("fa-chevron-up");
+                        }
+                        $this.parent().next().stop(true, true).fadeToggle();
+                    });
+
+                    var tog = jav.GetCookie('tog');//0:展開狀態，1:收起狀態
+                    jav.slideToogle(tog);
+
+                    var Sys = CheckBrowserVersion();
+                    if (Sys.safari) {
+                        $("#sliderbarToogler").hide();
+                    }
+
+                    //展开收缩导航菜单
+                    $("#sliderbarToogler").click(function () {
+                        var tog = jav.GetCookie('tog');
+                        if (tog == "1") {
+                            jav.slideToogle(0);
+                            jav.SetCookie('tog', '0', 7);
+                        }
+                        else {
+                            jav.slideToogle(1);
+                            jav.SetCookie('tog', '1', 7);
+                        }
+                    });
+                });
+
+                function quit() {
+                    window.location.href = "@Url.Content("~/Account/Logout")";
+                }
+
+                //判断浏览器版本
+                function CheckBrowserVersion() {
+
+                    var Sys = {};
+                    var ua = navigator.userAgent.toLowerCase();
+                    var s;
+                    (s = ua.match(/rv:([\d.]+)\) like gecko/)) ? Sys.ie = s[1] :
+                    (s = ua.match(/msie ([\d.]+)/)) ? Sys.ie = s[1] :
+                    (s = ua.match(/firefox\/([\d.]+)/)) ? Sys.firefox = s[1] :
+                    (s = ua.match(/chrome\/([\d.]+)/)) ? Sys.chrome = s[1] :
+                    (s = ua.match(/opera.([\d.]+)/)) ? Sys.opera = s[1] :
+                    (s = ua.match(/version\/([\d.]+).*safari/)) ? Sys.safari = s[1] : 0;
+                    //if (Sys.ie) {
+                    //}
+                    //if (Sys.firefox) {
+                    //}
+                    //if (Sys.chrome) {
+                    //}
+                    //if (Sys.opera) {
+                    //}
+                    //if (Sys.safari) {
+                    //}
+                    return Sys;
+
+                }
+                InitPopover();
+            </script>
+        </div>
+    </body>
+</html>

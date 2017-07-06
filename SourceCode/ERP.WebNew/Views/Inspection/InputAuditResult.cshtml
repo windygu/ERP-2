@@ -1,0 +1,637 @@
+﻿@{
+    ViewBag.Title = "第三方验厂结果";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+@model ERP.Models.Inspection.VMInspection
+@using ERP.Models.CustomEnums
+@using ERP.Models.Common
+
+@section styles{
+
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+    <style type="text/css">
+        .box_1k {
+            margin-top: 0;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+
+        .form-control-feedback {
+            right: 10px;
+        }
+    </style>
+
+}
+@using (Ajax.BeginForm("InputAuditResult", "Inspection", null, new AjaxOptions() { HttpMethod = "Post", OnBegin = "return OnBegin()", OnSuccess = "OnSuccess()" }, new { id = "frmEdit" }))
+{
+    @Html.HiddenFor(d => d.ID)
+    <input type="hidden" value="@ViewBag.statusName" id="statusName" />
+
+    <!-- ko with: Inspection -->
+    <h3 class="popTitle">
+        基本信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">采购单号：</label>
+            <div class="col-sm-8 control-label">
+                <p class="control-label" data-bind="text:PurchaseNumber()"></p>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">工厂：</label>
+            <div class="col-sm-8 control-label">
+                <p class="control-label" data-bind="text:FactoryName()"></p>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">第三方名称：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:InspectionName()"></label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="stree col-sm-4 control-label">联系邮箱：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:InspectionEmail()"></label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">联系电话：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:InspectionPhoneNumber()"></label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">传真：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:InspectionFax()"></label>
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">验厂时间：</label>
+            <div class="col-sm-8 control-label ">
+                <label class="control-label" data-bind="text:StartTime()"></label>
+                -
+                <label class="control-label" data-bind="text:EndTime()"></label>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+
+    <h3 class="popTitle">
+        验厂内容
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+
+        <table id="ContactsDataList" class="easyui-datagrid" style="width:100%;"
+               data-options="singleSelect:true,
+               rownumbers:true,
+               pagelist:[10,20,50,100],
+               pagesize:10,
+               pagination:false,
+               checkonselect:true,
+               onBeforeEdit:onBeforeEditContacts,
+               onAfterEdit:onAfterEditContacts,
+               onCancelEdit:onCancelEditContacts,
+               ">
+            <thead data-options=" frozen:true">
+                <tr>
+
+                    @*<th data-options="field:'ID',width:100">编号</th>*@
+                    <th data-options="field:'Name',width:200,sortable:true,editor:{type:'validatebox',options:{required:true}}">验厂项目</th>
+                    <th data-options="field:'Comment',width:300,sortable:true,editor:{type:'validatebox',options:{required:true}}">说明</th>
+                </tr>
+            </thead>
+
+            <tbody data-bind="foreach: Inspection().list_InspectionAuditNotice">
+                <tr>
+                    @* <td data-bind="text: ID"></td>*@
+                    <td data-bind="text: Name"></td>
+                    <td data-bind="text: Comment"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="one">
+        <h3 class="popTitle">
+            验厂报告
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+
+            <div class="form-group col-sm-6">
+                <label class="stree col-sm-4 control-label text-danger">验厂结果：</label>
+                <div class="col-sm-8 control-label ">
+                    @if (Model.PageType == PageTypeEnum.Edit)
+                    {
+                        <select id="StatusID" name="StatusID" class="form-control" @(Model.PageType == PageTypeEnum.Details ? "disabled=disabled" : "")>
+                            <option></option>
+                            <option value="@((short)InspectionStatusEnum.Passed)">通过</option>
+                            <option value="@((short)InspectionStatusEnum.NotPass)">不通过</option>
+                        </select>
+                    }
+                    else
+                    {
+                        <label class="control-label">@Model.StatusName</label>
+                    }
+                </div>
+            </div>
+
+            <div class="form-group col-sm-6" style="clear:both;">
+                <label class="stree col-sm-4 control-label">备注：</label>
+                <div class="col-sm-8 control-label ">
+                    @if (Model.PageType == PageTypeEnum.Edit)
+                    {
+                        @Html.TextAreaFor(d => d.InspectionContent, new { @class = "form-control", rows = 5 })
+                    }
+                    else
+                    {
+                        @Html.TextAreaFor(d => d.InspectionContent, new { @class = "form-control", rows = 5, disabled = "disabled" })
+
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="two">
+        @if (Model.PageType != PageTypeEnum.Details)
+        {
+            <h3 class="popTitle">
+                附件信息
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="row popContent" style="overflow: inherit;">
+                <div class="form-group col-sm-6 has-feedback">
+                    <label class="col-sm-4 control-label">结果附件：</label>
+                    <div class="col-sm-8 control-label">
+                        <div class="uploadify">
+                            <input type="file" name="uploadify" id="uploadify" />
+                            <a class="a_upload" onclick="UpLoadFile()">上传</a>
+                            <div class="fileQueue">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    if (Model.StatusID == (int)InspectionStatusEnum.AlreadySent || Model.StatusID == (int)InspectionStatusEnum.NotPass || Model.StatusID == (int)InspectionStatusEnum.Passed)
+    {
+        <h3 class="popTitle">
+            已上传的附件信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <div class="history_box">
+                <table id="fileListTable" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr class="t_bg">
+                            <td width="50%">附件名称</td>
+                            <td width="20%">上传时间</td>
+                            <td width="30%">操作</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.list_UpLoadFile != null)
+                        {
+                            int i = 0;
+                            foreach (var item in Model.list_UpLoadFile.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                                <tr>
+                                    <td class="hide">
+                                        <input name="list_UpLoadFile[@(i)].ID" type="hidden" value="@item.ID" />
+                                        <input class="IsDelete" name="list_UpLoadFile[@(i)].IsDelete" type="hidden" value="@item.IsDelete" />
+                                    </td>
+                                    <td>@item.DisplayFileName</td>
+                                    <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+                                        @if (Model.PageType != PageTypeEnum.Details)
+                                        {
+                                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                        }
+                                    </td>
+                                </tr>
+                                        ++i;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <div class="form-group text-right tijiao">
+        @if (Model.PageType == PageTypeEnum.Edit)
+        {
+            <button type="submit" class="btn btn-danger">保存</button>
+        }
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <h3 class="popTitle">
+        历史记录
+        <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+    </h3>
+    <div class="popContent" style="display:none;">
+        <div class="history_box">
+            <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                <tbody>
+                    <tr class="t_bg">
+                        <td width="20%">日期</td>
+                        <td width="20%">操作者</td>
+                        <td width="30%">状态</td>
+                        <td width="30%">意见/备注</td>
+                    </tr>
+                    @if (Model.list_InspectionAuditNoticeHistory != null)
+                    {
+                        foreach (var item_history in Model.list_InspectionAuditNoticeHistory.OrderByDescending(d => d.DT_CREATEDATE))
+                        {
+                            <tr>
+                                <td>@item_history.DT_CREATEDATE</td>
+                                <td>@item_history.ST_CREATEUSER</td>
+                                <td>@item_history.StatusName</td>
+                                <td>@item_history.Comment</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong><span>字体颜色为红色是必填项。</span>
+    </div>
+
+    @*<div id="tbToolbar" style="height:auto">
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="appendContact()">
+                新建验厂内容
+            </a>
+        </div>*@
+}
+
+@section scripts{
+
+    <script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+            $("#frmEdit").attr("disabled", "disabled");
+            var statusname = $("#statusName").val();
+
+            if (statusname == "待录入") {
+                $("#one").hide();
+                $("#two").hide();
+            }
+            else if (statusname == "待发送") {
+                $("#one").hide();
+                $("#two").hide();
+            }
+            else if (statusname == "通过") {
+                $("#two").hide();
+            }
+            else if (statusname == "未通过") {
+                $("#two").hide();
+            }
+
+        });
+
+        function InspectionModel() {
+            this.PurchaseNumber = ko.observable("@(Model.PurchaseNumber)");
+            this.FactoryName = ko.observable("@(Model.FactoryName)");
+            this.InspectionName = ko.observable("@(Model.InspectionName)");
+            this.InspectionEmail = ko.observable("@(Model.InspectionEmail)");
+            this.InspectionPhoneNumber = ko.observable("@(Model.InspectionPhoneNumber)");
+            this.InspectionFax = ko.observable("@(Model.InspectionFax)");
+            this.StartTime = ko.observable("@(Model.StartTime)");
+            this.EndTime = ko.observable("@(Model.EndTime)");
+            this.InspectionAuditFee = ko.observable("@(Model.InspectionAuditFee)");
+            this.StatusID = ko.observable();
+
+            this.list_InspectionAuditNotice = ko.observableArray();
+        }
+
+        function CustomerViewModel() {
+            var self = this;
+
+            self.Inspection = ko.observableArray();
+            self.Inspection(new InspectionModel());
+
+            self.Inspection().list_InspectionAuditNotice(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_InspectionAuditNotice))));
+
+        };
+        ko.applyBindings(new CustomerViewModel());
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndexContacts = undefined;
+        function onBeforeEditContacts(index, row) {
+            row.editing = true;
+            updateActionsContact(index);
+        }
+        function onAfterEditContacts(index, row) {
+            row.editing = false;
+            updateActionsContact(index);
+        }
+        function onCancelEditContacts(index, row) {
+            row.editing = false;
+            updateActionsContact(index);
+        }
+        function endEditingContact() {
+            //var isView = ((bool)ViewData["IsView"] ? 1 : 0);
+            //if(isView === 1){
+            //    return false;
+            //}
+            if (editIndexContacts == undefined) { return true }
+            if ($('#ContactsDataList').datagrid('validateRow', editIndexContacts)) {
+                $('#ContactsDataList').datagrid('endEdit', editIndexContacts);
+                editIndexContacts = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editContact(target) {
+            acceptContact(target);
+            $('#ContactsDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendContact() {
+            if (endEditingContact()) {
+                $('#ContactsDataList').datagrid('appendRow', { ID: -1 });
+                editIndexContacts = $('#ContactsDataList').datagrid('getRows').length - 1;
+                $('#ContactsDataList').datagrid('selectRow', editIndexContacts)
+                        .datagrid('beginEdit', editIndexContacts);
+            }
+        }
+        function removeitContact() {
+            if (editIndexContacts == undefined) { return }
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#ContactsDataList').datagrid('cancelEdit', editIndexContacts)
+                        .datagrid('deleteRow', editIndexContacts);
+                    editIndexContacts = undefined;
+                } else {
+                    return;
+                }
+            });
+        }
+        function removeContact(target) {
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#ContactsDataList').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptContact(target) {
+            editIndexContacts = getRowIndex(target);
+
+            if (endEditingContact()) {
+                $('#ContactsDataList').datagrid('acceptChanges');
+            }
+
+        }
+        function rejectContact() {
+            $('#ContactsDataList').datagrid('rejectChanges');
+            editIndexContacts = undefined;
+        }
+        function actionsFormatterContacts(value, row, index) {
+            if (row.editing) {
+                var s = '<input type="button" onclick="acceptContact(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectContact()" value="Cancel" style="width:40px"></input>';
+                return s + c;
+            } else {
+                var e = '<input type="button" onclick="editContact(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeContact(this)" value="Delete" style="width:40px"></input>';
+                return e + d;
+            }
+        }
+        function updateActionsContact(index) {
+            $('#ContactsDataList').datagrid('refreshRow', index);
+        }
+
+        var editIndexAcceptInfo = undefined;
+        function onBeforeEditAcceptInfo(index, row) {
+            editIndexAcceptInfo = index;
+            row.editing = true;
+            updateActionsAcceptInfo(index);
+        }
+        function onAfterEditAcceptInfo(index, row) {
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function onCancelEditAcceptInfo(index, row) {
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function endEditingAcceptInfo() {
+            //var isView =
+            if (isView === 1) {
+                return false;
+            }
+            if (editIndexAcceptInfo == undefined) { return true }
+            if ($('#AcceptInfoDataList').datagrid('validateRow', editIndexAcceptInfo)) {
+                $('#AcceptInfoDataList').datagrid('endEdit', editIndexAcceptInfo);
+                editIndexAcceptInfo = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editAcceptInfo(target) {
+            acceptAcceptInfo(target);
+            $('#AcceptInfoDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendAcceptInfo() {
+            if (endEditingAcceptInfo()) {
+                $('#AcceptInfoDataList').datagrid('appendRow', { ID: -1 });
+                editIndexAcceptInfo = $('#AcceptInfoDataList').datagrid('getRows').length - 1;
+                $('#AcceptInfoDataList').datagrid('selectRow', editIndexAcceptInfo)
+                        .datagrid('beginEdit', editIndexAcceptInfo);
+            }
+        }
+        function removeitAcceptInfo() {
+            if (editIndexAcceptInfo == undefined) { return }
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#AcceptInfoDataList').datagrid('cancelEdit', editIndexAcceptInfo)
+                    .datagrid('deleteRow', editIndexAcceptInfo);
+                    editIndexAcceptInfo = undefined;
+                }
+                else {
+                    return;
+                }
+            });
+        }
+        function removeAcceptInfo(target) {
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#AcceptInfoDataList').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptAcceptInfo(target) {
+            editIndexAcceptInfo = getRowIndex(target);
+
+            if (endEditingContact()) {
+                $('#ContactsDataList').datagrid('acceptChanges');
+            }
+        }
+        function rejectAcceptInfo() {
+            $('#AcceptInfoDataList').datagrid('rejectChanges');
+            editIndexAcceptInfo = undefined;
+        }
+        function actionsFormatterAcceptInfo(value, row, index) {
+            if (row.editing) {
+                var s = '<input type="button" onclick="acceptAcceptInfo(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectAcceptInfo()" value="Cancel" style="width:40px"></input>';
+                return s + c;
+            } else {
+                var e = '<input type="button" onclick="editAcceptInfo(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeAcceptInfo(this)" value="Delete" style="width:40px"></input>';
+                return e + d;
+            }
+        }
+        function updateActionsAcceptInfo(index) {
+            $('#AcceptInfoDataList').datagrid('refreshRow', index);
+        }
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                StatusID: {
+                    validators: {
+                        notEmpty: { message: '验厂结果不能为空' },
+                    }
+                }
+            }
+        });
+
+        uploadifyInitial();
+        function uploadifyInitial() {
+            $("#uploadify").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@UploadFileType.InspectionAuditNotice&id=@Model.ID', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+                fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                //uploadLimit: 10, //同时上传多小个文件
+                sizeLimit: 100000000, //限制上传大小10M
+                //queueSizeLimit: 10, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) { }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) { }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    var count = $("#fileListTable tr:not(:first)").length;
+                    var serverFileName = $.parseJSON(response).data.NewFilePath;
+                    var displayFileName = $.parseJSON(response).data.OldFileName;
+                    var fileListStr = '<tr>';
+                    fileListStr += '<td class="hide"><input name="list_UpLoadFile[' + count + '].ServerFileName" type="hidden" value="' + serverFileName + '" /><input name="list_UpLoadFile[' + count + '].DisplayFileName" type="hidden" value="' + displayFileName + '" /><input name="list_UpLoadFile[' + count + '].DT_CREATEDATE" type="hidden" value="' + formateDate2(new Date()) + '" /><input class="IsDelete" name="list_UpLoadFile[' + count + '].IsDelete" type="hidden" /></td>';
+                    fileListStr += '<td>' + displayFileName + '</td>';
+                    fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                    fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button><button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+                    fileListStr += '</tr>';
+
+                    $("#fileListTable").prepend(fileListStr);
+                }  //当单个文件上传成功后激发的事件
+            });
+        }
+
+        //上传
+        function UpLoadFile() {
+            $('#uploadify').uploadifyUpload('*');
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+
+        //删除
+        function DeleteFile(e, path) {
+            $(e).closest("tr").find(".IsDelete").val(true);
+            $(e).closest("tr").hide();
+        }
+
+        var checkSubmit = false;//防止重复提交
+        function OnBegin() {
+
+            var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+            if (!bootstrapValidator.isValid()) {
+                return false;
+            }
+            if (checkSubmit) {
+                //$.messager.alert("提示", "请勿重复提交！");
+                return false;
+            }
+            checkSubmit = true;
+            loading();
+            return true;
+        }
+
+        function OnSuccess() {
+            checkSubmit = false;
+
+            parentGridReload();
+            OA.CloseMe(true);
+        }
+    </script>
+}

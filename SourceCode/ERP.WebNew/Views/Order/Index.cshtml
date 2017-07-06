@@ -1,0 +1,114 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@model ERP.Models.Order.VMOrderSearch
+
+@{
+    ViewBag.Title = "待审批销售订单";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    //批量删除
+    function deleteSelected() {
+        var idArray = getSelections(tableName, "OrderID");
+        if (idArray.length <= 0) {
+            $.messager.alert("提示","请选中要删除的销售订单！");
+            return;
+        }
+        $.messager.confirm("提示","是否删除选中的销售订单？",function(r){
+            if (r){
+                $.post("@Url.Content("~/Order/BatchDelete")", { idList: idArray.join(',') },
+                    function (result) {
+                        switch (result) {
+                            case @((short)DBOperationStatus.NoAffect):
+                                $.messager.alert("提示","没有可以删除的记录");
+                                break;
+                            case @((short)DBOperationStatus.Success):
+                                $.messager.alert("成功","删除成功");
+                                $(tableName).datagrid('reload');
+                                break;
+                            default:
+                                break;
+                        }
+                    }, "json");
+            }
+        });
+    }
+
+    //删除
+    function deleteData(id) {
+        $.messager.confirm("提示","确定要删除吗？",function(r){
+            if (r){
+                $.post("@Url.Content("~/Order/Delete")", { id: id },
+               function (result) {
+                   switch (result) {
+                       case @((short)DBOperationStatus.NoAffect):
+                           $.messager.alert("提示","没有可以删除的记录");
+                           break;
+                       case @((short)DBOperationStatus.Success):
+                           $.messager.alert("成功","删除成功");
+                           $(tableName).datagrid('reload');
+                           break;
+                       default:
+                           break;
+                   }
+               }, "json");
+            }
+        });
+    }
+
+    function ActionSelected(type) {
+
+        var idArray = getSelections(tableName, "OrderID");
+        if (idArray.length <= 0) {
+            $.messager.alert("提示","请选中一个销售订单！");
+            return false;
+        }
+        if (type == "ProductList") {
+            window.open("@Url.Content("~/Order/ViewProductList?id=")" + idArray.join(','), "_blank");
+        }
+        return true;
+    }
+    function OrderRate_EnFormatter(val, row, index) {
+        return val+"%";
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)OrderElementPrivileges.View);
+        var showEdit = @(Model.PageElementPrivileges & (int)OrderElementPrivileges.Edit);
+        var showCheck = @(Model.PageElementPrivileges & (int)OrderElementPrivileges.Check);
+        var showDelete = @(Model.PageElementPrivileges & (int)OrderElementPrivileges.Delete);
+
+        var ops = "";
+
+        if (showView > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Order/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+
+        var OrderStatusID = row.OrderStatusID;
+        var OutLine= @((short)OrderStatusEnum.OutLine);
+        var PendingApproval= @((short)OrderStatusEnum.PendingApproval);
+        var NotPassApproval= @((short)OrderStatusEnum.NotPassApproval);
+
+        if ((OrderStatusID == OutLine || OrderStatusID == NotPassApproval) && showEdit>0) {//草稿或核算不通过
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Order/Edit/"))" + val + "' style='margin: 0 5px;'>编辑</a>";
+        }
+
+        var IsHasApprovalPermission=row.IsHasApprovalPermission;
+        if ((OrderStatusID == PendingApproval ) && showCheck>0 && IsHasApprovalPermission) {//待审批
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Order/Edit/"))" + val + "' style='margin: 0 5px;'>审批</a>";
+        }
+        if (showDelete > 0) {
+            ops += "<button class='btn btn-danger btn-xs w_auto' onclick='deleteData(" + val + ")' style='margin: 0 5px;'>删除</button>";
+        }
+        return ops;
+    }
+</script>

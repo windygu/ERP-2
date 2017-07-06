@@ -1,0 +1,221 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{B2D3855B-F65A-47AE-8452-225099580A7A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ERP.BLL</RootNamespace>
+    <AssemblyName>ERP.BLL</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AutoMapper, Version=4.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.4.1.1\lib\net45\AutoMapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.JScript" />
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\packages\MongoDB.Bson.2.2.0\lib\net45\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>..\packages\MongoDB.Driver.2.2.0\lib\net45\MongoDB.Driver.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core">
+      <HintPath>..\packages\MongoDB.Driver.Core.2.2.0\lib\net45\MongoDB.Driver.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NPOI, Version=2.2.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.2.2.1\lib\net40\NPOI.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NPOI.OOXML, Version=2.2.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.2.2.1\lib\net40\NPOI.OOXML.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NPOI.OpenXml4Net, Version=2.2.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.2.2.1\lib\net40\NPOI.OpenXml4Net.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NPOI.OpenXmlFormats, Version=2.2.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\NPOI.2.2.1\lib\net40\NPOI.OpenXmlFormats.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Consts\AdminConsts.cs" />
+    <Compile Include="Consts\MakerExcel_BuyingConfirmation.cs" />
+    <Compile Include="Consts\MakerExcel_Documents.cs" />
+    <Compile Include="Consts\ExcelHelper.cs" />
+    <Compile Include="Consts\MakerExcel_Customs.cs" />
+    <Compile Include="Consts\ProductBatchImport.cs" />
+    <Compile Include="Consts\ConstsMethod.cs" />
+    <Compile Include="Consts\EasyuiPagenationConsts.cs" />
+    <Compile Include="Consts\Email.cs" />
+    <Compile Include="Consts\MongoDBHelper.cs" />
+    <Compile Include="Consts\ProductExportHelper.cs" />
+    <Compile Include="Consts\MakerExcel_ShippingMark.cs" />
+    <Compile Include="Consts\PurchaseContractHelper.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_F20.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S52.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S56.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_DG.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S05.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S135.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S10.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S13.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S164.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S188.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S220.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S235.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S288.cs" />
+    <Compile Include="Documents\MakerExcel_Documents_S60.cs" />
+    <Compile Include="ERP.DocumentsIndexing\DocumentsIndexingService.cs" />
+    <Compile Include="ERP.DocumentsIndexing_ProductFitting\DocumentsIndexing_ProductFittingService.cs" />
+    <Compile Include="ERP.Finance\FinanceService.cs" />
+    <Compile Include="Consts\MakerExcel_Finance.cs" />
+    <Compile Include="ERP.Finance_ProductFitting\Finance_ProductFittingService.cs" />
+    <Compile Include="ERP.InspectionClearance\InspectionClearanceService.cs" />
+    <Compile Include="ERP.DataDictionary\DataDictionaryServices.cs" />
+    <Compile Include="ERP.Encasement\EncasementService.cs" />
+    <Compile Include="ERP.Address\AddressServices.cs" />
+    <Compile Include="ERP.AdminUser\UserServices.cs" />
+    <Compile Include="ERP.Dictionary\DictionaryServices.cs" />
+    <Compile Include="ERP.HS\HSService.cs" />
+    <Compile Include="ERP.Index\IndexService.cs" />
+    <Compile Include="ERP.Index\IStatHandler.cs" />
+    <Compile Include="ERP.Index\TestHandler.cs" />
+    <Compile Include="ERP.InspectionCustoms\InspectionCustomsService.cs" />
+    <Compile Include="ERP.InspectionExchange\InspectionExchangeService.cs" />
+    <Compile Include="ERP.Inspection\InspectionServices.cs" />
+    <Compile Include="ERP.Order\OrderService.cs" />
+    <Compile Include="ERP.OutSourcing\OutSourcingService.cs" />
+    <Compile Include="ERP.Packs\PacksServices.cs" />
+    <Compile Include="ERP.Customer\OrderCustomerServices.cs" />
+    <Compile Include="ERP.Factory\FactoryServices.cs" />
+    <Compile Include="ERP.PortChargesInvoice\PortChargesInvoiceService.cs" />
+    <Compile Include="ERP.ProducePlan\ProducePlanServices.cs" />
+    <Compile Include="ERP.ProductMixed\ProductMixedServices.cs" />
+    <Compile Include="ERP.ProductFitting\ProductFittingServices.cs" />
+    <Compile Include="ERP.Product\ProductClassificationService.cs" />
+    <Compile Include="ERP.Product\ProductServices.cs" />
+    <Compile Include="Consts\MakerExcel.cs" />
+    <Compile Include="ERP.Purchase\PurchaseContractService.cs" />
+    <Compile Include="ERP.Quote\QuoteApprovalHandler.cs" />
+    <Compile Include="Consts\MakerExcel_Quote.cs" />
+    <Compile Include="ERP.Quote\QuoteService.cs" />
+    <Compile Include="ERP.Rep\RepServices.cs" />
+    <Compile Include="ERP.Sample\SampleService.cs" />
+    <Compile Include="ERP.ShipmentOrder\ShipmentOrderService.cs" />
+    <Compile Include="ERP.ShipmentSample\ShipmentSampleService.cs" />
+    <Compile Include="ERP.Shipment\CabinetService.cs" />
+    <Compile Include="ERP.Shipment\ShipmentAgencyServices.cs" />
+    <Compile Include="ERP.ShippingMark\ShippingMarkService.cs" />
+    <Compile Include="ERP.ThirdPartyVerification\ThirdPartyVerificationService.cs" />
+    <Compile Include="ERP.ThreeTimesQC\ThreeTimesQCService.cs" />
+    <Compile Include="Extensions\QuerybleSortExtensions.cs" />
+    <Compile Include="Extensions\UserServicesExtensions.cs" />
+    <Compile Include="ERP.InspectionReceipt\InspectionReceiptService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ERP.AdminUser\UserMenuServices.cs" />
+    <Compile Include="Reminder\ReminderService.cs" />
+    <Compile Include="Workflow\Approval\ApprovalInspectionCustoms.cs" />
+    <Compile Include="Workflow\Approval\ApprovalInspectionClearance.cs" />
+    <Compile Include="Workflow\Approval\ApprovalDocumentsIndexing.cs" />
+    <Compile Include="Workflow\Approval\ApprovalInspectionExchange.cs" />
+    <Compile Include="Workflow\Approval\ApprovalInspectionReceipt.cs" />
+    <Compile Include="Workflow\Approval\ApprovalFactory.cs" />
+    <Compile Include="Workflow\Approval\ApprovalOrder.cs" />
+    <Compile Include="Workflow\Approval\ApprovalOutsourcingContract.cs" />
+    <Compile Include="Workflow\Approval\ApprovalShippingMark.cs" />
+    <Compile Include="Workflow\Approval\ApprovalPacking.cs" />
+    <Compile Include="Workflow\Approval\ApprovalProducePlan.cs" />
+    <Compile Include="Workflow\Approval\ApprovalPurchaseContract.cs" />
+    <Compile Include="Workflow\Approval\ApprovalQuot.cs" />
+    <Compile Include="Workflow\Approval\ApprovalShipmentNotification.cs" />
+    <Compile Include="Workflow\Approval\ApprovalShipmentOrder.cs" />
+    <Compile Include="Workflow\Approval\ApprovalShipping.cs" />
+    <Compile Include="Workflow\Approval\ApprovalThirdPeriodQC.cs" />
+    <Compile Include="Workflow\Approval\BaseApproval.cs" />
+    <Compile Include="Workflow\Approval\IApproval.cs" />
+    <Compile Include="Workflow\ApprovalService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ERP.DAL\ERP.DAL.csproj">
+      <Project>{411ed33e-c815-434c-a4d8-243d4e41c895}</Project>
+      <Name>ERP.DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ERP.DBModels\ERP.Models.csproj">
+      <Project>{3ac79692-00f7-4f3b-b836-e58cdf4c1f29}</Project>
+      <Name>ERP.Models</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ERP.Tools\ERP.Tools.csproj">
+      <Project>{31758041-4556-497d-b1ad-ffc287aa7cf4}</Project>
+      <Name>ERP.Tools</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <Compile Include="ERP.ShipmentNotification\ERP.ShipmentNotificationService.cs" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

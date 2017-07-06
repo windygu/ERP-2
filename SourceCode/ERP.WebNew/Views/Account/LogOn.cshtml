@@ -1,0 +1,201 @@
+﻿@model ERP.Models.AdminUser.VMLogOnModel
+
+@{
+    ViewBag.Title = "Jet·ERP系统用户登录";
+    Layout = null;
+}
+
+<style type="text/css">
+    .mainLoginFace {
+        position: absolute;
+        width: 902px;
+        height: 502px;
+        display: block;
+        left: 50%;
+        top: 50%;
+        margin-left: -451px;
+        margin-top: -251px;
+        background-color: #c0c0c0;
+        border: 1px solid #c0c0c0;
+        overflow: hidden;
+        box-shadow: 10px 10px 10px #ccc;
+    }
+
+    .login-input {
+        background-color: transparent;
+        border: 0px;
+        width: 100%;
+    }
+
+    #LoginFace {
+        background: url(/images/loginface/lf-mn1.jpg) no-repeat;
+        height: 500px;
+        width: 900px;
+        position: relative;
+        display: block;
+    }
+
+    #txtLoginName {
+        position: absolute;
+        display: block;
+        BACKGROUND-COLOR: transparent;
+        border: 0px;
+        left: 514px;
+        top: 251px;
+        height: 25px;
+        width: 177px;
+    }
+
+    #txtPassword {
+        position: absolute;
+        display: block;
+        BACKGROUND-COLOR: transparent;
+        border: 0px;
+        left: 514px;
+        top: 280px;
+        height: 25px;
+        width: 177px;
+    }
+
+    #txtCheckCode {
+        position: absolute;
+        display: block;
+        BACKGROUND-COLOR: transparent;
+        border: 0px;
+        left: 514px;
+        top: 307px;
+        height: 25px;
+        width: 114px;
+    }
+
+    #labCheckCode {
+        position: absolute;
+        display: block;
+        BACKGROUND-COLOR: transparent;
+        border: 0px;
+        left: 628px;
+        top: 307px;
+        height: 25px;
+        width: 63px;
+    }
+
+    #labSaveSession {
+        position: absolute;
+        display: block;
+        BACKGROUND-COLOR: transparent;
+        border: 0px;
+        left: 513px;
+        top: 335px;
+        height: 25px;
+        width: 177px;
+    }
+
+        #labSaveSession label {
+            font-size: 9pt;
+        }
+
+    #bntLogin {
+        position: absolute;
+        display: block;
+        BACKGROUND-COLOR: transparent;
+        border: 0px;
+        left: 722px;
+        top: 251px;
+        height: 46px;
+        width: 80px;
+        cursor: pointer;
+        background: url(/images/loginface/lf-mn1.jpg) no-repeat -722px -251px;
+    }
+
+        #bntLogin:hover {
+            background: url(/images/loginface/lf-mn2.jpg) no-repeat -722px -251px;
+        }
+
+    #bntHelp {
+        position: absolute;
+        display: block;
+        BACKGROUND-COLOR: transparent;
+        border: 0px;
+        left: 722px;
+        top: 301px;
+        height: 35px;
+        width: 80px;
+        cursor: pointer;
+        background: url(/images/loginface/lf-mn1.jpg) no-repeat -722px -301px;
+    }
+
+        #bntHelp:hover {
+            background: url(/images/loginface/lf-mn2.jpg) no-repeat -722px -301px;
+        }
+
+    .img-sidebar-logo {
+        padding: 20px;
+    }
+
+    .hidden {
+        display: none;
+    }
+</style>
+
+@using (Html.BeginForm("LogOn", "Account", new { returnUrl = ViewBag.ReturnURL }, FormMethod.Post))
+{
+    <div class="mainLoginFace">
+        <div id="LoginFace">
+            <input id="bntLogin" type="submit" title="登录" value="" />
+            <input id="bntHelp" type="button" title="帮助" value="" onclick="getHelpInfo()" />
+            <div id="txtLoginName">
+                @Html.TextBoxFor(u => u.UserName, new { @class = "login-input",@value="" })
+            </div>
+            <div id="txtPassword">
+                @Html.PasswordFor(u => u.Password, new { @class = "login-input", @value = "" })
+            </div>
+            <div id='labCheckCode' title='看不清我，点击更改！'>
+                <img onclick="this.src = '@Url.Content("~/Account/GetValidateCode?")' + Math.random(Math.random() * 1000)" src='@Url.Content("~/Account/GetValidateCode")'>
+            </div>
+            <div id="txtCheckCode">
+                @Html.TextBoxFor(u => u.ValidateCode, new { maxlength = "4", title = "输入右侧的验证码", @class = "login-input", autocomplete = "off" })
+            </div>
+            <div id="labSaveSession">
+                @Html.CheckBoxFor(u => u.RememberMe)
+                @Html.LabelFor(u => u.RememberMe)
+            </div>
+        </div>
+    </div>
+}
+<script src="@Url.Content("~/Scripts/jquery-1.11.3.min.js")" type="text/javascript"></script>
+@*<script src="@Url.Content("~/Scripts/jquery.validate.min.js")" type="text/javascript"></script>*@
+@*<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")" type="text/javascript"></script>*@
+<script src="@Url.Content("~/Scripts/jquery.unobtrusive-ajax.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/jquery.blockui.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/Site.js")" type="text/javascript"></script>
+<script type="text/javascript">
+    $(function () {
+        $('.blockOverlay').click($.unblockUI);
+        if (window != window.top) {
+            window.top.window.location.replace(window.location.href);
+        }
+    });
+
+    function getHelpInfo() {
+        $.blockUI({
+            message: "如果忘记你的密码可以直接与技术部联系，让其帮你重置密码 ! <br/>(点击背景关闭)",
+            css: blockUIStyle
+        });
+        $('.blockOverlay').click($.unblockUI);
+    }
+</script>
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="hidden">
+        @Html.ValidationSummary()
+    </div>
+    <script>
+        $(function () {
+            $.blockUI({
+                message: $(".validation-summary-errors").text() + " ! <br/>(点击背景关闭)",
+                css: blockUIStyle
+            });
+            $('.blockOverlay').click($.unblockUI);
+        });
+    </script>
+}

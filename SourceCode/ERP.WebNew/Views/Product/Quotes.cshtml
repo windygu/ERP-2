@@ -1,0 +1,340 @@
+﻿@model ERP.Models.Product.VMProductSearchModel
+
+@{
+    ViewBag.Title = "客户选样产品";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using Newtonsoft.Json;
+
+@section styles{
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+    <style type="text/css">
+        .search_Condition .multiJKNo > label {
+            width: 11.4% !important;
+            margin-top: 6px;
+        }
+
+        .search_Condition .multiJKNo > div {
+            width: 88.6% !important;
+        }
+
+            .search_Condition .multiJKNo > div > textarea {
+                margin-top: 6px;
+            }
+
+        .search_Condition ul li.search {
+            margin-top: 26px;
+        }
+
+        @@media only screen and (max-width: 1280px) {
+            .search_Condition .multiJKNo > label {
+                width: 17.4% !important;
+                margin-top: 6px;
+            }
+
+            .search_Condition .multiJKNo > div {
+                width: 82.6% !important;
+            }
+
+            .search_Condition ul li.search {
+                margin-top: 36px;
+            }
+        }
+    </style>
+}
+
+<div class="content-wrapper">
+    <div align="right">
+        <form class="form-inline frmFind" role="form" method="get">
+            <input name="$ID" type="hidden" value="product" />
+            <div class="search_Condition box_1k">
+                <ul>
+                    <li>
+                        <label class="col-xs-2">客户：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(u => u.CustomerNO, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">工厂：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(u => u.FactoryName, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">关键词：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(u => u.Keyword, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li class="width100p multiJKNo">
+                        <label class="col-xs-2">货号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextAreaFor(u => u.ProductNO, new { @class = "form-control", placeholder = "可输入分号(;)、逗号(,)、空格以及换行符号隔开多个货号" })
+                        </div>
+                    </li>
+                    <li class="search">
+                        <button id="bntFind" type="submit" onclick="return OA.s(this)" class="btn btn-info">查询</button>
+                        <button id="bntClearAll" type="button" class="btn btn-info">清空所有</button>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="Control">
+                @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProductListElementPrivileges.CreateAsQuote) > 0)
+                {
+                    <button id="bntSearch" wintype="idialog" type="button" winsize="1200,800,yes" onclick="return OA.i(this);" href="@Url.Content("~/Product/Edit/0")?createAsQuote=true" class="btn btn-danger">添加报价产品</button>
+                }
+                @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProductListElementPrivileges.ExportProductExcelForQuote) > 0)
+                {
+                    <button id="bntExportData" type="button" onclick="exportDataList();" class="btn btn-default">导出产品资料</button>
+                }
+                @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProductListElementPrivileges.ViewProductCatelogForQuote) > 0)
+                {
+                    <button type="button" onclick="productExport(1)" class="btn btn-default">查看产品目录</button>
+                }
+            </div>
+        </form>
+    </div>
+
+    <table id="tblProducts" class="easyui-datagrid" style="width:100%;"
+           data-options="resizeHandle:'right',singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/Product/GetAll")?isquoteproduct=@(Request.CurrentExecutionFilePath == "/Product/Quotes" ? "true" : "")&@HttpContext.Current.Request.QueryString',method:'get',onLoadSuccess:onLoadSuccess,onHeaderContextMenu:onHeaderContextMenu,view:groupview,groupField:'RootNo',groupFormatter:groupFormatter,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+        <thead data-options="frozen:true">
+            <tr>
+                <!--基本信息-->
+                <th data-options="field:'ck',checkbox:true"></th>
+                <th data-options="field:'No',width:80,sortable:true,formatter:productNoFormatter">货号</th>
+                <th data-options="field:'NoFactory',width:80,sortable:true">工厂货号</th>
+                <th data-options="field:'Name',width:120,sortable:true,title:'Name'">品名</th>
+                <th data-options="field:'DT_MODIFYDATE',width:150,sortable:true,formatter:formateDate">修改日期</th>
+                <th data-options="field:'ID',width:150,formatter:operationFormatter">操作</th>
+            </tr>
+        </thead>
+        <thead>
+            <tr>
+                <th data-options="field:'IsProductFittingFormatter',width:60,align:'center'">配件产品</th>
+                <th data-options="field:'FactoryName',width:80,sortable:true,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("FactoryName") ? "false" : "true")">工厂</th>
+                <th data-options="field:'Desc',sortable:true,width:130,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Desc") ? "false" : "true")">Product Description</th>
+                <!--产品信息-->
+                <th data-options="field:'CustomerNo',sortable:true,width:110,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CustomerNo") ? "false" : "true")">客户</th>
+                <th data-options="field:'UnitName',sortable:true,width:40,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("UnitName") ? "false" : "true")">单位</th>
+                <th data-options="field:'StyleName',sortable:true,width:40,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("StyleName") ? "false" : "true")">款式</th>
+                <th data-options="field:'Length',sortable:true,width:50,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Length") ? "false" : "true")">长/CM</th>
+                <th data-options="field:'LengthIN',sortable:true,width:50,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("LengthIN") ? "false" : "true")">长/in</th>
+                <th data-options="field:'Width',sortable:true,width:50,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Width") ? "false" : "true")">宽/CM</th>
+                <th data-options="field:'WidthIN',sortable:true,width:60,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("WidthIN") ? "false" : "true")">宽/in</th>
+                <th data-options="field:'Height',sortable:true,width:60,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Height") ? "false" : "true")">高/CM</th>
+                <th data-options="field:'HeightIN',sortable:true,width:60,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("HeightIN") ? "false" : "true")">高/in</th>
+                <th data-options="field:'Weight',sortable:true,width:90,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Weight") ? "false" : "true")">产品重量KGS</th>
+                <th data-options="field:'WeightLBS',sortable:true,width:90,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("WeightLBS") ? "false" : "true")">产品重量LBS</th>
+                <!--PDQ信息-->
+                <th data-options="field:'PDQPackRate',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PDQPackRate") ? "false" : "true")">PDQ装率</th>
+                <th data-options="field:'PDQLength',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PDQLength") ? "false" : "true")">PDQ长/CM</th>
+                <th data-options="field:'PDQLengthIN',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PDQLengthIN") ? "false" : "true")">PDQ长/in</th>
+                <th data-options="field:'PDQWidth',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PDQWidth") ? "false" : "true")">PDQ宽/CM</th>
+                <th data-options="field:'PDQWidthIN',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PDQWidthIN") ? "false" : "true")">PDQ宽/in</th>
+                <th data-options="field:'PDQHeight',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PDQHeight") ? "false" : "true")">PDQ高/CM</th>
+                <th data-options="field:'PDQHeightIN',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PDQHeightIN") ? "false" : "true")">PDQ高/in</th>
+                <!--内盒信息-->
+                <th data-options="field:'InnerBoxRate',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerBoxRate") ? "false" : "true")">内盒率</th>
+                <th data-options="field:'InnerLength',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerLength") ? "false" : "true")">内盒长/CM</th>
+                <th data-options="field:'InnerLengthIN',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerLengthIN") ? "false" : "true")">内盒长/in</th>
+                <th data-options="field:'InnerWidth',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerWidth") ? "false" : "true")">内盒宽/CM</th>
+                <th data-options="field:'InnerWidthIN',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerWidthIN") ? "false" : "true")">内盒宽/in</th>
+                <th data-options="field:'InnerHeight',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerHeight") ? "false" : "true")">内盒高/CM</th>
+                <th data-options="field:'InnerHeightIN',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerHeightIN") ? "false" : "true")">内盒高/in</th>
+                <th data-options="field:'InnerVolume',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerVolume") ? "false" : "true")">内盒材积Cuft</th>
+                <th data-options="field:'InnerWeight',sortable:true,width:90,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerWeight") ? "false" : "true")">内盒重量KGS</th>
+                <th data-options="field:'InnerWeightLBS',sortable:true,width:90,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InnerWeightLBS") ? "false" : "true")">内盒重量LBS</th>
+                <!--外箱信息-->
+                <th data-options="field:'OuterBoxRate',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterBoxRate") ? "false" : "true")">外箱率</th>
+                <th data-options="field:'OuterLength',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterLength") ? "false" : "true")">外箱长/CM</th>
+                <th data-options="field:'OuterLengthIN',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterLengthIN") ? "false" : "true")">外箱长/in</th>
+                <th data-options="field:'OuterWidth',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterWidth") ? "false" : "true")">外箱宽/CM</th>
+                <th data-options="field:'OuterWidthIN',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterWidthIN") ? "false" : "true")">外箱宽/in</th>
+                <th data-options="field:'OuterHeight',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterHeight") ? "false" : "true")">外箱高/CM</th>
+                <th data-options="field:'OuterHeightIN',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterHeightIN") ? "false" : "true")">外箱高/in</th>
+                <th data-options="field:'OuterVolume',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterVolume") ? "false" : "true")">外箱材积Cuft</th>
+                <!--价格信息-->
+                <th data-options="field:'PriceFactory',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PriceFactory") ? "false" : "true")">工厂价格</th>
+                <th data-options="field:'CurrencyName',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CurrencyName") ? "false" : "true")">币种</th>
+                <!--外箱信息-->
+                <th data-options="field:'OuterWeightGross',sortable:true,width:90,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterWeightGross") ? "false" : "true")">外箱毛重KGS</th>
+                <th data-options="field:'OuterWeightGrossLBS',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterWeightGrossLBS") ? "false" : "true")">外箱毛重LBS</th>
+                <th data-options="field:'OuterWeightNet',sortable:true,width:90,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterWeightNet") ? "false" : "true")">外箱净重KGS</th>
+                <th data-options="field:'OuterWeightNetLBS',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OuterWeightNetLBS") ? "false" : "true")">外箱净重LBS</th>
+                <!--产品信息-->
+                <th data-options="field:'PortName',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PortName") ? "false" : "true")">出运港</th>
+                <th data-options="field:'PackingMannerZhName',sortable:true,width:110,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PackingMannerZhName") ? "false" : "true")">包装方式</th>
+                <th data-options="field:'IngredientZh',sortable:true,width:90,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("IngredientZh") ? "false" : "true")">产品成分构成</th>
+                <th data-options="field:'MOQZh',sortable:true,width:70,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("MOQZh") ? "false" : "true")">起订量</th>
+                <!--备注信息-->
+                <th data-options="field:'Comment',width:90,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Comment") ? "false" : "true")">备注</th>
+                <!--报价有效期-->
+                <th data-options="field:'PriceInputDateFormat',width:90,sortable:true,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PriceInputDateFormat") ? "false" : "true")">价格输入日期</th>
+                <th data-options="field:'ValidDateFormat',width:90,sortable:true,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("ValidDateFormat") ? "false" : "true")">有效期</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+@section scripts
+{
+    <script src="~/Scripts/jquery.easyui.datagrid-groupview.js?v=20151224110930"></script>
+
+    <script>
+        $(function () {
+            $(".box_1k").css("overflow", "hidden");
+
+            //清空所有
+            $("#bntClearAll").click(function () {
+                $("#ProductNO").val("");
+                $("#CustomerNO").val("");
+                $("#FactoryName").val("");
+                $("#Keyword").val("");
+            });
+        })
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","PriceInputDate","ValidDate","DT_MODIFYDATE","ID"]);
+        }
+
+        //删除产品
+        function deleteProduct(pid) {
+            $.messager.confirm('提示','是否删除选中的产品?',function(r){
+                if (r){
+                    $.post('@Url.Content("~/Product/Delete")', { idList: pid },
+                       function (result) {
+                           switch (result) {
+                               case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect) :
+                                   $.messager.alert("提示","没有可以删除删除的记录");
+                                   break;
+                               case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success) :
+                                   $.messager.alert("成功","删除成功");
+                                   $('#tblProducts').datagrid('reload');
+                                   break;
+                               default:
+                                   break;
+                           }
+                       }, "json");
+                }
+            });
+        }
+
+        //删除选中
+        function deleteSelected() {
+            var idArray = getAllSelections();
+            if (idArray.length <= 0) {
+                $.messager.alert("提示","请选中要删除的产品！");
+                return;
+            }
+
+            $.messager.confirm('提示','是否删除选中的产品?',function(r){
+                if (r){
+                    $.post("@Url.Content("~/Product/Delete")", { idList: idArray.join(',') },
+                        function (result) {
+                            switch (result) {
+                                case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect) :
+                                    $.messager.alert("提示","没有可以删除删除的记录");
+                                    break;
+                                case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success) :
+                                    $.messager.alert("成功","删除成功");
+                                    $('#tblProducts').datagrid('reload');
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }, "json");
+                }
+            });
+        }
+
+        function getAllSelections(){
+            var idArray = [];
+            var rows = $('#tblProducts').datagrid('getSelections');
+            for(var i=0; i<rows.length; i++){
+                idArray.push(rows[i].ID);
+            }
+            return idArray;
+        }
+
+        //导出选中产品标签
+        function productExport(type) {
+            var idArray = getAllSelections();
+            if (idArray.length <= 0) {
+                $.messager.alert("提示","请选中信息！");
+                return;
+            }
+
+            switch (type) {
+                case 1:
+                    window.open("/Product/ViewProductList?type=1&idList=" + idArray.join(','));//导出产品目录
+                    break;
+                case 2:
+                    window.open("/Product/ViewLabelList?idList=" + idArray.join(','));//查看标签目录
+                    break;
+                case 3:
+                    window.open("/Product/DownLoadLabelList?idList=" + idArray.join(','));//下载产品标签
+                    break;
+                default:
+            }
+        }
+
+        //产品信息数据列表导出
+        function exportDataList() {
+            var idArray = getAllSelections();
+            if (idArray == "") {
+                $.messager.alert("提示","没有可供数据导出，或请选中它们。");
+                return;
+            }
+
+            $.post("@Url.Content("~/Product/Export")", { SelectKeys: idArray.join(',') }, function (result) {
+                if (result) {
+                    if (result.ok == 1) {
+                        window.open(unescape(result.data.filepath));
+                    } else {
+                        $.messager.alert("导出结果",result.msg);
+
+                    }
+                }
+            }, "json")
+        }
+
+        var showEdit = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProductListElementPrivileges.EditProduct);
+        var showView = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProductListElementPrivileges.ViewProduct);
+        var showDelete = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ProductListElementPrivileges.DeleteProduct);
+        var currentUserHierachyID = @(ERP.WebNew.Service.CurrentUserServices.Me.HierachyID);
+        var isSuperAdmin = @(ERP.WebNew.Service.CurrentUserServices.Me.IsSuperAdmin ? "true":"false");
+        function operationFormatter(val, row, index) {
+            var data = $('#tblProducts').datagrid('getData');
+
+            var ops = "";
+            if((showEdit > 0 && data.rows[index].UserHierachyID == currentUserHierachyID) || isSuperAdmin){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Product/Edit/"))" + val + "' style='margin: 0 5px;'>编辑</a>";
+            }
+            if(showView > 0){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Product/Details/"))" + val + "' style='margin: 0 5px;'>查看</a>";
+            }
+            if((showDelete > 0 && data.rows[index].UserHierachyID == currentUserHierachyID) || isSuperAdmin){
+                ops += "<button class='btn btn-danger btn-xs w_auto' onclick='deleteProduct(" + val + ")'>删除</button>";
+            }
+            return ops;
+        }
+
+        function productNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ID , row.No);
+        }
+
+        function onHeaderContextMenu(e, field){
+            e.preventDefault();
+            jav.initGridColumnVisibilityMenus("tblProducts", @(ERP.WebNew.Service.CurrentUserServices.Me.UserID), @((int)ERP.Models.CustomEnums.DatagridCustomColumnVisibilityModules.ProductManagement_QuoteProduct_Management), e.pageX, e.pageY, @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ColumnsVisible))));
+        }
+
+        function groupFormatter(value,rows){
+            return value + ' - ' + rows.length + '个相关产品';
+        }
+    </script>
+}

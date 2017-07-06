@@ -1,0 +1,167 @@
+﻿@model List<ERP.Models.InspectionCustoms.VMInspectionCustoms>
+@using ERP.Models.CustomEnums
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    var ThisModel = Model;
+}
+<!--报关单选项卡-->
+<div id="dvTab_CustomsList" title="报关单">
+    <h3 class="popTitle">报关单信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+    <div class="popContent">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var item2 = Model[i];
+            <div class="Factory">
+                <div style="margin-bottom:0px;" class="modal-title">
+                    <span class="span_InvoiceNO text-center" style="width: 98%;">
+                        @item2.InvoiceNO
+                    </span>
+                    <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+                </div>
+
+                <div class="history_box">
+                    <!--静态显示-->
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Loading port:</label>
+                        <div class="col-sm-8 control-label">
+                            @item2.PortName
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">目的港:</label>
+                        <div class="col-sm-8 control-label">
+                            @item2.DestinationPortName
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label text-danger">运输方式:</label>
+                        <div class="col-sm-8 control-label">
+                            @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                            {
+                                @InlineHelpers.GetSelection(ViewData["list_TransportType"] as SelectList, "ThisModel[" + i + "].TransportType", true, ThisModel[i].TransportType, "txt_TransportType", "txt_TransportType")
+                            }
+                            else
+                            {
+                                @InlineHelpers.GetSelection(ViewData["list_TransportType"] as SelectList, "ThisModel[" + i + "].TransportType", false, ThisModel[i].TransportType, "txt_TransportType", "txt_TransportType")
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label text-danger">结汇方式:</label>
+                        <div class="col-sm-8 control-label">
+                            @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                            {
+                                @InlineHelpers.GetSelection(ViewData["list_ExchangeTypeList"] as SelectList, "ThisModel[" + i + "].ExchangeType", true, ThisModel[i].ExchangeType, "txt_ExchangeType", "txt_ExchangeType")
+                            }
+                            else
+                            {
+                                @InlineHelpers.GetSelection(ViewData["list_ExchangeTypeList"] as SelectList, "ThisModel[" + i + "].ExchangeType", false, ThisModel[i].ExchangeType, "txt_ExchangeType", "txt_ExchangeType")
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">贸易方式:</label>
+                        <div class="col-sm-8 control-label">
+                            GT
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">运抵国(地区):</label>
+                        <div class="col-sm-8 control-label">@item2.CountryName</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label text-danger">境内货源地:</label>
+                        <div class="col-sm-8 control-label">
+                            @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                            {
+                                @Html.TextBoxFor(p => ThisModel[i].SourceAreaWithin, new { @class = "form-control txt_SourceAreaWithin" })
+
+                            }
+                            else
+                            {
+                                @item2.SourceAreaWithin
+
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label text-danger">成交方式:</label>
+                        <div class="col-sm-8 control-label">
+                            @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                            {
+                                @Html.TextBoxFor(p => ThisModel[i].TransactionType, new { @class = "form-control txt_TransactionType" })
+                            }
+                            else
+                            {
+                                @item2.TransactionType
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">包装种类:</label>
+                        <div class="col-sm-8 control-label"> CARTON </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">箱数:</label>
+                        <div class="col-sm-8 control-label"> @item2.ProductsBoxNum </div>
+                    </div>
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">毛重(kg):</label>
+                        <div class="col-sm-8 control-label">@item2.WeightGrossSum</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">净重(kg):</label>
+                        <div class="col-sm-8 control-label">@item2.WeightNetSum</div>
+                    </div>
+                    
+                    <table id="MyPopGrid_Customs_@(i)" class="easyui-datagrid" style="width:100%">
+                        <thead data-options="frozen:true">
+                            <tr>
+                                <th data-options="field:'HsName',width:150,sortable:true,align:'center',editor:{type:'validatebox'}">报关品名</th>
+                                <th data-options="field:'HsEngName',width:150,sortable:true,align:'center',editor:{type:'validatebox'}">报关英文品名</th>
+                            </tr>
+                        </thead>
+                        <thead>
+                            <tr>
+                                <th data-options="field: 'HsCode', width: 100, align: 'center'">报关编码</th>
+                                <th data-options="field: 'ProductPrice', width: 100, align: 'center',editor:{type:'numberbox',options:{precision:4}}">产品单价($)</th>
+                                <th data-options="field: 'Qty', width: 100, align: 'center'">产品数量</th>
+                                <th data-options="field: 'Amount', width: 100, align: 'center'">总金额($)</th>
+                                <th data-options="field: 'CurrencyType', width: 100, align: 'center'">币制</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                         
+                           @for (var j = 0; j < Model[i].list_OrdersProducts.Count; j++)
+                            {
+                                var item = Model[i].list_OrdersProducts[j];
+                                <tr>
+                                    <td style="width:100px;">@item.HsName</td>
+                                    <td style="width:100px;">@item.HsEngName</td>
+                                    <td style="width:100px;">@item.HsCode</td>
+                                    <td style="width:100px;">@item.ProductPrice</td>
+                                    <td style="width:100px;">@item.Qty</td>
+                                    <td style="width:100px;">@item.Amount</td>
+                                    <td style="width:100px;">USD</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+        }
+    </div>
+</div>

@@ -1,0 +1,59 @@
+﻿@model ERP.Models.Encasement.VMFilterEncasement
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@{
+    ViewBag.Title = "已审核出运明细列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var tableName = "#MyGrid";
+
+        var ControllerURL="href='@(Url.Content("~/Encasement/Edit"))?ContractID=";
+
+        var showView = @(Model.PageElementPrivileges & (int)EncasementElementPrivileges.EncasementWatch);
+
+        var showClearData = @(Model.PageElementPrivileges & (int)EncasementElementPrivileges.ClearData);
+
+        function operationFormatter(val, row, index) {
+            
+            var rows = $(tableName).datagrid('getRows');
+            var row = rows[index];
+
+            var ops="";
+            var url=ControllerURL;
+            if (showView>0) {
+                url+= val + "&EncasementID="+row.EncasementID+"&PageType=1'";
+
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' ' "+url +" style='margin: 0 5px;'>查看</a>";
+            }
+
+            if (showClearData > 0) {
+                ops += "<a class='btn btn-danger btn-xs w_auto' href='#' onclick='Confirm(" + row.EncasementID + ")' style='margin:0 5px;'>删除本订单的其他数据</a>";
+            }
+
+            return ops;
+        }
+
+        //列表数据加载成功时，使单元格鼠标移动呈现title
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ContractID"]);
+        }
+
+        function Confirm(id) {
+            $.messager.confirm('提示','确认删除本订单的其他数据吗?',function(r){
+                if (r){
+                    $.post('@Url.Content("~/Encasement/ClearData")', { id: id })
+                    .done(function () {
+                        $(tableName).datagrid('reload');
+                    })
+                }
+            });
+        }
+    </script>
+}

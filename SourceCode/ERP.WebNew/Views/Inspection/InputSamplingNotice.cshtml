@@ -1,0 +1,568 @@
+﻿@{
+    ViewBag.Title = "第三方抽检通知";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+@model ERP.Models.Inspection.VMInspection
+@using ERP.Models.CustomEnums
+
+@{
+    ViewBag.SendEmail_type = UploadFileType.InspectionSamplingNotice;
+    ViewBag.SendEmail_ID = Model.ID;
+}
+
+@section styles{
+
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+    <style type="text/css">
+        .box_1k {
+            margin-top: 0;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+    </style>
+}
+
+<form id="frmEdit" class="form-horizontal bv-form">
+    <!-- ko with: Inspection -->
+    <h3 class="popTitle">
+        基本信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">采购单号：</label>
+            <div class="col-sm-8 control-label">
+                <p class="control-label" name="PurchaseNumber" data-bind="text:PurchaseNumber()"></p>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">工厂：</label>
+            <div class="col-sm-8 control-label">
+                <p class="control-label" name="FactoryName" data-bind="text:FactoryName()"></p>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">第三方名称：</label>
+            <div class="col-sm-8 control-label ">
+                <input type="text" class="form-control" name="InspectionName" data-bind="value:InspectionName()" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="stree col-sm-4 control-label">联系邮箱：</label>
+            <div class="col-sm-8 control-label ">
+                <input type="text" class="form-control" name="InspectionEmail" data-bind="value:InspectionEmail()" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">联系电话：</label>
+            <div class="col-sm-8 control-label ">
+                <input type="text" class="form-control" name="InspectionPhoneNumber" data-bind="value:InspectionPhoneNumber()" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">传真：</label>
+            <div class="col-sm-8 control-label ">
+                <input type="text" class="form-control" name="InspectionFax" data-bind="value:InspectionFax()" />
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">抽检时间：</label>
+            <div class="col-sm-8 control-label ">
+
+                <div class="col-sm-5" style="padding: 0;">
+                    <input class="form-control Wdate" name="StartTime" type="text" value="StartTime" data-bind="value:StartTime()">
+                </div>
+                <div class="col-sm-2" style="text-align:center;">-</div>
+                <div class="col-sm-5" style="padding: 0;">
+                    <input class="form-control Wdate" name="EndTime" type="text" value="EndTime" data-bind="value:EndTime()">
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+    <h3 class="popTitle">
+        抽检内容
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+
+        <table id="ContactsDataList" class="easyui-datagrid" style="width:100%;"
+               data-options="singleSelect:true
+                       ,pageList:[10,20,50,100]
+                       ,pageSize:10
+                       ,pagination:false
+                       ,checkOnSelect:true
+                       ,onBeforeEdit:onBeforeEditContacts
+                       ,onAfterEdit:onAfterEditContacts
+                       ,onCancelEdit:onCancelEditContacts
+                       ,toolbar: '#tbToolbar'">
+            <thead data-options="frozen:true">
+                <tr>
+                    <th data-options="field:'ID',width:100,formatter:actionsFormatterContacts">操作</th>
+                    <th data-options="field:'Name',width:200,sortable:true,editor:{type:'validatebox',options:{required:true}}">抽检项目</th>
+                    <th data-options="field:'Comment',width:300,sortable:true,editor:{type:'validatebox',options:{required:true}}">说明</th>
+                </tr>
+            </thead>
+
+            <tbody data-bind="foreach: Inspection().list_InspectionSamplingNotice">
+                <tr>
+                    <td data-bind="text: ID"></td>
+                    <td data-bind="text: Name"></td>
+                    <td data-bind="text: Comment"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    @Html.Partial("_PartialSendEmail")
+
+    <div class="form-group text-right tijiao">
+        @*@if (Model.StatusID == (short)InspectionStatusEnum.PendingInput)
+            {*@
+        <button id="bntSave" type="button" class="btn btn-primary" data-loading-text="Loading..." data-bind="click: $root.save.bind($data, @((int)InspectionStatusEnum.PendingSent))">保存</button>
+        @*}*@
+        <button id="bntSave" type="button" class="btn btn-danger" data-loading-text="Loading..." data-bind="click: $root.save.bind($data, @((int)InspectionStatusEnum.AlreadySent))">保存并发送</button>
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong><span>字体颜色为红色是必填项。</span>
+    </div>
+
+    <div id="tbToolbar" style="height:auto">
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="appendContact()">
+            新建抽检内容
+        </a>
+    </div>
+</form>
+
+@section scripts{
+
+    <script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+            $("#frmEdit").attr("disabled", "disabled");
+
+            $("#frmEdit .Wdate").blur(function () {
+                var time = $(this).val();
+                $(this).attr("value", time);
+                $('#frmEdit').bootstrapValidator('revalidateField', $(this).prop("name"));
+            });
+        });
+
+        function InspectionModel() {
+            this.PurchaseNumber = ko.observable("@(Model.PurchaseNumber)");
+            this.FactoryName = ko.observable("@(Model.FactoryName)");
+            this.InspectionName = ko.observable("@(Model.InspectionName)");
+            this.InspectionEmail = ko.observable("@(Model.InspectionEmail)");
+            this.InspectionPhoneNumber = ko.observable("@(Model.InspectionPhoneNumber)");
+            this.InspectionFax = ko.observable("@(Model.InspectionFax)");
+            this.StartTime = ko.observable("@(Model.StartTime)");
+            this.EndTime = ko.observable("@(Model.EndTime)");
+            this.InspectionSamplingFee = ko.observable("@(Model.InspectionSamplingFee)");
+            this.StatusID = ko.observable();
+
+            this.list_InspectionSamplingNotice = ko.observableArray();
+
+            this.SendEmail = ko.observableArray();
+        }
+
+        function SendEmailModel() {
+            this.FromAddress = ko.observable("@ViewBag.FromAddress");
+            this.ToAddress = ko.observable("@ViewBag.ToAddress");
+            this.CcAddress = ko.observable();
+            this.BccAddress = ko.observable();
+            this.Subject = ko.observable();
+            this.BodyContent = ko.observable();
+            this.Attachs = ko.observable();
+        }
+
+        function CustomerViewModel() {
+            var self = this;
+
+            self.Inspection = ko.observableArray();
+            self.Inspection(new InspectionModel());
+
+            self.Inspection().list_InspectionSamplingNotice(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_InspectionSamplingNotice))));
+
+            self.SendEmail = ko.observableArray();
+            self.SendEmail(new SendEmailModel());
+
+            self.save = function (status) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+
+                if (bootstrapValidator.isValid()) {
+                    var AlreadySent=@((int)InspectionStatusEnum.AlreadySent);
+                    if (status==AlreadySent) {
+                        if ($("input[name=Subject]").val()=="") {
+                            $.messager.alert("提示","请输入主题");
+                            return;
+                        }
+                    }
+                    self.Inspection().InspectionName($("input[name=InspectionName]").val());
+                    self.Inspection().InspectionEmail($("input[name=InspectionEmail]").val());
+                    self.Inspection().InspectionPhoneNumber($("input[name=InspectionPhoneNumber]").val());
+                    self.Inspection().InspectionFax($("input[name=InspectionFax]").val());
+                    self.Inspection().StartTime($("input[name=StartTime]").val());
+                    self.Inspection().EndTime($("input[name=EndTime]").val());
+                    self.Inspection().InspectionSamplingFee($("input[name=InspectionSamplingFee]").val());
+                    self.Inspection().StatusID(status);
+
+                    self.Inspection().SendEmail(self.SendEmail());
+                    self.Inspection().SendEmail().FromAddress($("input[name=FromAddress]").val());
+                    self.Inspection().SendEmail().ToAddress($("input[name=ToAddress]").val());
+                    self.Inspection().SendEmail().CcAddress($("input[name=CcAddress]").val());
+                    self.Inspection().SendEmail().BccAddress($("input[name=BccAddress]").val());
+                    self.Inspection().SendEmail().Subject($("input[name=Subject]").val());
+                    self.Inspection().SendEmail().BodyContent($("textarea[name=BodyContent]").val());
+
+                    if ($("#fileListTable_Email tbody tr:visible .ServerFileName").length > 0) {
+                        var Attachs = [];//附件
+                        $("#fileListTable_Email tbody tr:visible").each(function () {
+                            var ServerFileName = $(this).find(".ServerFileName").val();
+                            if (ServerFileName != "undefined") {
+                                Attachs.push(ServerFileName);
+                            }
+                        });
+                        self.SendEmail().Attachs(Attachs.join(';'));
+                    }
+
+                    $("#bntSave").removeAttr("disabled");
+
+                    var contactInfos = $('#ContactsDataList').datagrid("getRows");
+                    if (contactInfos && contactInfos.length > 0) {
+                        self.Inspection().list_InspectionSamplingNotice(contactInfos);
+                    }
+                    else {
+                        self.Inspection().list_InspectionSamplingNotice(null);
+                        $.messager.alert("提示", "请输入抽检内容！");
+                        return;
+                    }
+
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@Url.Content("~/Inspection/InputSamplingNotice/" + Model.ID)",
+                        data: ko.toJSON(self.Inspection())
+                    }).done(function (data) {
+                        if (data == 0) {
+                            $.messager.alert("出错了", "出错了");
+                            $("#frmEdit input[name=No]").focus();
+                        }
+                        else {
+                            parentGridReload();
+                            OA.CloseMe(true);
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    });
+                }
+                else {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            };
+        };
+        ko.applyBindings(new CustomerViewModel());
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndexContacts = undefined;
+        function onBeforeEditContacts(index, row) {
+            row.editing = true;
+            updateActionsContact(index);
+        }
+        function onAfterEditContacts(index, row) {
+            row.editing = false;
+            updateActionsContact(index);
+        }
+        function onCancelEditContacts(index, row) {
+            row.editing = false;
+            updateActionsContact(index);
+        }
+        function endEditingContact() {
+            //var isView = ((bool)ViewData["IsView"] ? 1 : 0);
+            //if(isView === 1){
+            //    return false;
+            //}
+            if (editIndexContacts == undefined) { return true }
+            if ($('#ContactsDataList').datagrid('validateRow', editIndexContacts)) {
+                $('#ContactsDataList').datagrid('endEdit', editIndexContacts);
+                editIndexContacts = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editContact(target) {
+            acceptContact(target);
+            $('#ContactsDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendContact() {
+            if (endEditingContact()) {
+                $('#ContactsDataList').datagrid('appendRow', { ID: -1 });
+                editIndexContacts = $('#ContactsDataList').datagrid('getRows').length - 1;
+                $('#ContactsDataList').datagrid('selectRow', editIndexContacts)
+                        .datagrid('beginEdit', editIndexContacts);
+            }
+        }
+        function removeitContact() {
+            if (editIndexContacts == undefined) { return }
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#ContactsDataList').datagrid('cancelEdit', editIndexContacts)
+                        .datagrid('deleteRow', editIndexContacts);
+                    editIndexContacts = undefined;
+                } else {
+                    return;
+                }
+            });
+        }
+        function removeContact(target) {
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#ContactsDataList').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptContact(target) {
+            editIndexContacts = getRowIndex(target);
+
+            if (endEditingContact()) {
+                $('#ContactsDataList').datagrid('acceptChanges');
+            }
+
+        }
+        function rejectContact() {
+            $('#ContactsDataList').datagrid('rejectChanges');
+            editIndexContacts = undefined;
+        }
+        function actionsFormatterContacts(value, row, index) {
+            if (row.editing) {
+                var s = '<input type="button" onclick="acceptContact(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectContact()" value="Cancel" style="width:40px"></input>';
+                return s + c;
+            } else {
+                var e = '<input type="button" onclick="editContact(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeContact(this)" value="Delete" style="width:40px"></input>';
+                return e + d;
+            }
+        }
+        function updateActionsContact(index) {
+            $('#ContactsDataList').datagrid('refreshRow', index);
+        }
+
+        var editIndexAcceptInfo = undefined;
+        function onBeforeEditAcceptInfo(index, row) {
+            editIndexAcceptInfo = index;
+            row.editing = true;
+            updateActionsAcceptInfo(index);
+        }
+        function onAfterEditAcceptInfo(index, row) {
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function onCancelEditAcceptInfo(index, row) {
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function endEditingAcceptInfo() {
+            //var isView =
+            if (isView === 1) {
+                return false;
+            }
+            if (editIndexAcceptInfo == undefined) { return true }
+            if ($('#AcceptInfoDataList').datagrid('validateRow', editIndexAcceptInfo)) {
+                $('#AcceptInfoDataList').datagrid('endEdit', editIndexAcceptInfo);
+                editIndexAcceptInfo = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editAcceptInfo(target) {
+            acceptAcceptInfo(target);
+            $('#AcceptInfoDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendAcceptInfo() {
+            if (endEditingAcceptInfo()) {
+                $('#AcceptInfoDataList').datagrid('appendRow', { ID: -1 });
+                editIndexAcceptInfo = $('#AcceptInfoDataList').datagrid('getRows').length - 1;
+                $('#AcceptInfoDataList').datagrid('selectRow', editIndexAcceptInfo)
+                        .datagrid('beginEdit', editIndexAcceptInfo);
+            }
+        }
+        function removeitAcceptInfo() {
+            if (editIndexAcceptInfo == undefined) { return }
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#AcceptInfoDataList').datagrid('cancelEdit', editIndexAcceptInfo)
+                    .datagrid('deleteRow', editIndexAcceptInfo);
+                    editIndexAcceptInfo = undefined;
+                }
+                else {
+                    return;
+                }
+            });
+        }
+        function removeAcceptInfo(target) {
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#AcceptInfoDataList').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptAcceptInfo(target) {
+            editIndexAcceptInfo = getRowIndex(target);
+
+            if (endEditingContact()) {
+                $('#ContactsDataList').datagrid('acceptChanges');
+            }
+        }
+        function rejectAcceptInfo() {
+            $('#AcceptInfoDataList').datagrid('rejectChanges');
+            editIndexAcceptInfo = undefined;
+        }
+        function actionsFormatterAcceptInfo(value, row, index) {
+            if (row.editing) {
+                var s = '<input type="button" onclick="acceptAcceptInfo(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectAcceptInfo()" value="Cancel" style="width:40px"></input>';
+                return s + c;
+            } else {
+                var e = '<input type="button" onclick="editAcceptInfo(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeAcceptInfo(this)" value="Delete" style="width:40px"></input>';
+                return e + d;
+            }
+        }
+        function updateActionsAcceptInfo(index) {
+            $('#AcceptInfoDataList').datagrid('refreshRow', index);
+        }
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                InspectionName: {
+                    validators: {
+                        notEmpty: { message: '第三方名称不能为空' },
+                        stringLength: {
+                            min: 1,
+                            max: 100,
+                            message: '长度在1-100之间'
+                        },
+                    }
+                },
+                InspectionEmail: {
+                    validators: {
+                        regexp: jav.emailValid,
+                        stringLength: {
+                            min: 1,
+                            max: 100,
+                            message: '长度在1-100之间'
+                        },
+                    }
+                },
+                InspectionPhoneNumber: {
+                    validators: {
+                        stringLength: {
+                            min: 1,
+                            max: 100,
+                            message: '长度在1-100之间'
+                        },
+                    }
+                },
+                InspectionFax: {
+                    validators: {
+                        stringLength: {
+                            min: 1,
+                            max: 50,
+                            message: '长度在1-50之间'
+                        },
+                    }
+                },
+                StartTime: {
+                    validators: {
+                        notEmpty: { message: '抽检时间不能为空' }
+                    }
+                },
+                EndTime: {
+                    validators: {
+                        notEmpty: { message: '抽检时间不能为空' }
+                    }
+                },
+                InspectionSamplingFee: {
+                    validators: {
+                        notEmpty: { message: '抽检费用不能为空' },
+                        regexp: {
+                            regexp: /^(([1-9]\d{0,9})|0)(\.\d{1,2})?$/,
+                            message: '请输入正确的数值！'
+                        }
+                    }
+                },
+                InspectionSamplingFee: {
+                    validators: {
+                        notEmpty: { message: '抽检费用不能为空' },
+                        regexp: {
+                            regexp: /^(([1-9]\d{0,9})|0)(\.\d{1,2})?$/,
+                            message: '请输入正确的数值！'
+                        }
+                    }
+                },
+                FromAddress: {
+                    validators: {
+                        notEmpty: { message: '发件人不能为空' },
+                        regexp: jav.emailValid,
+                    }
+                },
+                ToAddress: {
+                    validators: {
+                        notEmpty: { message: '收件人不能为空' },
+                        regexp: jav.emailValid,
+                    }
+                },
+            }
+        });
+    </script>
+}

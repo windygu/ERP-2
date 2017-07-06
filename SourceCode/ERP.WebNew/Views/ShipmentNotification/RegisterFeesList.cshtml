@@ -1,0 +1,47 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@model ERP.Models.ShipmentOrder.VMShipmentOrderSearch
+
+@{
+    ViewBag.Title = "拉柜费用登记列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function StatusFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+        return row.RegisterFeesStatusName;
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)ShipmentNotificationElementPrivileges.View_RegisterFees);
+        var showAdd = @(Model.PageElementPrivileges & (int)ShipmentNotificationElementPrivileges.Maintenance_RegisterFees);
+        var showEdit = @(Model.PageElementPrivileges & (int)ShipmentNotificationElementPrivileges.Edit_RegisterFees);
+
+        var StatusID = row.RegisterFeesStatusID;
+        var PendingMaintenance= @((short)ShipmentRegisterFeesStatusEnum.PendingMaintenance);
+        var OutLine= @((short)ShipmentRegisterFeesStatusEnum.OutLine);
+
+        var ops = "";
+        if (showView > 0 && StatusID != PendingMaintenance) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentNotification/Edit/"))" + val + "?Type=View_RegisterFees' style='margin: 0 5px;'>查看</a>";
+        }
+        if ((StatusID == PendingMaintenance) && showAdd > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentNotification/Edit/"))" + val + "?Type=Maintenance_RegisterFees' style='margin: 0 5px;'>维护</a>";
+        }
+        if ((StatusID == OutLine) && showEdit > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentNotification/Edit/"))" + val + "?Type=Edit_RegisterFees' style='margin: 0 5px;'>编辑</a>";
+        }
+
+        return ops;
+    }
+</script>

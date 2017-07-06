@@ -1,0 +1,150 @@
+﻿@model ERP.Models.InspectionReceipt.DTOInspectionReceipt
+@using ERP.Models.CustomEnums
+
+@{
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+    ViewBag.Title = Model.PageTitle;
+    ViewBag.SendEmail_type = UploadFileType.InspectionReceiptUploadSended;
+    ViewBag.SendEmail_ID = Model.ShipmentOrderID;
+}
+
+<form id="frmEdit" class="form-horizontal bv-form">
+
+    @Html.Partial("_PartialSendEmail")
+
+    <div class="form-group text-right tijiao">
+        <button id="bntSave" type="button" class="btn btn-danger" data-loading-text="Loading..." data-bind="click: $root.save.bind($data, @((int)InspectionReceiptStatusEnum.Sended))">保存并发送</button>
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong><span>@ERP.Tools.Keys.Tip_Email</span>
+    </div>
+</form>
+
+<script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+@section scripts{
+    <script>
+
+        $(function () {
+            $("#frmEdit").attr("disabled", "disabled");
+            $("#trMakerExcel").hide();
+            var sHtml = "";
+            sHtml = "<tr>";
+            sHtml += "<td>查看PDF文件</td>";
+            sHtml += "<td></td>";
+            sHtml += "<td><button type='button' class='btn btn-primary' onclick=\"DownLoad(@(Model.InspectionReceiptListID))\" style='margin-right: 7px;'>下载</button></td>";
+            sHtml += "</tr>";
+
+            $("#fileListTable_Email").append(sHtml);
+        });
+
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                FromAddress: {
+                    validators: {
+                        notEmpty: { message: '发件人不能为空' },
+                        regexp: jav.emailValid,
+                    }
+                },
+                ToAddress: {
+                    validators: {
+                        notEmpty: { message: '收件人不能为空' },
+                        regexp: jav.emailValid,
+                    }
+                },
+                Subject: {
+                    validators: {
+                        notEmpty: { message: '主题不能为空' },
+                    }
+                },
+            }
+        });
+        //
+        function SendEmailModel() {
+            this.FromAddress = ko.observable("@ViewBag.FromAddress");//
+            this.ToAddress = ko.observable("@ViewBag.ToAddress");
+            this.CcAddress = ko.observable();
+            this.BccAddress = ko.observable();
+            this.Subject = ko.observable();
+            this.BodyContent = ko.observable();
+            this.Attachs = ko.observable();
+        }
+
+        function SendEmailViewModel() {
+            var self = this;
+
+            self.SendEmail = ko.observableArray();
+            self.SendEmail(new SendEmailModel());
+
+            self.save = function (status) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+
+                if (bootstrapValidator.isValid()) {
+
+                    self.SendEmail().FromAddress($("input[name=FromAddress]").val());
+                    self.SendEmail().ToAddress($("input[name=ToAddress]").val());
+                    self.SendEmail().CcAddress($("input[name=CcAddress]").val());
+                    self.SendEmail().BccAddress($("input[name=BccAddress]").val());
+                    self.SendEmail().Subject($("input[name=Subject]").val());
+                    self.SendEmail().BodyContent($("textarea[name=BodyContent]").val());
+
+                    if ($("#fileListTable_Email tbody tr:visible .ServerFileName").length > 0) {
+                        var Attachs = [];//附件
+                        $("#fileListTable_Email tbody tr:visible").each(function () {
+                            var ServerFileName = $(this).find(".ServerFileName").val();
+                            if (ServerFileName != "undefined") {
+                                Attachs.push(ServerFileName);
+                            }
+                        });
+                        self.SendEmail().Attachs(Attachs.join(';'));
+                    }
+
+                    $("#bntSave").removeAttr("disabled");
+                    loading();
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@(Url.Content("~/InspectionReceipt/SendEmail/" + Model.InspectionReceiptListID))",
+                        data: ko.toJSON(self.SendEmail())
+                    }).done(function (data) {
+                        completeLoading();
+                        if (data.ok == 0) {
+                            $.messager.alert("出错了", "出错了，错误信息 = " + data.msg);
+                        }
+                        else {
+                            parentGridReload();
+                            OA.CloseMe(true);
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    });
+                }
+                else {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            };
+        };
+        ko.applyBindings(new SendEmailViewModel());
+
+        function DownLoad(id) {
+            loading();
+            $.post("@(Url.Content("~/InspectionReceipt/DownLoad"))", { "id": id }, function (data) {
+                completeLoading();
+                for (var i = 0; i < data.length; i++) {
+                    window.open(data[i]);
+
+                }
+            });
+        }
+    </script>
+}

@@ -1,0 +1,96 @@
+﻿@using ERP.Models.CustomEnums
+@model ERP.Models.Packs.VMFilterPacks
+
+<div class="content-wrapper">
+    <div align="right">
+        <form class="form-inline frmFind" role="form" method="get">
+            <input type="hidden" name="r" id="r" value="@(new Random().Next(1,999999))" />
+            <div class="search_Condition box_1k">
+                <ul>
+                    <li>
+                        <label class="col-xs-2">采购合同编号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.PurchaseNumber, new { @class = "form-control" })
+                        </div>
+                    </li>
+
+                    <li>
+                        <label class="col-xs-2">采购合同日期：</label>
+                        <div class="col-sm-10">
+                            <div style="padding:0;" class="col-xs-5">@Html.TextBoxFor(d => d.PurchaseDateStart, new { @class = "form-control Wdate" })</div>
+                            <span class="col-xs-1" style="padding:0;">-</span>
+
+                            <div style="padding:0;" class="col-xs-5">@Html.TextBoxFor(d => d.PurchaseDateEnd, new { @class = "form-control Wdate" })</div>
+                        </div>
+                    </li>
+
+                    <li>
+                        <label class="col-xs-2">合同交货日期：</label>
+                        <div class="col-sm-10">
+                            <div style="padding:0;" class="col-xs-5">
+                                @Html.TextBoxFor(d => d.DateStart, new { @class = "form-control Wdate" })
+                            </div>
+                            <span class="col-xs-1" style="padding:0;">-</span>
+
+                            <div style="padding:0;" class="col-xs-5">
+                                @Html.TextBoxFor(d => d.DateEnd, new { @class = "form-control Wdate" })
+                            </div>
+                        </div>
+                    </li>
+
+                    <li>
+                        <label class="col-xs-2">客户：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.CustomerCode, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">工厂：</label><div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.FactoryAbbreviation, new { @class = "form-control" })
+                        </div>
+                    </li>
+
+                    <li>
+                        <label class="col-xs-2">包装资料状态：</label>
+                        <div class="col-sm-10">
+                            @Html.DropDownListFor(d => d.PacksStatus, ViewData["PacksStatus"] as SelectList, new { @class = "form-control" })
+                        </div>
+                    </li>
+
+                    <li class="search">
+                        <button id="bntFind" type="submit" onclick="return OA.s(this)" class="btn btn-info">查询</button>
+                        <button id="bntClearAll" type="button" class="btn btn-info" onclick="clearAll(this)">清空所有</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+
+    <div style="width:100%;overflow:auto" class="box_1k">
+
+        <table id="MyGrid" class="easyui-datagrid" data-options="singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/Packs/GetAll")?PageType=@((int)Model.PageType)&@Request.QueryString',method:'get',onLoadSuccess:LoadDataSuccess,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+            <thead>
+                <tr>
+                    <!--包装资料信息-->
+                    <th data-options="field:'PurchaseNumber',sortable:true,align:'center',width:120">采购合同编号</th>
+                    <th data-options="field:'FactoryAbbreviation',sortable:true,align:'center',width:100">工厂</th>
+                    <th data-options="field:'PurchaseDate',sortable:true,align:'center',width:100">采购合同日期</th>
+                    <th data-options="field:'AllAmount',sortable:true,align:'center',width:100">采购合同金额</th>
+                    <th data-options="field:'CustomerCode',sortable:true,align:'center',width:100">客户</th>
+                    <th data-options="field:'DateStart',sortable:true,align:'center',width:100">交货日期</th>
+                    <th data-options="field:'IsOutsourcing',sortable:true,align:'center',width:60">是否代购</th>
+                    <th data-options="field:'PacksName',align:'center',width:100">包含的标签</th>
+                    <th data-options="field:'PacksStatusID',sortable:true,align:'center',hidden:true">包装资料状态ID</th>
+                    <th data-options="field:'PacksStatus',sortable:true,align:'center',width:80">包装资料状态</th>
+                    <th data-options="field:'IsCanAudit',hidden:true">能否审批</th>
+                    @if (Model.PageType == PageTypeEnum.PendingCheckList)
+                    {
+                        <th data-options="field:'NextApproverDisplayNames',align:'center',width:100">待审批人</th>
+                    }
+                    <th data-options="field:'PacksUpdateDateFormatter',width:130,sortable:true,align:'center'">最后修改时间</th>
+                    <th data-options="field:'PurchaseContractID',align:'center',formatter:operationFormatter">操作</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>

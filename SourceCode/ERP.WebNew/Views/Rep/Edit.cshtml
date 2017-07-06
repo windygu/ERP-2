@@ -1,0 +1,295 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@model ERP.Models.Rep.VMRep
+@using ERP.Models.CustomEnums
+
+<form id="frmEdit" method="post" class="form-horizontal">
+    <h3 class="popTitle">
+        Rep信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+
+    <div class="row popContent" style="overflow: inherit;">
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">Company Name：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.CompanyName, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.CompanyName, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">Contact Person：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.ContactPerson, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.ContactPerson, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">Title：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.Title, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.Title, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">Cell Phone：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.CellPhone, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.CellPhone, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">Tel Number：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.TelNumber, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.TelNumber, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">Company Address：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.CompanyAddress, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.CompanyAddress, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">Email Address：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.EmailAddress, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.EmailAddress, new { @class = "form-control" })
+                }
+            </div>
+        </div>
+    </div>
+
+    @if (Model.PageType != PageTypeEnum.Add)
+    {
+        <h3 class="popTitle">
+            Commission信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            <table id="MyPopGrid" class="easyui-datagrid dg" style="width:100%;overflow:auto;">
+                <thead>
+                    <tr>
+                        <th data-options="field:'CustomerCode',width:120,align:'center',formatter:CustomerCodeFormatter">客户代号</th>
+                        <th data-options="field:'Commission',width:120,align:'center'">Commission%</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    }
+
+    <div class="popBtns">
+        @if (Model.PageType != PageTypeEnum.Details)
+        {
+            <div class="form-group" data-bind="with: RepModel">
+                <div class="col-sm-12">
+                    <div class="text-right">
+                        <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, 1)">保存</button>
+                        <button type="button" onclick="OA.CloseMe()" class="btn btn-default">取消</button>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+        }
+    </div>
+</form>
+
+@section scripts{
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+
+    <script>
+        $(function() {
+
+            var list_Commission = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_Commission)));
+            $("#MyPopGrid").datagrid({
+                data:list_Commission,
+                onLoadSuccess:onLoadSuccess,
+            });
+        });
+
+        function onLoadSuccess() {
+            jav.initGridCellTooltips();
+        }
+
+        function CustomerCodeFormatter(val, row, index) {
+            return "<a class='data-content' href='@(Url.Content("~/Customer/Edit/"))" + row.OCID+"?isview=true' target='_blank'>" + row.CustomerCode + "</a>";
+        }
+
+        function KOModel() {
+            this.RepID = ko.observable(@Model.RepID);
+            this.CompanyName = ko.observable();
+            this.ContactPerson = ko.observable();
+            this.Title = ko.observable();
+            this.CellPhone = ko.observable();
+            this.TelNumber = ko.observable();
+            this.CompanyAddress = ko.observable();
+            this.EmailAddress = ko.observable();
+        }
+
+        function RepEditViewModel() {
+            var self = this;
+
+            self.RepModel = ko.observableArray();
+            self.RepModel(new KOModel());
+
+            var checkSubmit = false;//防止重复提交
+            //提交
+            self.submit = function (StatusID) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+
+                if (!bootstrapValidator.isValid()) {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+
+                self.RepModel().CompanyName($("#CompanyName").val());
+                self.RepModel().ContactPerson($("#ContactPerson").val());
+                self.RepModel().Title($("#Title").val());
+                self.RepModel().CellPhone($("#CellPhone").val());
+                self.RepModel().TelNumber($("#TelNumber").val());
+                self.RepModel().CompanyAddress($("#CompanyAddress").val());
+                self.RepModel().EmailAddress($("#EmailAddress").val());
+
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/Rep/Edit")',
+                    data: ko.toJSON(self.RepModel)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    if (!data.IsSuccess) {
+                        completeLoading();
+                        $.messager.alert("提示", data.Msg);
+                        return;
+                    } else {
+                        $.messager.alert("成功", "保存成功！", "info", function () {
+                            parentGridReload();
+                            OA.CloseMe(true);
+                        });
+                    }
+                });
+            }
+
+        }
+
+        var RepEditViewModel = new RepEditViewModel();
+        ko.applyBindings(RepEditViewModel);
+
+        $(function () {
+            // 表单验证
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+
+                fields: {
+                    CompanyName: {
+                        validators: {
+                            notEmpty: { message: 'Company Name不能为空' },
+                        }
+                    },
+                    //ContactPerson: {
+                    //    validators: {
+                    //        notEmpty: { message: 'Contact Person不能为空' },
+                    //    }
+                    //},
+                    //Title: {
+                    //    validators: {
+                    //        notEmpty: { message: 'Title不能为空' },
+                    //    }
+                    //},
+                    //CellPhone: {
+                    //    validators: {
+                    //        notEmpty: { message: 'Cell Phone不能为空' },
+                    //    }
+                    //},
+                    //TelNumber: {
+                    //    validators: {
+                    //        notEmpty: { message: 'Tel Number不能为空' },
+                    //    }
+                    //},
+                    //CompanyAddress: {
+                    //    validators: {
+                    //        notEmpty: { message: 'Company Address不能为空' },
+                    //    }
+                    //},
+                    EmailAddress: {
+                        validators: {
+                            notEmpty: { message: 'Email Address不能为空' },
+                            regexp: jav.emailValid,
+                        }
+                    },
+                }
+            });
+        });
+    </script>
+}

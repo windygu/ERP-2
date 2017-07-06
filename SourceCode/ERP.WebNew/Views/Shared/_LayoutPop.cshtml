@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/bundles/popup/CommonCSS", "~/bundles/popup/AppCSS")
+    @RenderSection("styles", required: false)
+    <script type="text/javascript" src="~/Scripts/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="~/Content/bootstrap/js/bootstrap.min.js"></script>
+    @* !IMPORTANT by daniel: 不要使用压缩版的min.js，因为在框架代码中修复了加载空的datagrid时，js报错的bug *@
+    <script type="text/javascript" src="~/Scripts/jquery.easyui-1.4.3.js"></script>
+    <script src="~/Content/uploadify-v3.0.0/jquery.uploadify.js"></script>
+    <script src="@Url.Content("~/Scripts/jquery.easyui.datagrid-detailview.js")"></script>
+    <script src="@Url.Content("~/Scripts/Site.js?v=20170608")"></script>
+</head>
+<body style="margin: 20px!important; padding: 0px !important">
+    <div id='PopWinPageHeader' style="height: 90px; color: #333; padding: 2px 10px 10px 15px; margin: -20px!important; text-align: center">
+        <h3 style="margin-top: 20px; margin-bottom: 10px;">
+            @ViewBag.Title
+        </h3>
+        <span style="float: right"><a href="#" title="关闭窗口" onclick="return OA.CloseMe()"><i style="width: 30px; height: 30px; font-size: 18px; color: #999; margin-top: -5px; font-weight: normal; -moz-border-radius: 15px; -webkit-border-radius: 15px; border-radius: 15px; border: 2px #999 solid; line-height: 25px; position: relative; top: -35px; right: 10px" class="fa fa-times"></i></a></span>
+    </div>
+    @RenderBody()
+
+    @Scripts.Render("~/bundles/popup/CommonJS", "~/bundles/popup/AppJS")
+    <script>
+        $(function () {
+            $("select[rel=selectpicker]").selectpicker();
+            $("input.moneyx,input.toUpperRMB")
+            .blur(function () { this.value = OA.fmoney(this.value); })
+            .focus(function () { this.value = OA.rmoney(this.value); })
+            .blur();
+
+            //日期控件
+            $("body").on("click", ".Wdate", function () {
+                WdatePicker();
+            });
+
+            //展开 收缩
+            $(".table_toggle").parent().click(function () {
+                var $this = $(this).find(".table_toggle");
+                if ($this.hasClass("fa-chevron-up")) {
+                    $this.data("up", false).removeClass("fa-chevron-up").addClass("fa-chevron-down");
+                } else {
+                    $this.data("up", true).removeClass("fa-chevron-down").addClass("fa-chevron-up");
+                }
+                $this.parent().next().stop(true, true).fadeToggle();
+            });
+
+            InitPopover();
+
+            $('input').keypress(function (e) {
+                if (e.keyCode == 13) {
+                    e.preventDefault();//禁止回车触发表单提交
+                }
+            });
+        }).keydown(function (event) {
+            if (event.keyCode == 27) {//按住Esc，关闭窗体
+                //OA.CloseMe();
+            }
+        });
+
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

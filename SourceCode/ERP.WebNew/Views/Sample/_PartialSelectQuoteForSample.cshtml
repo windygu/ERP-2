@@ -1,0 +1,73 @@
+﻿@using ERP.Models.CustomEnums;
+<!--销售管理—>寄样管理->新建样品单，选择报价单数据列表页面-->
+<div class="modal fade" id="myModal2" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title">选择报价单</h3>
+            </div>
+            <div class="modal-body">
+                <div class="search_Condition box_1k">
+                    <ul>
+                        <li>
+                            <label class="col-xs-2">报价单号</label><div class="col-sm-10">
+                                <input type="text" class="form-control" name="QuotNumber" />
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-2">客户</label>
+                            <div class="col-sm-10">
+                                @*<input type="text" class="form-control" name="txtCustomerID" />*@
+                                @InlineHelpers.GetSelectionForCustomers(ViewBag.CustomerInfos, "_PartialSelectQuote_CustomerID", true, 0)
+                            </div>
+                        </li>
+                        <li class="search">
+                            <button type="button" class="btn btn-info" onclick="loadQuoteGrid()">查询</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <table id="modalGrid2" class="easyui-datagrid" data-options="singleselect:false,pagelist: [10,20,50,100], pagesize:10,remotesort:true,multisort:true,pagination:true,method:'get',onLoadSuccess:onLoadSuccess" style="display:none;">
+                    <thead>
+                        <tr>
+                            @*<th data-options="field:'ck',checkbox:true"></th>*@
+                            <th data-options="field:'QuotNumber',sortable:true,width:130,align:'center'">报价单号</th>
+                            <th data-options="field:'CustomerCode',sortable:true,width:80,align:'center'">客户</th>
+                            <th data-options="field:'QuotDate',sortable:true,width:80,align:'center'">报价日期</th>
+                            <th data-options="field:'ValidDateFormat',sortable:true,width:80,align:'center'">报价有效期</th>
+                            <th data-options="field:'SalesOrderID',sortable:true,width:100,align:'center'">销售订单ID</th>
+                            <th data-options="field:'AuthorName',sortable:true,width:80,align:'center'">制单人</th>
+                            <th data-options="field:'StatusName',sortable:true,width:80,align:'center'">状态</th>
+                            <th data-options="field:'ID',align:'center',formatter:operationFormatter2">操作</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    function operationFormatter2(val, row, index) {
+        var ops = "<button id='btnSelectQuote' class='button button-flat-primary button-small' onclick='SelectedQuot2(" + val + ")' type='button'><i class='fa fa-check'></i>选中</button>";
+
+        return ops;
+    }
+
+    //加载表格内容
+    function loadQuoteGrid() {
+        $("#modalGrid2").datagrid({
+            url: '@Url.Content("~/Quote/SelectQuote")',
+            queryParams: {
+                QuotNumber: $("#myModal2 input[name=QuotNumber]").val(),
+                CustomerID: $("#myModal2 #_PartialSelectQuote_CustomerID").val(),
+                SelectQuoteOccasion:@((int)SelectQuoteOccasionEnum.Sample),
+            }
+        });
+    }
+
+    function onLoadSuccess() {
+        jav.initGridCellTooltips(["ID"]);
+    }
+</script>

@@ -1,0 +1,654 @@
+﻿@using ERP.Models.CustomEnums
+@model ERP.Models.ThirdPartyVerification.VMThirdPartyVerification
+
+@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+<style>
+    .form-control-feedback {
+        right: 10px;
+    }
+</style>
+
+@using (Ajax.BeginForm("Edit", "ThirdPartyVerification", null, new AjaxOptions() { HttpMethod = "Post", OnBegin = "OnBegin", OnSuccess = "OnSuccess" }, new { id = "frmEdit" }))
+{
+    <div id="inline">
+
+        <h3 class="popTitle">
+            销售订单信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">销售订单编号：</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    @Model.Order.OrderNumber
+                </div>
+            </div>
+
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">&nbsp;</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    &nbsp;
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">销售订单来源：</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    @Model.Order.OrderOrigin
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">Shipping Window：</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    @Model.Order.OrderDateStart - @Model.Order.OrderDateEnd
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">出运港：</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    @Model.Order.PortName
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">DC：</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    @Model.Order.DestinationPortName
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">@ERP.Tools.Keys.CustomerPO：</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    @Model.Order.POID
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">@ERP.Tools.Keys.ECHPO：</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    @Model.Order.EHIPO
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">客户：</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    @Model.Order.CustomerNo
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">客户下单日期：</label>
+                <div class="col-sm-8 control-label" style="text-align: left;">
+                    @Model.Order.CustomerDate
+                </div>
+            </div>
+
+            <div class="form-group col-sm-6">
+                <label class="col-sm-4 control-label text-danger">我司承担费用：</label>
+                <div class="col-sm-8 control-label ">
+                    <div class="col-sm-1 control-label ">
+                        @ERP.Tools.Keys.RMB_Sign
+                    </div>
+                    <div class="col-sm-10 control-label">
+                        @if (Model.PageType == PageTypeEnum.Details)
+                        {
+                            @Model.InspectionVerificationFee
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(d => d.InspectionVerificationFee, new { @class = "form-control", disabled = "disabled" })
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group col-sm-6">
+                <label class="col-sm-4 control-label text-danger"></label>
+                <div class="col-sm-8 control-label ">
+                </div>
+            </div>
+            <div class="form-group col-sm-6">
+                <label class="col-sm-4 control-label text-danger">工厂承担费用：</label>
+                <div class="col-sm-8 control-label ">
+                    <div class="col-sm-1 control-label ">
+                        @ERP.Tools.Keys.RMB_Sign
+                    </div>
+                    <div class="col-sm-10 control-label ">
+
+                        @if (Model.PageType == PageTypeEnum.Details)
+                        {
+                            @Model.InspectionVerificationFee_ForFactory
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(d => d.InspectionVerificationFee_ForFactory, new { @class = "form-control", disabled = "disabled" })
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="popTitle">
+            第三方验货的产品信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent select_table row chanpin">
+
+            <div class="table-responsive">
+                <table id="MyPopGrid" class="table table-striped table-bordered table-advance table-editable">
+                    <thead>
+                        <tr class="t_bg">
+                            <th data-options="field:'No',width:100,align:'center',formatter:productNoFormatter">Item NO.</th>
+                            <th data-options="field:'SkuNumber',width:100,align:'center'">SKU#</th>
+                            <th data-options="field:'FactoryName',width:100,align:'center'">FTY</th>
+                            <th data-options="field:'Desc',width:200,align:'center'">Description</th>
+                            <th data-options="field:'Qty',width:100,align:'center'">Qty</th>
+                            <th data-options="field:'InspectionVerificationFee',width:100,editor:{type:'numberbox',options:{precision:2}}">我司承担费用</th>
+                            <th data-options="field:'InspectionVerificationFee_ForFactory',width:100,editor:{type:'numberbox',options:{precision:2}}">工厂承担费用</th>
+
+                            <th data-options="field:'ID',width:80,align:'center',hidden:true"></th>
+                            <th data-options="field:'ProductID',width:80,align:'center',hidden:true"></th>
+                            <th data-options="field:'Image',width:80,align:'center',hidden:true"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody data-bind="foreach: Inspection().list_OrderProduct">
+                        <tr>
+                            <td data-bind="text: No"></td>
+                            <td data-bind="text: SkuNumber"></td>
+                            <td data-bind="text: FactoryName"></td>
+                            <td data-bind="text: Desc"></td>
+                            <td data-bind="text: Qty"></td>
+                            <td data-bind="text: InspectionVerificationFee"></td>
+                            <td data-bind="text: InspectionVerificationFee_ForFactory"></td>
+
+                            <td data-bind="text:ID"></td>
+                            <td data-bind="text:ProductID"></td>
+                            <td data-bind="text:Image"></td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <h3 class="popTitle">
+            第三方验货备注
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            @if (Model.PageType == PageTypeEnum.Details)
+            {
+                @Html.TextAreaFor(d => d.Comment, new { @class = "form-control", disabled = "disabled" })
+            }
+            else
+            {
+                @Html.TextAreaFor(d => d.Comment, new { @class = "form-control" })
+            }
+        </div>
+
+        @if (Model.PageType == PageTypeEnum.Edit)
+        {
+            <h3 class="popTitle">
+                上传第三方验货附件
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="row popContent" style="overflow: inherit;">
+                <div class="form-group col-sm-6 has-feedback">
+                    <label class="col-sm-4 control-label">附件：</label>
+                    <div class="col-sm-8 control-label">
+                        <div class="uploadify">
+                            <input type="file" name="uploadify" id="uploadify" />
+                            <a class="a_upload" onclick="UpLoadFile()">上传</a>
+                            <div class="fileQueue">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <h3 class="popTitle">
+            已上传的第三方验货附件
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <div class="history_box">
+                <table id="fileListTable" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr class="t_bg">
+                            <td width="50%">附件名称</td>
+                            <td width="20%">上传时间</td>
+                            <td width="30%">操作</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.UpLoadFileList != null)
+                        {
+                            int i = 0;
+                            foreach (var item in Model.UpLoadFileList.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                                <tr>
+                                    <td class="hide">
+                                        <input name="UpLoadFileList[@(i)].ID" type="hidden" value="@item.ID" class="ID" />
+                                        <input class="IsDelete" name="UpLoadFileList[@(i)].IsDelete" type="hidden" value="@item.IsDelete" />
+                                    </td>
+                                    <td>@item.DisplayFileName</td>
+                                    <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+                                        @if (Model.PageType == PageTypeEnum.Edit)
+                                        {
+                                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                        }
+                                    </td>
+                                </tr>
+                                ++i;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="popBtns">
+            @switch (Model.PageType)
+            {
+                case PageTypeEnum.Edit:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.save.bind($data, @((int)ThirdPartyVerificationStatusEnum.OutLine))">保存为草稿</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: $root.save.bind($data, @((int)ThirdPartyVerificationStatusEnum.HadUpload))">保存并上传</button>
+                    <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                    break;
+                case PageTypeEnum.Details:
+                    <button type="button" class="btn btn-default" onclick="OA.CloseMe()">关闭</button>
+                    break;
+                default:
+                    break;
+            }
+        </div>
+    </div>
+}
+
+@section scripts{
+
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+
+    <script>
+        $(function () {
+
+            $("#MyPopGrid").datagrid({
+                rownumbers: true,
+                checkOnSelect: true,
+                onBeforeEdit: onBeforeEditContacts,
+                onAfterEdit: onAfterEditContacts,
+                onCancelEdit: onCancelEditContacts,
+                onClickCell: onClickCell,
+                onBeginEdit: onBeginEdit,
+                onLoadSuccess: onLoadSuccess,
+            });
+
+            uploadifyInitial();
+        });
+
+        function onLoadSuccess() {
+            InitPopover();
+        }
+
+        function uploadifyInitial() {
+            $("#uploadify").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@((short)UploadFileType.ThirdPartyVerification)&id=@Model.ID', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+                fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                //uploadLimit: 10, //同时上传多小个文件
+                sizeLimit: 100000000, //限制上传大小10M
+                //queueSizeLimit: 10, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) { }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) { }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    var count = $("#fileListTable tr:not(:first)").length;
+                    var serverFileName = $.parseJSON(response).data.NewFilePath;
+                    var displayFileName = $.parseJSON(response).data.OldFileName;
+
+                    var fileListStr = '<tr><td class="hide">';
+                    fileListStr += '<input name="UpLoadFileList[' + count + '].DisplayFileName" value="' + displayFileName + '" class="DisplayFileName" />';
+                    fileListStr += '<input name="UpLoadFileList[' + count + '].ServerFileName" value="' + serverFileName + '" class="ServerFileName" />';
+                    fileListStr += '<input name="UpLoadFileList[' + count + '].DT_CREATEDATE" value="' + formateDate2(new Date()) + '" class="DT_CREATEDATE" />';
+                    fileListStr += '<input name="UpLoadFileList[' + count + '].IsDelete"  class="IsDelete" class="IsDelete" />';
+                    fileListStr += '</td>';
+
+                    fileListStr += '<td>' + displayFileName + '</td>';
+                    fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                    fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button>';
+                    fileListStr += '<button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button>';
+                    fileListStr += '</td>';
+
+                    fileListStr += '</tr>';
+                    $("#fileListTable").prepend(fileListStr);
+                }  //当单个文件上传成功后激发的事件
+            });
+        }
+
+        //上传
+        function UpLoadFile() {
+            $('#uploadify').uploadifyUpload('*');
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+
+        //删除
+        function DeleteFile(e, path) {
+            $(e).closest("tr").find(".IsDelete").val(true);
+            $(e).closest("tr").hide();
+        }
+
+
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                InspectionVerificationFee: {
+                    validators: {
+                        notEmpty: { message: '我司承担费用不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                InspectionVerificationFee_ForFactory: {
+                    validators: {
+                        notEmpty: { message: '工厂承担费用不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                }
+            }
+        });
+
+        function InspectionModel() {
+            this.ID = ko.observable("@(Model.ID)");
+            this.InspectionVerificationFee = ko.observable("@(Model.InspectionVerificationFee)");
+            this.InspectionVerificationFee_ForFactory = ko.observable("@(Model.InspectionVerificationFee_ForFactory)");
+            this.Comment = ko.observable();
+            this.StatusID = ko.observable();
+
+            this.list_OrderProduct = ko.observableArray();
+            this.UpLoadFileList = ko.observableArray();
+        }
+
+
+        function UploadFileModel(item) {
+            this.ID = ko.observable(item.ID);
+            this.DisplayFileName = ko.observable(item.DisplayFileName);
+            this.ServerFileName = ko.observable(item.ServerFileName);
+            this.DT_CREATEDATE = ko.observable(item.DT_CREATEDATE);
+            this.IsDelete = ko.observable(item.IsDelete);
+        }
+
+        function CustomerViewModel() {
+            var self = this;
+
+            self.Inspection = ko.observableArray();
+            self.Inspection(new InspectionModel());
+
+            self.Inspection().list_OrderProduct(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Order.list_OrderProduct))));
+
+            self.save = function (StatusID) {
+
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (bootstrapValidator.isValid()) {
+
+                    self.Inspection().InspectionVerificationFee($("input[name=InspectionVerificationFee]").val());
+                    self.Inspection().InspectionVerificationFee_ForFactory($("input[name=InspectionVerificationFee_ForFactory]").val());
+                    self.Inspection().Comment($("#Comment").val());
+                    self.Inspection().StatusID(StatusID);
+
+                    var rows = $('#MyPopGrid').datagrid("getRows");
+                    self.Inspection().list_OrderProduct(rows);
+                    
+                    var temp = [];
+                    if ($("#fileListTable tbody tr").length > 0) {
+                        var UploadFileModel_temp = {};
+                        $("#fileListTable tbody tr").each(function () {
+                            UploadFileModel_temp.ID = $(this).find(".ID").val();
+                            UploadFileModel_temp.DisplayFileName = $(this).find(".DisplayFileName").val();
+                            UploadFileModel_temp.ServerFileName = $(this).find(".ServerFileName").val();
+                            UploadFileModel_temp.DT_CREATEDATE = $(this).find(".DT_CREATEDATE").val();
+                            UploadFileModel_temp.IsDelete = $(this).find(".IsDelete").val();
+                            temp.push(new UploadFileModel(UploadFileModel_temp));
+                        });
+                        self.Inspection().UpLoadFileList(temp);
+                    }
+
+
+
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@Url.Content("~/ThirdPartyVerification/Edit/" + Model.ID)",
+                        data: ko.toJSON(self.Inspection())
+                    }).done(function (data) {
+                        if (data == 0) {
+                            $.messager.alert("出错了", "出错了！");
+                        }
+                        else {
+                            parentGridReload();
+                            OA.CloseMe(true);
+                        }
+                    });
+                }
+                else {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            };
+
+        };
+        ko.applyBindings(new CustomerViewModel());
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndexContacts = undefined;
+        function onBeforeEditContacts(index, row) {
+            row.editing = true;
+            updateActionsContact(index);
+        }
+        function onAfterEditContacts(index, row) {
+            row.editing = false;
+            updateActionsContact(index);
+        }
+        function onCancelEditContacts(index, row) {
+            row.editing = false;
+            updateActionsContact(index);
+        }
+        function endEditingContact() {
+            //var isView = ((bool)ViewData["IsView"] ? 1 : 0);
+            //if(isView === 1){
+            //    return false;
+            //}
+            if (editIndexContacts == undefined) { return true }
+            if ($('#MyPopGrid').datagrid('validateRow', editIndexContacts)) {
+                $('#MyPopGrid').datagrid('endEdit', editIndexContacts);
+                editIndexContacts = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editContact(target) {
+            acceptContact(target);
+            $('#MyPopGrid').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendContact() {
+            if (endEditingContact()) {
+                $('#MyPopGrid').datagrid('appendRow', { ID: -1 });
+                editIndexContacts = $('#MyPopGrid').datagrid('getRows').length - 1;
+                $('#MyPopGrid').datagrid('selectRow', editIndexContacts)
+                        .datagrid('beginEdit', editIndexContacts);
+            }
+        }
+        function removeitContact() {
+            if (editIndexContacts == undefined) { return }
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#MyPopGrid').datagrid('cancelEdit', editIndexContacts)
+                        .datagrid('deleteRow', editIndexContacts);
+                    editIndexContacts = undefined;
+                } else {
+                    return;
+                }
+            });
+        }
+        function removeContact(target) {
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#MyPopGrid').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+
+        function onBeginEdit(index, row) {
+            $(".datagrid-editable-input,.textbox-text,.validatebox-text").on("keypress", function (e) {
+                if (e.keyCode == 13) {
+                    editAcceptInfo(row);
+                    return false;
+                }
+            });
+        }
+        function editAcceptInfo(target) {
+            acceptAcceptInfo(target);
+        }
+
+        function onClickCell(index, field) {
+            if (editIndexContacts != index) {
+                if (endEditingContact()) {
+                    $('#MyPopGrid').datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $('#MyPopGrid').datagrid('getEditor', { index: index, field: field });
+                    if (ed) {
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndexContacts = index;
+                } else {
+                    setTimeout(function () {
+                        $('#MyPopGrid').datagrid('selectRow', editIndexContacts);
+                    }, 0);
+                }
+            }
+
+            CalculatorFees();
+        }
+
+        function updateActionsContact(index) {
+            $('#MyPopGrid').datagrid('refreshRow', index);
+        }
+
+        var editIndex = undefined;
+        function onBeforeEditAcceptInfo(index, row) {
+            editIndex = index;
+            row.editing = true;
+            updateActionsAcceptInfo(index);
+        }
+        function onAfterEditAcceptInfo(index, row) {
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function onCancelEditAcceptInfo(index, row) {
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function acceptAcceptInfo(target) {
+            editIndex = getRowIndex(target);
+
+            if (endEditingContact()) {
+                $('#MyPopGrid').datagrid('acceptChanges');
+            }
+            CalculatorFees();
+        }
+
+        //计算我司承担费用、工厂承担费用
+        function CalculatorFees() {
+            var rows = $('#MyPopGrid').datagrid('getRows');
+            var InspectionVerificationFee = 0;
+            var InspectionVerificationFee_ForFactory = 0;
+            for (var i = 0; i < rows.length; i++) {
+
+                if (rows[i].InspectionVerificationFee != parseFloat(rows[i].InspectionVerificationFee)) {
+                    rows[i].InspectionVerificationFee = 0;
+                }
+                if (rows[i].InspectionVerificationFee_ForFactory != parseFloat(rows[i].InspectionVerificationFee_ForFactory)) {
+                    rows[i].InspectionVerificationFee_ForFactory = 0;
+                }
+
+                InspectionVerificationFee += parseFloat(rows[i].InspectionVerificationFee);
+                InspectionVerificationFee_ForFactory += parseFloat(rows[i].InspectionVerificationFee_ForFactory);
+            }
+            $("#InspectionVerificationFee").val(NumberToRound(InspectionVerificationFee, 2));
+            $("#InspectionVerificationFee_ForFactory").val(NumberToRound(InspectionVerificationFee_ForFactory, 2));
+        }
+
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                InspectionVerificationFee: {
+                    validators: {
+                        notEmpty: { message: '我司承担费用不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                InspectionVerificationFee_ForFactory: {
+                    validators: {
+                        notEmpty: { message: '工厂承担费用不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                }
+            }
+        });
+
+        var checkSubmit = false;//防止重复提交
+        function OnBegin() {
+            return false;
+        }
+
+        function OnSuccess() {
+            checkSubmit = false;
+
+            parentGridReload();
+            OA.CloseMe(true);
+        }
+
+
+        function productNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+        }
+    </script>
+}

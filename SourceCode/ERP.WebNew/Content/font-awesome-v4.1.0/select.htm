@@ -1,0 +1,141 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Basic Page Needs
+ ================================================== -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Font Awesome, the iconic font designed for Bootstrap">
+  <meta name="author" content="Dave Gandy">
+  <title>图标选择</title>
+<link rel="stylesheet" href="../bootstrap/css/bootstrap.min.css">
+<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+<script type="text/jscript" src="../jquery-1.11.0/jquery-1.11.0.min.js"></script>
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script  type="text/jscript" src="../bootstrap/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="css/font-awesome.css"/>
+  <link href="../../admin/assets/plugins/bootstrap-modal/css/bootstrap-modal-bs3patch.css" rel="stylesheet" />
+  <link href="../../admin/assets/plugins/bootstrap-modal/css/bootstrap-modal.css" rel="stylesheet" />
+   <script src="../../admin/assets/plugins/bootstrap-modal/js/bootstrap-modalmanager.js"></script>
+    <script src="../../admin/assets/plugins/bootstrap-modal/js/bootstrap-modal.js"></script>
+    <script src="../oa/oa.js"></script>
+ <!--[if lt IE 9]>
+    <script src="../js/html5shiv.js"></script>
+    <script src="../js/respond.min.js"></script>
+  <![endif]-->
+  <style>
+  #iconList ul
+  { margin:10px;
+    padding:0px;
+    border:0px;
+  }
+ #iconList ul li 
+  {  display:block;
+     width:22px;
+     height:22px;
+     float:left;
+     overflow:hidden;
+     text-align:center;
+     line-height:22px;
+     
+   }
+#iconList ul li i
+   { color:gray;
+     font-size:16px;
+    }
+
+#iconList ul li i.no
+   { color:#f0f0f0 ;
+     }
+  
+    
+#iconList ul li  a:hover i,
+#iconList ul li  a:hover i.bo
+   { color:red !important;
+     font-size:24px;
+     }
+        
+  </style>
+  <script type="text/javascript">
+  function sm(obj)
+  {
+     var s=$(obj).find("i").attr("class");
+     $("#iconClass").val(s);
+//     if (CopyToClipBoard(s)==false)
+//     {
+//          alert("无法将图标class复制到剪贴板中, 请手工操作!");
+//     }
+  }
+  
+  $(function()
+  {
+      //var fa=
+      //var glyphicon="adjust|align-center|align-justify|align-left|align-right|arrow-down|arrow-left|arrow-right|arrow-up|asterisk|backward|ban-circle|barcode|bell|bold|book|bookmark|briefcase|bullhorn|calendar|camera|certificate|check|chevron-down|chevron-left|chevron-right|chevron-up|circle-arrow-down|circle-arrow-left|circle-arrow-right|circle-arrow-up|cloud|cloud-download|cloud-upload|cog|collapse-down|collapse-up|comment|compressed|copyright-mark|credit-card|cutlery|dashboard|download|download-alt|earphone|edit|eject|envelope|euro|exclamation-sign|expand|export|eye-close|eye-open|facetime-video|fast-backward|fast-forward|file|film|filter|fire|flag|flash|floppy-disk|floppy-open|floppy-remove|floppy-save|floppy-saved|folder-close|folder-open|font|forward|fullscreen|gbp|gift|glass|globe|hand-down|hand-left|hand-right|hand-up|hd-video|hdd|header|headphones|heart|heart-empty|home|import|inbox|indent-left|indent-right|info-sign|italic|leaf|link|list|list-alt|lock|log-in|log-out|magnet|map-marker|minus|minus-sign|move|music|new-window|off|ok|ok-circle|ok-sign|open|paperclip|pause|pencil|phone|phone-alt|picture|plane|play|play-circle|plus|plus-sign|print|pushpin|qrcode|question-sign|random|record|refresh|registration-mark|remove|remove-circle|remove-sign|repeat|resize-full|resize-horizontal|resize-small|resize-vertical|retweet|road|save|saved|screenshot|sd-video|search|send|share|share-alt|shopping-cart|signal|sort|sort-by-alphabet|sort-by-alphabet-alt|sort-by-attributes|sort-by-attributes-alt|sort-by-order|sort-by-order-alt|sound-5-1|sound-6-1|sound-7-1|sound-dolby|sound-stereo|star|star-empty|stats|step-backward|step-forward|stop|subtitles|tag|tags|tasks|text-height|text-width|th|th-large|th-list|thumbs-down|thumbs-up|time|tint|tower|transfer|trash|tree-conifer|tree-deciduous|unchecked|upload|usd|user|volume-down|volume-off|volume-up|warning-sign|wrench|zoom-in|zoom-out";
+      var t=OA.faIcons;
+      
+      var html="";
+      for(var i=0;i<t.length;i++)
+           html+="<li><a href=# onclick=sm(this) title='fa-"+t[i]+"'><i class='fa fa-"+t[i]+"'></i></a></li>";
+      t=OA.glyphIcons;
+      for(var i=0;i<t.length;i++)
+           html+="<li><a href=# onclick=sm(this) title='glyphicon-"+t[i]+"'><i class='glyphicon glyphicon-"+t[i]+"'></i></a></li>";
+     $("#iconList").html("<ul>"+html+"</ul>");
+     
+     
+     $('#clickme').click(function(){ $("#responsive").modal({keyboard: true}); });
+     
+     $("#iconClass").keyup(function(){
+     
+      var s=$.trim($(this).val());
+      if(s=="")
+         $("#iconList li i").removeClass("no");
+      else
+      {   s=s.split(' ');
+          $("#iconList li").each(function()
+          {  
+             var ts= $(this).find("a").attr("title");
+             var b=false;
+             for(var ti=0;ti<s.length;ti++)
+               {  
+                  if( ts.indexOf($.trim(s[ti]))>=0 )
+                   {  b=true; break;}
+                }  
+                
+             if(b)
+                $(this).find("a i").removeClass("no");
+             else
+                $(this).find("a i").addClass("no");
+             
+              
+          });
+     }
+     });
+     }
+);
+
+function EndMe()
+{
+  var s=[];
+  $("input[name=userID]:checked").each(function(o)
+  {  s.push(getUser($(this)));
+  });
+  if(s.length==0)
+    { alert("没有用户选中！");return false;}
+  
+  OA.SetReturnVal(s);
+  //OA.ShowJson(s);
+  OA.CloseMe();
+}
+  </script>
+</head>
+<body style="margin:20px !important">
+<h4><i class='glyphicon glyphicon-th'></i> 系统内部图标选择 (设计：江龙, Build: 20140516)</h4>
+<blockquote><small>点击下述图标可以将类名复制到下述文本框或者在下述框中输入图标class进行搜索。
+
+<input class="form-control"  id='iconClass' /></small></blockquote>
+
+<div class="row fontawesome-icon-list" id="iconList">
+
+</div>
+</body>
+</html>

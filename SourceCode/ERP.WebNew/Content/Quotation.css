@@ -1,0 +1,558 @@
+/* 框架 */
+
+#Product_box {
+	width:1200px;
+	margin:0 auto
+}
+#Product_box .Product_top {
+	width:95%;
+	padding:10px 0;
+	text-align:right;
+}
+#Product_box .Product_list {
+	width:100%;
+	border:1px #ccc solid;
+	min-height:1000px;
+	border-bottom:20px #666 solid;
+	float:left;
+	margin-bottom:40px
+}
+#Product_box .Product_list .Product_left {
+	width:23.2%;
+	min-height:1000px;
+	float:left
+}
+#Product_box .Product_list .Product_right {
+	width:76.77%;
+	min-height:1000px;
+	border-left:1px #ccc solid;
+	float:left
+}
+#Product_box .Product_list .Product_left .logo {
+	width:100%;
+	padding:20px 0 20px 20px
+}
+#Product_box .Product_list .Product_title {
+	padding:20px 0 20px 20px;
+	color:#666;
+	border-bottom:1px #ccc solid;
+	border-top:1px #ccc solid
+}
+#Product_box .Product_list .Product_title .F14 {
+	color:#999
+}
+#Product_box .Product_list .Product_left .menu_left {
+	width:100%
+}
+#Product_box .Product_list .Product_right .map_menu {
+	width:100%;
+	padding:13px 15px;
+	border-bottom:1px #ccc solid;
+	color:#666
+}
+#Product_box .Product_list .Product_right .map_menu a {
+	color:#666
+}
+#Product_box .Product_list .Product_right .map_menu a:hover {
+	color:#2CA9E0
+}
+
+.page {
+	width:100%;
+	text-align:right;
+	padding-top:10px;
+	float:left
+}
+.page a {
+	padding:5px 10px 5px 10px;
+	border:1px #ccc solid;
+	margin-top:0px;
+}
+.page input {
+	width:40px;
+	padding:5px;
+	border:0px;
+	border:1px #ccc solid;
+	font-size:12px;
+	margin-top:-1px;
+	margin-right:1px
+}
+.page .btn {
+	min-width:22px;
+	padding:3px;
+	font-size:14px;
+	background:#666;
+	border:1px #666 solid
+}
+.page .bule {
+	background:#2CA9E1;
+	color:#fff;
+	border:1px #2CA9E1 solid
+}
+
+.m_10{ margin-top:15px}
+.Container .search ul li .col-sm-10 .m_0{ margin:0px; padding:0px}
+.Container .search ul li .form-group .l_20{ margin-left:20px; float:left}
+.Container .search ul li .form-group .m_5{ padding-top:1px; margin-left:10px;float:left}
+/* 报价单列表页 */
+
+.Container{ width:100%; padding:15px}
+.Container .search{ width:100%; border:2px #999 solid; float:left; padding:15px}
+.Container .mt_0{ margin-bottom:15px}
+.Container .search ul li{ width:50%; height:40px; float:left; margin-bottom:5px}
+.Container .search ul li label{ width:25%;text-align:right; line-height:280%; font-weight:normal}
+.Container .search ul li .Date input{ width:45.5%; float:left}
+.Container .search ul li .Date span{ float:left; line-height:280%; display:block; padding:0 10px}
+.Container .search ul li .col-sm-10{ width:75%}
+.Container .search ul li .col-sm-10 .xuanze{ width:100%; float:left}
+.Container .search ul li .Date select{ width:48.1%; float:left}
+.Container .search ul li .col-sm-10 .m_10{ margin:0 11px 0 0}
+.Container .search ul li .m_5{ margin:2px 10px 0 0}
+.Container .search ul .duoxuan{ padding-top:10px}
+.Container .search_butten{ width:100%; text-align:right; padding:15px; float:left; border:2px #999 solid; border-top:none; margin-bottom:15px}
+
+.Container .search1{ width:100%;float:left; padding:25px 15px;}
+.Container .search1 ul li{ width:50%; height:40px; float:left; margin-bottom:5px}
+.Container .search1 ul li label{ width:25%;text-align:right; line-height:280%; font-weight:normal}
+.Container .search1 ul li .Date input{ width:45.5%; float:left}
+.Container .search1 ul li .Date span{ float:left; line-height:280%; display:block; padding:0 10px}
+.Container .search1 ul li .col-sm-10{ width:75%}
+.Container .search1 ul li .col-sm-10 .xuanze{ width:100%; float:left}
+.Container .search1 ul li .Date select{ width:48.1%; float:left}
+.Container .search1 ul li .col-sm-10 .m_10{ margin:0 11px 0 0}
+.Container .search1 ul li .m_5{ margin:2px 10px 0 0}
+.Container .search1 ul .duoxuan{ padding-top:10px}
+
+
+
+#Control{  float: left;width: 100%;padding:0 0 15px 0; }
+
+#QuotationTable{ width:100%; float:left; text-align:center}
+#QuotationTable .bg_b{ background:#666; color:#fff; font-weight:bold}
+#QuotationTable .blankCheckbox{ margin:0px}
+#QuotationTable .caijian a{ color:#2CA9E0}
+#QuotationTable .caijian a:hover{ text-decoration:underline}
+
+
+/* 审批详细页 */
+
+
+#List_Sale {
+	width:100%;
+	float:left; margin-bottom:25px
+}
+#List_Sale .left {
+	width:30%;
+	float:left;
+	border-right:0px;
+	overflow:hidden
+}
+#List_Sale .Operation { margin-bottom:15px}
+#List_Sale .left .caijian_box{
+	width:100%;
+	float:left;
+	}
+#List_Sale .left .caijian_box .Record{ background:#ccc; color:#333}
+
+#List_Sale .left table {
+	float:left;
+	margin-bottom:0px;
+	text-align:center
+}
+#List_Sale .left table .table_bg {
+	background:#666;
+	color:#fff
+}
+#List_Sale .left table input {
+	margin:0px
+}
+#List_Sale .right {
+	width:70%;
+	float:left;
+	border-right:1px #ddd solid
+}
+
+
+.pic_sm {
+	position:relative;
+	left:15%;
+	top:-513px;
+	width:148px;
+	height:148px;
+	background: url(../images/jt_l.png) no-repeat left 10px;
+	padding-left:8px
+}
+.pic_sm img {
+	padding:3px;
+	border:1px #666 solid; background:#fff
+}
+#List_Sale .left .text_ps {
+	width:100%;
+	text-align:right;
+	line-height:250%;
+	font-size:14px;
+	color:#666;
+	padding-right:10px
+}
+
+.sale_text{ width:100%; float:left;}
+.sale_text ul li{ width:50%; float:left; font-size:14px; height:30px; font-weight:normal; color:#666}
+.sale_text ul li .form-group label{ width:30%; text-align:right; font-weight:normal}
+.sale_text ul li .form-group .col-sm-10{ width:70%}
+
+#view{ width:100%; margin:20px 0 0 0; float:left; padding:20px}
+#view ul li{ width:100%; float:left; margin-bottom:20px}
+#view ul li label{ width:13.33%;text-align:right; font-size:14px; font-weight:normal; color:#666}
+#view ul li .col-sm-10{ width:86%}
+#view ul li .col-sm-10 button{ width:20%; margin-right:15px}
+#view .juzhong .link{ padding-left:15px; font-size:14px; color:#2CA9E1; text-decoration:underline}
+#view_tijiao{ width:100%; margin:20px 0 0 0; float:left; padding:10px 20px; text-align:center}
+#view_tijiao .juzhong .link{ padding-left:15px; font-size:14px; color:#2CA9E1; text-decoration:underline}
+
+
+.xinxi{ width:100%; float:left; padding:10px 0 0 0}
+.xinxi ul li{ width:33.33%; float:left; font-size:14px}
+.xinxi ul li label{ width:50%; text-align:right; font-weight:normal}
+.xinxi ul li .col-sm-10{ width:50%}
+
+.xinxi1{ width:100%; float:left; padding:10px 0 0 0}
+.xinxi1 ul li{ width:50%; float:left; font-size:14px; padding:0 0 0 15px}
+.xinxi1 ul li label{ width:50%; text-align:right; font-weight:normal}
+.xinxi1 ul li .col-sm-10{ width:50%}
+.xinxi1 ul li .form-group label{ width:20%; margin-right:15px;float:left;line-height:250%}
+.xinxi1 ul li .form-group .FL{ width:76%; float:left; }
+.xinxi1 ul li .form-group .point{ line-height:250%; color:#999}
+
+.xinxi2{ width:100%; float:left; padding:10px 0 10px 0}
+.xinxi2 ul li{ width:50%; float:left; font-size:14px; padding:0 0 0 15px}
+.xinxi2 ul li label{ width:50%; text-align:right; font-weight:normal}
+.xinxi2 ul li .col-sm-10{ width:50%}
+.xinxi2 ul li .form-group label{ width:30%; margin-right:15px;float:left;line-height:250%}
+.xinxi2 ul li .form-group .FL{ width:66%; float:left; }
+.xinxi2 ul li .form-group .point{ line-height:250%; color:#999}
+.xinxi2 ul li .form-group{ margin-bottom: 0px;}
+
+
+
+#history{ width:100%; border:1px #ccc solid; float:left; margin-bottom:30px; padding:15px}
+#history .modal-title{ width:100%; font-size:14px; font-weight:bold}
+#history .history_box{ width:100%; float:left}
+.history_box .t_bg{ background:#666; color:#fff}
+
+#view .juzhong{ text-align:center}
+#view .juzhong button{ width:150px}
+
+/* 选择商品 */
+#inline{overflow:auto; padding:15px}
+#inline .search{  overflow: hidden;
+  padding: 15px 0;
+  border: 1px #666 solid;
+  margin: 15px 0 10px 0;}
+#inline .search ul li{ width:50%; height:40px; float:left; margin-bottom:5px}
+#inline .search ul li.searchBtn{  border-top: 1px #ccc solid;
+  width: 100%;
+  padding-right: 24px;
+  padding-top: 15px;
+  margin-top: 0px;
+  text-align: right;
+  padding-bottom: 0px;}
+#inline .search ul li label{ width:25%;text-align:right; line-height:280%; font-weight:normal; font-size:13px}
+#inline .search ul li .Date input{ width:45.5%; float:left}
+#inline .search ul li .Date span{ float:left; line-height:280%; display:block; padding:0 10px}
+#inline .search ul li .col-sm-10{ width:75%}
+#inline .search ul li .col-sm-10 select{ width:48.1%; float:left}
+#inline .search ul li .col-sm-10 .m_10{ margin:0 11px 0 0}
+#inline .search ul li .m_5{ margin:2px 10px 0 0}
+#inline .search ul .duoxuan{ padding-top:10px}
+#inline .search_butten{width: 100%;float: left;text-align:right; padding:15px;  border:2px #999 solid; border-top:none; margin-bottom:15px}
+#inline .select_table{width: 100%; overflow:auto;white-space:nowrap}
+#inline .select_table tr.TH{ background:#666;}
+
+
+#inline1{ width:850px; min-height:870px;overflow:auto; padding:15px}
+#inline1 .select_table{ width:780px; float:left}
+
+
+.page_open {
+	width:780px;
+	text-align:right;
+	padding-top:10px;
+	float:left
+}
+.page_open a {
+	padding:5px 10px 5px 10px;
+	border:1px #ccc solid;
+	margin-top:0px;
+}
+.page_open input {
+	width:40px;
+	padding:5px;
+	border:0px;
+	border:1px #ccc solid;
+	font-size:12px;
+	margin-top:-1px;
+	margin-right:1px
+}
+.page_open .btn {
+	min-width:30px;
+	padding:3px;
+	font-size:14px;
+	background:#666;
+	border:1px #666 solid
+}
+.page_open .bule {
+	background:#5BC0DE;
+	color:#fff;
+	border:1px #5BC0DE solid
+}
+
+.add_tianjia{ width:100%; float:left; margin:15px 0; background-color:#ccc; text-align:center; height:20px}
+.add_tianjia span{ width:200px;display:block; padding:0px 20px; background:#fff; color:#2CA9DF; font-weight:bold; margin:0 auto; font-size:14px}
+
+/*.Factory{ width:100%; border:1px #ccc solid; float:left; margin-bottom:30px}
+.Factory .modal-title{ width:100%; font-size:12px; padding:8px 20px; float:left;cursor: pointer;margin-bottom:15px;}
+.Factory .modal-title span{margin-right: 0px;float:initial;}
+.Factory .modal-title .xiala{ display: block; float:right; padding-right:5px}
+.Factory .history_box{ width:100%; float:left}
+
+.Factory .history_box .miaoshu{ width:100%; float:left; margin:15px 0}
+.Factory .history_box .shangchuan .Day{ width:200px; padding:7px; margin:0 10px}
+.Factory .history_box .shangchuan .btn-info{ margin-right:10px}
+.Factory .history_box .tongzhi{ width:100%; border-top:1px #333 dotted; text-align:center; padding:20px 0 10px 0; margin-top:20px}*/
+
+
+.Factory1{ width:100%; border:1px #ccc solid; float:left; margin-bottom:15px; padding:0 15px 15px 15px; margin-top:0px}
+.Factory1 .modal-title{ width:100%; font-size:12px; padding-bottom:15px; float:left}
+.Factory1 .modal-title span{ margin-right:30px}
+.Factory1 .modal-title .xiala{ display: block; float:right; padding-right:5px}
+.Factory1 .history_box{ width:100%; float:left}
+.Factory1 .history_box .t_bg{ background:#666; color:#fff; font-weight:bold}
+.Factory1 .history_box .miaoshu{ width:100%; float:left; margin:15px 0}
+.Factory1 .history_box .shangchuan .Day{ width:200px; padding:7px; margin:0 10px}
+.Factory1 .history_box .shangchuan .btn-info{ margin-right:10px}
+.Factory1 .history_box .tongzhi{ width:100%; border-top:1px #333 dotted; text-align:center; padding:20px 0 10px 0; margin-top:20px}
+.b_1k{ border:1px #ccc solid; overflow:hidden; margin-top:15px}
+
+
+/* 样品汇集 */
+.huiji_text{ width:100%; padding:15px}
+.huiji_text ul li{ width:50%; float:left; height:40px; font-size:14px; color:#666}
+.huiji_text ul li label{ width:40%; padding:0px 15px 0 0; text-align:right; float:left; font-weight:normal}
+#QuotationTable .table-bordered{ border:2px #666 solid}
+#QuotationTable .table-bordered .t_bg{ background:#666; color:#fff}
+.jiyang_info{ width:100%; float:left; margin:25px 0}
+.jiyang_info ul li{ width:100%; float:left; margin:0 0 15px 0}
+.jiyang_info label{ width:15%; text-align:right; font-weight:normal; color:#666; float:left; padding-right:15px; line-height:250%}
+.jiyang_info .right_text{ width:85%; float:right}
+.jiyang_info .right_text span{ float:left; margin:8px 0 0 0}
+.jiyang_info .right_text .width_20{ float:left; margin-right:10px}
+.jiyang_info ul li .money{ width:100%; float:left}
+.jiyang_info ul li .money ul li{ width:33.33%; float:left}
+.jiyang_info ul li .width_20{ width:20%; float:left; margin:0 0 15px 0; text-align:left}
+.jiyang_info ul li .width_1{ width:20%; float:left; margin-top:15px}
+
+.jiyang_info ul li .width_20 input{ margin:10px 0 0 -20px}
+.jiyang_info ul li .LH25{ line-height:150%}
+
+
+.jiyang_box{ width:100%; float:left; margin:25px 0; border:1px #666 solid}
+.jiyang_box .title{ width:100%; float:left;background:#666; color:#fff; padding:10px 15px}
+.jiyang_box ul{ padding:25px 35px 15px 15px; float:left}
+.jiyang_box ul li{ width:50%; float:left; margin:0 0 15px 0}
+.jiyang_box label{ width:30%; text-align:right; font-weight:normal; color:#666; float:left; padding-right:15px; line-height:250%}
+.jiyang_box .right_text{ width:70%; float:right}
+.jiyang_box .right_text span{ float:left; margin:8px 0 0 0}
+.jiyang_box .right_text .width_20{ float:left; margin-right:10px}
+.jiyang_box ul .width_100{ width:100%}
+.jiyang_box ul .width_100 label{ width:15%}
+.jiyang_box ul .width_100 .right_text{ width:85%}
+
+
+
+.Update{ width:91%; margin:0 auto}
+.Update ul li{ width:50%; float:left; margin-bottom:15px}
+.Update label{ width:30%; text-align:right; font-weight:normal; color:#666; float:left; padding-right:15px; line-height:250%}
+.Update .right_text{ width:70%; float:right}
+.modal-title span{ float:initial; line-height:150%}
+.modal-title .huiji{ float:left;}
+.modal-title .huiji label{ float:left; font-weight:normal;line-height:150%}
+.modal-title .huiji .point{ float:left; margin-right:20px}
+.modal-title .huiji .point input{ width:80px}
+
+
+.mt_0{ margin-top:0px}
+.mb_0{ margin-bottom:0px}
+.m_b15{ margin-bottom:15px}
+.beizhu .mt_0{ margin-top:15px}
+.beizhu .form-group{ float:left; width:100%}
+
+
+
+.miaoshuqueren .Day{ width:200px; padding:7px; margin:0 10px}
+.miaoshuqueren .btn-info{ margin-right:10px}
+.queren{ padding:5px 0 0 10px}
+
+.order{ width:100%; overflow-x:auto;overflow-y:hidden; border:2px #666 solid}
+.order .table-striped .t_bg{ background:#666; color:#fff}
+.tijiao{ width:100%; text-align:center; border-top:1px #666 solid; float:left; padding:30px 0}
+.tijiao button{  margin:0 10px}
+
+.beizhu{ width:100%; float:left; margin:30px 0}
+.beizhu .form-group .control-label{ width:15%; text-align:right; font-weight:normal}
+
+#picture{ width:900px; min-height:200px; padding:10px 10px 30px 10px}
+#picture ul li{ width:200px; margin-right:10px; float:left; height:260px; text-align:center;}
+#picture ul li div{ width:100%; margin:5px 0 0 0}
+
+
+
+/* 新建采购合同 */
+.FactoryTitle{ width:100%; font-size:14px; margin:0 0 15px 0;height: 50px;}
+.FactoryTitle a{ display:block; padding:10px;margin-right:10px; float:left; color:#999}
+.FactoryTitle a:hover{ background:#2CA9E1; color:#fff; }
+.FactoryTitle .Onclick{background:#2CA9E1; color:#fff;}
+.Container_nb .Contract .table-bordered{ text-align:left}
+.Container_nb .Contract .table-bordered .choose{ width:auto;  margin-top:0px}
+.Container_nb .Contract .table-bordered .day{ width:30px; margin:0 10px}
+.Container_nb .Contract .table-bordered .qi{ width:70%; margin:0 10px}
+.Container_nb .Contract .table-bordered select{ width:70%; padding:0px; line-height:100%; margin:0 10px}
+.Container_nb .Contract .table-bordered option{padding:0px; line-height:100%}
+.Container_nb .Contract .hetong_title{ font-size:25px; text-align:center; padding:0 0 15px 0; width:100%}
+
+
+/* 包装资料维护 */
+.Packing_box .title{ margin-bottom:15px}
+.Packing_box .title a{ padding:3px 15px; color:#666; font-weight:bold; float:right}
+.Packing_box .table-bordered{ border:2px #666 solid}
+.Packing_box .table-bordered .t_bg{ background:#666; color:#fff; font-weight:bold}
+.Packing_box .table-bordered .update{ width:79%;border-radius:0px;height:22px; padding:0 10px; font-size:12px; margin:0 0.5%}
+.Packing_box .table-bordered .choose{width:69%; float:left; margin-right:1%;border-radius:0px}
+.Packing_box .table-bordered .btn-xs{ min-width:20%;border-radius:0px; }
+.Packing_box .table-bordered .btn-sm{ min-width:30%;border-radius:0px; }
+.Packing_box .table-bordered .biaoqian{ width:100%; padding:0 30%}
+.Packing_box table tr td{ text-align:center}
+
+/* 待审核的代印合同列表页 */
+.Container .Contract .table-striped{ font-size:14px; color:#666}
+.Factory .printing-title{ width:100%; height:35px}
+.Factory .printing-title ul li{ float:left; margin-right:15px; line-height:200%}
+.Factory .printing-title ul li .FR{ width:100px}
+.Factory .printing-title ul li .FR select{ height:24px; font-size:12px; padding:2px 10px}
+.Factory .printing-title ul .xiala{ float:right}
+
+.Factory1 .printing-title{ width:100%; height:35px}
+.Factory1 .printing-title ul li{ float:left; margin-right:15px; line-height:200%}
+.Factory1 .printing-title ul li .FR{ width:100px}
+.Factory1 .printing-title ul li .FR select{ height:24px; font-size:12px; padding:2px 10px}
+.Factory1 .printing-title ul .xiala{ float:right}
+
+
+.beizhu1{ width:100%}
+.beizhu1 ul li{ float:left; width:100%; margin-bottom:15px; font-size:14px; color:#666}
+.beizhu1 ul li label{ text-align:right; font-weight: normal}
+
+.beizhu2{ width:100%; border:1px #666 solid; overflow:hidden}
+.beizhu2 ul li{ float:left; width:100%; margin-bottom:5px; font-size:14px; color:#666; padding:10px 15px 0 25px}
+.beizhu2 ul li label{ text-align:right; font-weight: normal}
+.beizhu2 h3{ width:100%; padding:10px 15px; background:#666; color:#fff; float:left; font-size:15px; font-weight:bold!important; margin-top:0px}
+
+
+/* 上传 */
+#shangchuan{ width:750px; height:350px; padding:0 60px 0 20px}
+#shangchuan .title{ font-size:25px; width:100%; text-align:center; padding:15px 20px 25px 0px}
+#shangchuan table tr td{ font-size:14px; color:#666}
+#iframepage{height:2000px}
+.breadcrumb{ margin-bottom:0px!important;margin-top:0px!important}
+.page-content{ padding-top:0px}
+
+
+
+.color_red{ color:#E8470A}
+.m_5{ margin-top:3px}
+
+/* 标签导出 */
+        .label_box {
+            width: 1000px;
+            margin: 0 auto;
+            min-height: 900px;
+        }
+
+            .label_box .title {
+                width: 100%;
+                font-size: 35px;
+                text-align: center;
+                color: #090870;
+                font-weight: bolder;
+                padding: 25px 0 10px 0;
+            }
+
+            .label_box .title_sm {
+                width: 100%;
+                font-size: 14px;
+                text-align: center;
+                color: #03027A;
+                padding: 0 0 15px 0;
+                margin-bottom: 10px;
+            }
+
+            .label_box .butten {
+                width: 100%;
+                text-align: right;
+                float: right;
+                margin-bottom: 10px;
+            }
+
+                .label_box .butten a {
+                    margin-left: 10px;
+                    text-decoration:none;
+                }
+
+            .label_box .pic_list {
+                width: 100%;
+            }
+
+                .label_box .pic_list ul li {
+                    border: 2px #03027A solid;
+                    float: left;
+                    padding: 3px;
+                    margin: 0 0px 10px 4px;
+                    font-size: 14px;
+                    text-align: center;
+                }
+
+                    .label_box .pic_list ul li span {
+                        line-height: 200%;
+                        color: #666;
+                    }
+
+            .label_box .pic_list1 {
+                width: 100%;
+            }
+
+                .label_box .pic_list1 ul li {
+                    border: 2px #03027A solid;
+                    float: left;
+                    padding: 5px;
+                    margin: 0 5% 3% 4%;
+                    font-size: 14px;
+                    text-align: center;
+                }
+
+                    .label_box .pic_list1 ul li span {
+                        line-height: 200%;
+                        color: #666;
+                    }
+
+            .label_box .xiugai {
+                width: 100%;
+                border-top: 1px #666 dotted;
+                padding: 20px 0 20px 0;
+                margin: 30px 0;
+                text-align: center;
+                float: left;
+            }
+
+                .label_box .xiugai .btn-info {
+                    width: 30%;
+                    padding: 5px 0;
+                }

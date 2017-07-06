@@ -1,0 +1,116 @@
+﻿@{
+    ViewBag.Title = "箱柜设置";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model ERP.Models.Cabinet.VMDTOCabinet
+<div class="content-wrapper">
+    <div align="right">
+        <form class="form-inline frmFind" role="form" runat="server" method="get">
+
+            <div class="search_Condition box_1k">
+                <ul>
+                    <li>
+                        <label class="col-xs-2">柜型：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(n => n.Name, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">尺寸：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(n => n.Size, new { @class = "form-control" })
+                        </div>
+                    </li>
+
+                    <li class="search">
+                        <button type="submit" onclick="return OA.s(this)" class="btn btn-info">查询</button>
+                        <button type="button" class="btn btn-info" onclick="clearAll(this)">清空所有</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+    @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CabinetElementPrivileges.Create) > 0)
+    {
+        <button id='bntUpdate' wintype='idialog' type='button' winsize='1000,800,yes' onclick='return OA.i(this);' href='@(Url.Content("~/Cabinet/Add/"))?id=0' class="btn btn-danger">新建柜型信息</button>
+    }
+    @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CabinetElementPrivileges.deleteAll) > 0)
+    {
+        <button id="bntDelete" type="button" onclick="deleteSelected()" class="btn btn-default">批量删除</button>
+    }
+    <div class="box_1k" style="width:100%;overflow:auto">
+        <table id="MyGrid" class="easyui-datagrid" data-options="singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("/Cabinet/GetAll")?@Request.QueryString',method:'get',@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+            <thead>
+                <tr>
+                    <th data-options="field:'ID',checkbox:true,width:100,align:'center'"></th>
+                    <th data-options="field:'Name',sortable:true,width:100,align:'center'">柜型名称</th>
+                    <th data-options="field:'Size',sortable:true,width:100,align:'center'">尺寸(m³)</th>
+                    <th data-options="field:'IDD',align:'center',formatter:operationFormatter">操作</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+@section scripts
+{
+    <script>
+        var tableName = "#MyGrid";
+        //删除选中
+        function deleteSelected() {
+            var idArray = getSelections(tableName, "ID");
+            if (idArray.length <= 0) {
+                alert("请选中要删除的柜型！");
+                return;
+            }
+            if (!confirm("是否删除选中的柜型？")) {
+                return;
+            }
+            $.post("@Url.Content("~/Cabinet/Deleted")", { idList: idArray.join(',') }, function (result) {
+
+                if (result == 1) {
+                    alert("删除成功！");
+                    parent.location.reload();
+                }
+            }, "json");
+        };
+        function deleteData(id) {
+            if (window.confirm("确定要删除吗？")) {
+
+                $.post('@Url.Content("/Cabinet/Delete")', { id: id },
+               function (result) {
+
+                   switch (result) {
+                       case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect) :
+                           alert("没有可以删除的记录");
+                           break;
+                       case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success) :
+                           alert("删除成功");
+                           parent.location.reload();
+                           break;
+                       default:
+                           break;
+                   }
+               }, "json");
+            }
+        }
+        var showWatch = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CabinetElementPrivileges.Watch);
+        var showEdit = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CabinetElementPrivileges.Edit);
+        var showDelete = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.CabinetElementPrivileges.delete);
+        function operationFormatter(val, row, index) {
+            var rows = $(tableName).datagrid('getRows');
+            var row = rows[index];
+            var ops = "";
+            if (showEdit>0) {
+                ops += "<a wintype='idialog' winsize='900,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Cabinet/Edit/"))?id=" + row.ID + "&status=1' style='margin: 0 5px;'>编辑</a>";
+            }
+            if (showDelete>0) {
+                ops += "<button id='bntUpdate' wintype='idialog' type='button' winsize='900,800,yes' onclick='deleteData(" + row.ID + ")'  class='btn btn-default btn-xs w_auto btn-danger'>删除</button>";
+            }
+            if (showWatch>0) {
+                ops += "<a wintype='idialog' winsize='900,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Cabinet/Edit/"))?id=" + row.ID + "&status=2' style='margin: 0 5px;'>查看</a>";
+            }
+            return ops;
+
+        }    //删除产品
+    </script>
+}

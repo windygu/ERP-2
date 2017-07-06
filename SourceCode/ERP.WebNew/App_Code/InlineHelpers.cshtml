@@ -1,0 +1,264 @@
+﻿@helper GetSelectionForCustomers(List<ERP.Models.Customer.DTOOrderCustomers> customerKeyInfos, string selectionName, bool isEnable, int? activeValue)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName">
+        <option value=""></option>
+        @foreach (var customer in customerKeyInfos)
+        {
+            <option value="@customer.OCID" @((activeValue.HasValue && customer.OCID == activeValue.Value) ? "selected" : string.Empty)> @customer.CustomerCode</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForFactories(List<ERP.Models.Factory.DTOFactory> factoryKeyInfos, string selectionName, bool isEnable, int? activeValue)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName">
+        <option value=""></option>
+        @foreach (var factory in factoryKeyInfos)
+        {
+            <option value="@factory.ID" @((activeValue.HasValue && factory.ID == activeValue.Value) ? "selected" : string.Empty)> @(factory.Abbreviation+"("+factory.CurrencyName+")")</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForProductClassifications(List<ERP.Models.Product.DTOProductClassifications> productClassificationKeyInfos, string selectionName, bool isEnable, int? activeValue)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName">
+        <option value=""></option>
+        @foreach (var pc in productClassificationKeyInfos)
+        {
+            <option value="@pc.ID" @((activeValue.HasValue && pc.ID == activeValue.Value) ? "selected" : string.Empty) title="@pc.Text"> @pc.Text</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForDictionaryInfosAlias(List<ERP.Models.Dictionary.DTODictionary> dictionaryKeyInfos, string selectionName, bool isEnable, int? activeValue)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName">
+        <option value=""></option>
+        @foreach (var key in dictionaryKeyInfos)
+        {
+            <option value="@key.Code" @((activeValue.HasValue && key.Code == activeValue.Value) ? "selected" : string.Empty) data-dataflag="@key.DataFlag"> @key.Alias</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForDictionaryInfos(List<ERP.Models.Dictionary.DTODictionary> dictionaryKeyInfos, string selectionName, bool isEnable, int? activeValue)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName">
+        <option value=""></option>
+        @foreach (var key in dictionaryKeyInfos)
+        {
+            <option value="@key.Code" @((activeValue.HasValue && key.Code == activeValue.Value) ? "selected" : string.Empty)> @key.Name</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForDictionaryInfosForSpecial(List<ERP.Models.Dictionary.DTODictionary> dictionaryKeyInfos, string selectionName, bool isEnable, int? activeValue)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName">
+        <option value=""></option>
+        @foreach (var key in dictionaryKeyInfos)
+        {
+            <option value="@key.Code" @((activeValue.HasValue && key.Code == activeValue.Value) ? "selected" : string.Empty) data-dataflag="@key.DataFlag"> @key.Name</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForDictionaryInfosForSpecial_Season(List<ERP.Models.Dictionary.DTODictionary> dictionaryKeyInfos, string selectionName, bool isEnable, int? activeValue)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName">
+        <option value=""></option>
+        @foreach (var key in dictionaryKeyInfos.OrderBy(d => d.Name).OrderBy(d => d.Alias))
+        {
+            string temp = key.Name + " - " + key.Alias;
+            if (string.IsNullOrEmpty(key.Alias))
+            {
+                temp = key.Name;
+            }
+
+            <option value="@key.Code" @((activeValue.HasValue && key.Code == activeValue.Value) ? "selected" : string.Empty) data-dataflag="@key.DataFlag">@temp</option>
+        }
+    </select>
+}
+
+@helper GetSelectForTags(List<ERP.Models.Dictionary.DTODictionary> dictionaryKeyInfos, string selectionName, bool isEnable, int? activeValue)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName">
+        <option value=""></option>
+        @foreach (var key in dictionaryKeyInfos)
+        {
+            <option value="@key.Code" @((activeValue.HasValue && key.Code == activeValue.Value) ? "selected" : string.Empty)> @key.Name</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForCustomers(List<ERP.Models.Customer.DTOOrderCustomers> customerKeyInfos, string selectionName, bool isEnable, int? activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute">
+        <option value=""></option>
+        @foreach (var customer in customerKeyInfos)
+        {
+            <option value="@customer.OCID" @((activeValue.HasValue && customer.OCID == activeValue.Value) ? "selected" : string.Empty)> @customer.CustomerCode</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForFactories(List<ERP.Models.Factory.DTOFactory> factoryKeyInfos, string selectionName, bool isEnable, int? activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute">
+        <option value=""></option>
+        @foreach (var factory in factoryKeyInfos)
+        {
+            <option value="@factory.ID" @((activeValue.HasValue && factory.ID == activeValue.Value) ? "selected" : string.Empty)> @factory.Abbreviation</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForDictionaryInfosAlias(List<ERP.Models.Dictionary.DTODictionary> dictionaryKeyInfos, string selectionName, bool isEnable, int? activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute" style="width:130px;">
+        <option value=""></option>
+        @foreach (var key in dictionaryKeyInfos)
+        {
+            <option value="@key.Code" @((activeValue.HasValue && key.Code == activeValue.Value) ? "selected" : string.Empty) data-dataflag="@key.DataFlag"> @key.Alias</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForDictionaryInfos(List<ERP.Models.Dictionary.DTODictionary> dictionaryKeyInfos, string selectionName, bool isEnable, int? activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute">
+        <option value=""></option>
+        @foreach (var key in dictionaryKeyInfos)
+        {
+            <option value="@key.Code" @((activeValue.HasValue && key.Code == activeValue.Value) ? "selected" : string.Empty)> @key.Name</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForDictionaryInfosForSpecial(List<ERP.Models.Dictionary.DTODictionary> dictionaryKeyInfos, string selectionName, bool isEnable, int? activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute" style="width:130px;">
+        <option value=""></option>
+        @foreach (var key in dictionaryKeyInfos)
+        {
+            <option value="@key.Code" @((activeValue.HasValue && key.Code == activeValue.Value) ? "selected" : string.Empty) data-dataflag="@key.DataFlag"> @key.Name</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForDictionaryInfosForSpecial(List<ERP.Models.Dictionary.DTODictionary> dictionaryKeyInfos, string selectionName, bool isEnable, int? activeValue, string attribute,string className)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control @className" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute" style="width:130px;">
+        <option value=""></option>
+        @foreach (var key in dictionaryKeyInfos)
+        {
+            <option value="@key.Code" @((activeValue.HasValue && key.Code == activeValue.Value) ? "selected" : string.Empty) data-dataflag="@key.DataFlag"> @key.Name</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForCountries(IEnumerable<System.Web.Mvc.SelectListItem> countries, string selectionName, bool isEnable, int? activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute">
+        <option value=""></option>
+        @foreach (var con in countries)
+        {
+            <option value="@con.Value" @((activeValue.HasValue && con.Value == activeValue.Value.ToString()) ? "selected" : string.Empty)> @con.Text</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForProvinces(IEnumerable<System.Web.Mvc.SelectListItem> provinces, string selectionName, bool isEnable, int? activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute">
+        <option value=""></option>
+        @foreach (var pro in provinces)
+        {
+            <option value="@pro.Value" @((activeValue.HasValue && pro.Value == activeValue.Value.ToString()) ? "selected" : string.Empty)> @pro.Text</option>
+        }
+    </select>
+}
+@helper GetSelectionForHSCode(List<ERP.Models.HS.DTOHSContract> list, string selectionName, bool isEnable, int? activeValue)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName">
+        <option value=""></option>
+        @foreach (var item in list)
+        {
+            <option value="@item.ID" @((activeValue.HasValue && item.ID == activeValue.Value) ? "selected" : string.Empty)> @item.HSCode</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForAdminUserHierachy(IEnumerable<System.Web.Mvc.SelectListItem> hierachies, string selectionName, bool isEnable, int? activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute">
+        <option value=""></option>
+        @foreach (var h in hierachies)
+        {
+            <option value="@h.Value" @((activeValue.HasValue && h.Value == activeValue.Value.ToString()) ? "selected" : string.Empty)> @h.Text</option>
+        }
+    </select>
+}
+
+@helper GetSelectionForQuoteTemplateFileName(IEnumerable<System.Web.Mvc.SelectListItem> QuoteTemplate, string selectionName, string activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-bv-field="@selectionName" data-bind="@attribute">
+        <option value=""></option>
+        @foreach (var con in QuoteTemplate)
+        {
+            if (string.IsNullOrEmpty(con.Value))
+            {
+                <option></option>
+            }
+            else
+            {
+                <option value="@con.Value" @((con.Value == activeValue) ? "selected" : string.Empty)> @con.Text</option>
+            }
+        }
+    </select>
+}
+
+<!--通用下拉框-->
+@helper GetSelection(IEnumerable<System.Web.Mvc.SelectListItem> list, string selectionName, bool isEnable, int? activeValue, string attribute)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-bv-field="@selectionName" data-bind="@attribute">
+        @foreach (var item in list)
+        {
+            <option value="@item.Value" @((activeValue.HasValue && item.Value == activeValue.Value.ToString()) ? "selected" : string.Empty)>@item.Text</option>
+        }
+    </select>
+}
+
+<!--报关的下拉框-->
+@helper GetSelection(IEnumerable<System.Web.Mvc.SelectListItem> list, string selectionName, bool isEnable, int? activeValue, string attribute, string className)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control @className" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-classname="@attribute">
+        @foreach (var item in list)
+        {
+            <option value="@item.Value" @((activeValue.HasValue && item.Value == activeValue.Value.ToString()) ? "selected" : string.Empty)>@item.Text</option>
+        }
+    </select>
+}
+
+@helper GetSelection(IEnumerable<System.Web.Mvc.SelectListItem> list, string selectionName, bool isEnable, string activeValue, string attribute, string className)
+{
+    <select id="@selectionName" name="@selectionName" class="form-control @className" data-live-search="true" @(isEnable ? "" : "disabled='disabled'") data-classname="@attribute">
+        @foreach (var item in list)
+        {
+            <option value="@item.Value" @((item.Value == activeValue) ? "selected" : string.Empty)>@item.Text</option>
+        }
+    </select>
+}
+
+<!--获取产品悬浮的Html-->
+@helper GetProductHtml(string image, string href, string no)
+{
+    <a wintype='idialog' class='data-content' winsize='900,800,yes' data-toggle='popover' data-content='&lt;div class=&#39;popoverDiv&#39;&gt;&lt;img class=&#39;popoverImg&#39; src=&#39;@(image)&#39; /&gt;&lt;/div&gt;' onclick='return OA.i(this)' href='@href' target='_blank'>@no</a>
+}
+
+<!--获取船运公司下拉框-->
+@helper Shipment_Agency(string url)
+{
+    <select id="Shipment_AgencyID" name="Shipment_AgencyID" class="easyui-combogrid form-control" style="width:250px;height:30px;" data-options="url:'@url', method: 'get', idField: 'ShippingAgencyID', textField: 'ShippingAgencyName',  panelWidth: 820,  panelHeight: 'auto', columns:[[{field:'ShippingAgencyName',title:'船代公司名',align:'center'}, {field:'Currency',title:'Currency',align:'center'},{field:'FeeDocument',title:'文件费',align:'center'}, {field:'FeeDockOperation',title:'码头操作费',align:'center'}, {field:'FeeYangShanPicking',title:'附加提还箱费',align:'center'}, {field:'FeeFacilityManagement',title:'散货设备管理费',align:'center'}, {field:'FeePortSecurity',title:'散货港口设备安保费',align:'center'},{field:'FeeImporterSecurityClassify',title:'进口商安保归类',align:'center'}, {field:'FeeWarehousing',title:'散货入仓费',align:'center'},{field:'FeePicking',title:'提单费',align:'center'},{field:'FeeCustomDeclaration',title:'报关费',align:'center'}]],  fitColumns: true "></select>
+}

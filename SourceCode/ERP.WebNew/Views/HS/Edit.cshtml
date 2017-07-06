@@ -1,0 +1,279 @@
+﻿@{
+    ViewBag.Title = @ViewBag.title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@*<link href="~/Content/themes/bootstrap/easyui.css" rel="stylesheet" />*@
+
+@*@using (Ajax.BeginForm("Edit", "HS", null, new AjaxOptions() { HttpMethod = "Post", OnBegin = "return OnBegin()", OnSuccess = "OnSuccess()" }, new { id = "frmEdit" }))
+    {*@
+
+<div class="content-wrapper" style="border-color:white">
+    <input type="text" value="@ViewBag.DataFlag" id="DataFlag" style="visibility: hidden" />
+    <div align="right" style="border-color:white">
+
+        <div class="search_Condition box_1k" style="border-color:white">
+            <ul>
+                <li>
+                    <label class="col-sm-4 text-danger">@ViewBag.Code：</label>
+                    <div class="col-sm-8 form-group">
+                        <input id="HSCode" type="text" name="HSCode" class="form-control" value="@ViewBag.HSCode" />
+                    </div>
+                </li>
+                @if (Request.QueryString["DataFlag"] == "1")
+                {
+                    <li>
+                        <label class="col-sm-4  text-danger">@ViewBag.Cesss：</label>
+                        <div class="col-sm-6 form-group">
+                            <input id="Cess" type="text" name="Cess" class="form-control" value="@ViewBag.Cess" />
+                            <input type="text" style="visibility: hidden" name="ID" value="@ViewBag.ID" id="ID">
+                            <input type="text" value="@ViewBag.ProjectName" id="project" style="visibility:hidden" />
+                        </div>
+                        <div class="col-sm-2">%</div>
+                    </li>
+                }
+                else
+                {
+                    <li>
+                        <label class="col-sm-4  text-danger">Duty：</label>
+                        <div class="col-sm-6 form-group">
+                            <input id="DutyPercentList" type="text" name="DutyPercentList" class="form-control" value="@ViewBag.DutyPercentList" />
+                            <input type="text" style="visibility: hidden" name="ID" value="@ViewBag.ID" id="ID">
+                            <input type="text" value="@ViewBag.ProjectName" id="project" style="visibility:hidden" />
+                        </div>
+                        <div class="col-sm-2">%</div>
+                    </li>
+                }
+                <li>
+                    <label class="col-sm-4 text-danger">@ViewBag.Name：</label>
+                    <div class="col-sm-8 form-group">
+                        <input id="Name" type="text" name="Name" class="form-control" value="@ViewBag.CodeName" />
+                        <label style="display:none" name="ID"></label>
+                        <label style=""></label>
+                    </div>
+                </li>
+                <li>
+                    <label class="col-sm-4 text-danger">@ViewBag.EngName：</label>
+                    <div class="col-sm-8 form-group">
+                        <input id="EngName" type="text" name="EngName" class="form-control" value="@ViewBag.CodeEngName" />
+                        <label style="display:none" name="ID"></label>
+                        <label style=""></label>
+                    </div>
+                </li>
+                <li>
+                    <label class="col-sm-4" style="@(ViewBag.DataFlag==2?"display:none":"")">是否需要报检：</label>
+                    <div class="col-sm-8">
+                        <input id="Checkbox1" type="checkbox" name="Check" onclick="checkboxOnclick(this)" style="@(ViewBag.DataFlag==2?"display:none":"")" />
+                    </div>
+                </li>
+            </ul>
+            <div class="box_1k" style="width:98%;overflow:auto;margin-left:123px;border-color:white" id="Show">
+                <div class="history_box ProductList" style="@(ViewBag.DataFlag==2?"display:none":"")">
+                    <table class="table table-bordered" style="width:80%" border="0" cellspacing="0" cellpadding="0">
+                        <tbody>
+                            <tr style="border:1px solid white">
+                                <td style="border:1px solid white"></td>
+                            </tr>
+                            <tr class="t_bg">
+                                <td width="4%"><input id="box" type="checkbox" /> </td>
+                                <td width="90%" style="font-weight: bold; text-align: center; margin: auto">报检项目</td>
+                            </tr>
+                            @{
+                                List<ERP.Models.Dictionary.DTODictionary> erp = (List<ERP.Models.Dictionary.DTODictionary>)ViewData["Data"];
+
+                                foreach (var item in erp)
+                                {
+                                    <tr>
+                                        <td width="1%"><input type="checkbox" name="chk" value="@item.Code" style="text-align:center;padding:0 ;margin:auto" /></td>
+                                        <td width="60%" style="text-align:center;margin:auto"><label style="font-weight:100;">@item.Name</label></td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="search" style="float: right; border-color: white; margin-top:12px;border-top:1px solid #ccc;width:100%">
+
+                <button type="button" class="btn btn-info" onclick="OA.CloseMe()" style="float: right; margin-right: 10px; margin-top: 30px; ">取消</button>
+                <button type="button" class="btn btn-danger" onclick="Add()" style="float:right;margin-right:10px;margin-top:30px">保存</button>
+            </div>
+
+          @if (Request.QueryString["DataFlag"] == "2")
+          {
+                <div class="beizhu" style="float: none;">
+                    <ul>
+                        <li>PS：多个Duty可以用分号;隔开。</li>
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+
+        $(function () {
+
+            if ($("#project").val() != "") {
+                document.getElementById("Checkbox1").checked = true;
+            }
+            else {
+                $("#Show").hide();
+            }
+            var project = $("#project").val();
+            //现在已经得到了tagid
+            var statuses006 = project.split(",");
+            var box006 = document.getElementsByName("chk");
+            for (var M = 0; M < statuses006.length; M++) {
+                for (var N = 0; N < box006.length; N++) {
+                    if (box006[N].value == statuses006[M]) {
+                        box006[N].checked = true;
+                    }
+                }
+            }
+
+            //得到chk的个数
+            var len = box006.length;
+            var aaa = statuses006.length;
+            if (len == aaa) {
+                document.getElementById("box").checked = true;
+            }
+            var obox = document.getElementById("box");
+
+            var ach = document.getElementsByName("chk");
+            obox.onclick = function () {
+                for (var i = 0; i < ach.length; i++) {
+                    ach[i].checked = this.checked;
+                }
+            }
+
+            for (var i = 0; i < ach.length; i++) {
+                ach[i].onclick = function () {
+                    if (!this.checked) {
+                        obox.checked = false;
+                    }
+                };
+            }
+        })
+
+        //显示与关闭table
+        function checkboxOnclick(checkbox) {
+            if (checkbox.checked == true) {
+                $("#Show").show();
+
+            } else {
+                $("#Show").hide();
+            }
+        }
+
+        //$(function(){ //点击保存按钮，执行的操作方法。。。
+        function Add() {
+            if ($("#HSCode").val() == "") {
+                $.messager.alert("提示", "请输入HS Code！", "info", function () {
+                    $("#HSCode").focus();
+                });
+                return;
+            }
+            if ($("#Cess").val() == "") {
+                $.messager.alert("提示", "请输入退税率！", "info", function () {
+                    $("#Cess").focus();
+                });
+                return;
+
+            }
+            else if ($("#Cess").val() != undefined) {
+                var num = /^[0-9]{0}([0-9]|[.])+$/;
+                if (!num.test($("#Cess").val())) {
+                    $.messager.alert("提示", "退税率请输入数字！", "info", function () {
+                        $("#Cess").focus();
+                    });
+                    return;
+                }
+                else {
+                    if ($("#Cess").val() > 100) {
+                        $.messager.alert("提示", "退税率不能超过100！", "info", function () {
+                            $("#Cess").focus();
+                        });
+                        return;
+                    }
+                }
+
+            }
+
+            if ($("#DutyPercentList").val() == "") {
+                $.messager.alert("提示", "请输入Duty！", "info", function () {
+                    $("#DutyPercentList").focus();
+                });
+                return;
+
+            }
+            else {
+                //TODO
+
+            }
+
+            if ($("#Name").val() == "") {
+                $.messager.alert("提示", "请输入名称！", "info", function () {
+                    $("#Name").focus();
+                });
+                return;
+
+            }
+            if ($("#EngName").val() == "") {
+                $.messager.alert("提示", "请输入英文名称！", "info", function () {
+                    $("#EngName").focus();
+                });
+                return;
+
+            }
+
+            var CodeList = [];
+            //得到table的值
+            $("#Show table tr:not(:first)").each(function () {
+                var $chk = $(this).find("input[name=chk]");
+                if ($chk.is(":checked")) {
+                    CodeList.push($(this).find("input[name=chk]").val());
+
+                }
+            })
+
+            var tempCodeList = "";
+
+            if (document.getElementById("Checkbox1").checked) {
+                if (CodeList == "") {
+                    $.messager.alert("提示", "请选择报检项目！");
+                    return;
+                }
+                else {
+                    tempCodeList = CodeList.join(',');
+                }
+            }
+
+            $.post('@Url.Content("~/HS/Edit")', {
+                hscode:  $("#HSCode").val(),
+                cess: $("#Cess").val(),
+                DutyPercentList: $("#DutyPercentList").val(),
+                ID: $("#ID").val(),
+                CodeList: tempCodeList,
+                name: $("#Name").val(),
+                engName: $("#EngName").val(),
+                dataflag: $("#DataFlag").val()
+            }, function (result) {
+                if (result > 0) {
+                    OA.CloseMe();
+                    parentGridReload();
+                }
+                else {
+                    $.messager.alert("提示", "已存在此 Code,不能重复添加！请重新输入！");
+                }
+            });
+            
+
+        }//方法结束
+
+        //})
+    </script>
+}

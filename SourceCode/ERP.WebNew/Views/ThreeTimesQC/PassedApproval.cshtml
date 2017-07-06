@@ -1,0 +1,30 @@
+﻿@{
+    ViewBag.Title = "已审核的三期QC";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@model ERP.Models.ThreeTimesQC.VMPurchaseSearch
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)ThreeTimesQCElementPricileges.View);
+        var showReplySuggest = @(Model.PageElementPrivileges & (int)ThreeTimesQCElementPricileges.ReplySuggest);
+
+        var ops = "";
+        if (showView>0) {
+            ops+="<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ThreeTimesQC/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+        if (showReplySuggest>0) {
+            ops+="<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ThreeTimesQC/Edit/"))" + val + "?Type=ReplySuggest' style='margin: 0 5px;'>回复意见</a>";
+        }
+        
+        return ops;
+    }
+</script>

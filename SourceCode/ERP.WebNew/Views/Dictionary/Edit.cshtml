@@ -1,0 +1,281 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@using ERP.Models.CustomEnums
+@model ERP.Models.DataDictionary.DTODataDictionary
+
+<style type="text/css">
+    .border_color {
+        border: 1px solid #CCC;
+    }
+
+    .form-control-feedback {
+        right: 10px;
+    }
+
+    .div_Packing, .div_GoalPort {
+        display: none;
+    }
+</style>
+
+<form action='@Url.Content("~/Dictionary/Edit")' method="post" id="frm">
+    @Html.HiddenFor(d => d.ID)
+
+    <div class="search_Condition box_1k" style="border-color: white">
+        <ul>
+            <li class="margin-top-20">
+                <label class="col-xs-2 text-danger">类型名称：</label>
+                <div class="col-sm-10  form-group">
+                    @if (Model.PageType == PageTypeEnum.Add)
+                    {
+                        @Html.DropDownListFor(n => n.TableKind, ViewData["AttrName"] as SelectList, new { @class = "form-control" })
+                    }
+                    else
+                    {
+                        @Html.DropDownListFor(n => n.TableKind, ViewData["AttrName"] as SelectList, new { @class = "form-control", disabled = "disabled" })
+                    }
+                </div>
+            </li>
+
+            <li class="margin-top-20">
+                <label class="col-xs-2 text-danger">数据名称：</label>
+                <div class="col-sm-10 form-group">
+                    @Html.TextBoxFor(d => d.Name, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20">
+                <label class="col-xs-2">数据别名</label>
+                <div class="col-sm-10 form-group">
+                    @Html.TextBoxFor(d => d.Alias, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_Packing">
+                <label class="col-xs-2">标签类型</label>
+                <div class="col-sm-10 form-group">
+                    @InlineHelpers.GetSelection(ViewData["GetSelectionDataFlag"] as IEnumerable<System.Web.Mvc.SelectListItem>, "DataFlag", true, Model.DataFlag, "")
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_GoalPort">
+                <label class="col-xs-2">
+                    Country
+                </label>
+                <div class="col-sm-10 form-group">
+                    @Html.DropDownListFor(d => d.Country, ViewData["Countries"] as SelectList, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_GoalPort">
+                <label class="col-xs-2">State：</label>
+                <div class="col-sm-10 form-group">
+                    @Html.DropDownListFor(d => d.Province, ViewData["Provinces"] as SelectList, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_GoalPort">
+                <label class="col-xs-2">City：</label>
+                <div class="col-sm-10 form-group">
+                    @Html.TextBoxFor(d => d.City, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_GoalPort">
+                <label class="col-xs-2">Street Address：</label>
+                <div class="col-sm-10 form-group">
+                    @Html.TextBoxFor(d => d.StreetAddress, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_GoalPort">
+                <label class="col-xs-2">公司名称：</label>
+                <div class="col-sm-10 form-group">
+                    @Html.TextBoxFor(d => d.CompanyName, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_GoalPort">
+                <label class="col-xs-2">邮编：</label>
+                <div class="col-sm-10 form-group">
+                    @Html.TextBoxFor(d => d.ZipCode, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_Season">
+                <label class="col-xs-2">Dept#：</label>
+                <div class="col-sm-10 form-group">
+                    @Html.TextBoxFor(d => d.DepartmentNumber, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_Season">
+                <label class="col-xs-2">季节中文名：</label>
+                <div class="col-sm-10 form-group">
+                    @Html.TextBoxFor(d => d.SeasonZhName, new { @class = "form-control" })
+                </div>
+            </li>
+
+            <li class="margin-top-20 div_Season">
+                <label class="col-xs-2">季节的客户：</label>
+                <div class="col-sm-10 form-group">
+                    @InlineHelpers.GetSelectionForQuoteTemplateFileName(ViewData["GetSelectionCustomer"] as IEnumerable<System.Web.Mvc.SelectListItem>, "SelectCustomer", Model.SelectCustomer, "value:customer().SelectCustomer")
+                </div>
+            </li>
+
+            <li class="search">
+                <button type="submit" id="bntSave" class="btn btn-danger">保存</button>
+                <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong><span>字体颜色为红色是必填项。</span>
+    </div>
+</form>
+
+@section scripts
+    {
+    <script>
+
+        function Change() {
+            var Packing = @((int)DictionaryTableKind.Packing);
+            if ($("#TableKind").val()==Packing) {
+                $(".div_Packing").show();
+            } else {
+                $(".div_Packing").hide();
+            }
+
+            var GoalPort = @((int)DictionaryTableKind.GoalPort);
+            if ($("#TableKind").val()==GoalPort) {
+                $(".div_GoalPort").show();
+            } else {
+                $(".div_GoalPort").hide();
+            }
+
+            var Season = @((int)DictionaryTableKind.Season);
+            if ($("#TableKind").val()==Season) {
+                $(".div_Season").show();
+            } else {
+                $(".div_Season").hide();
+            }
+        }
+
+        $(function () {
+            Change();
+
+            $("#TableKind").change(function () {
+                Change();
+            });
+
+            $('#frm').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+                fields: {
+                    TableKind: {
+                        validators: {
+                            notEmpty: { message: '请选择类型名称！' }
+                        }
+                    },
+                    Name:{
+                        validators: {
+                            notEmpty: { message: '请输入数据名称！' },
+                            stringLength: {
+                                min: 1,
+                                max: 50,
+                                message: '长度在1-50之间'
+                            },
+                        }
+                    },
+                    City:{
+                        validators: {
+                            stringLength: {
+                                min: 1,
+                                max: 100,
+                                message: '长度在1-100之间'
+                            },
+                        }
+                    },
+                    DepartmentNumber:{
+                        validators: {
+                            stringLength: {
+                                min: 1,
+                                max: 100,
+                                message: '长度在1-100之间'
+                            },
+                        }
+                    },
+                    ZipCode:{
+                        validators: {
+                            stringLength: {
+                                min: 1,
+                                max: 100,
+                                message: '长度在1-100之间'
+                            },
+                        }
+                    },
+                    CompanyName:{
+                        validators: {
+                            stringLength: {
+                                min: 1,
+                                max: 1000,
+                                message: '长度在1-1000之间'
+                            },
+                        }
+                    },
+                    SeasonZhName:{
+                        validators: {
+                            stringLength: {
+                                min: 1,
+                                max: 200,
+                                message: '长度在1-200之间'
+                            },
+                        }
+                    },
+                }
+            }).on('success.form.bv', function (e) {
+                e.preventDefault();
+                var $form = $(e.target);
+                $.post($form.attr('action'), $form.serialize(),
+                    function (result) {
+
+                        if (result == 0) {
+                            $.messager.alert("提示", "此类型中已存在数据名称！");
+
+                        }
+                        else {
+                            OA.CloseMe(true);
+                            parentGridReload();
+                        }
+                    }, "text");
+
+            });
+
+
+            $("#Country").change(function() {
+                var countryID=$(this).val();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: "@Url.Content("~/Customer/Provinces/")" + countryID,
+                }).done(function (data) {
+                    $("#Province").html("");
+                    for (var i = 0; i < data.length; i++) {
+                        $("#Province").append("<option value='"+data[i].ARID+"'>"+data[i].AreaName+"</option>");
+                    }
+
+                });
+            });
+
+        })
+    </script>
+}

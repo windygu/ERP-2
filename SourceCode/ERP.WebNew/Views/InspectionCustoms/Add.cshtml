@@ -1,0 +1,860 @@
+﻿@{
+    ViewBag.Title = "新建报关";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@model List<ERP.Models.ShipmentOrder.VMShipmentOrder>
+@using ERP.Models.CustomEnums
+
+@section styles{
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+    <style type="text/css">
+        .glyphicon {
+            right: 20px;
+        }
+
+        .box_1k {
+            margin-top: 0;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+
+        .ChooseCabinet, .ChooseCustoms {
+            margin-bottom: 10px;
+        }
+    </style>
+
+}
+
+<form id="frmEdit" class="content-wrapper">
+
+    @{
+        var FirstModel = Model.FirstOrDefault();
+        int ID = FirstModel.ID;
+        string OrderIDList = string.Join(",", Model.Select(d => d.OrderID).ToArray());
+        string OrderNumberList = string.Join(",", Model.Select(d => d.OrderNumber).ToArray());
+        string PO1List = string.Join(",", Model.Select(d => d.POID).ToArray());
+        string EHIPOList = string.Join(",", Model.Select(d => d.EHIPO).ToArray());
+    }
+    @Html.HiddenFor(d => OrderIDList)
+
+    <h3 class="popTitle">
+        销售订单信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">销售订单编号：</label>
+            <div class="col-sm-8 control-label">
+                @OrderNumberList
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">Shipping Window：</label>
+            <div class="col-sm-8 control-label">
+                @(FirstModel.OrderDateStartFormatter + " ~ " + FirstModel.OrderDateEndFormatter)
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">@ERP.Tools.Keys.CustomerPO：</label>
+            <div class="col-sm-8 control-label">
+                @PO1List
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">@ERP.Tools.Keys.ECHPO：</label>
+            <div class="col-sm-8 control-label">
+                @EHIPOList
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">DESTINATION：</label>
+            <div class="col-sm-8 control-label">
+                @FirstModel.DestinationPortName
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">选择船运公司：</label>
+            <div class="col-sm-8 control-label">
+                @FirstModel.Shipment_AgencyName
+            </div>
+        </div>
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">出运港：</label>
+            <div class="col-sm-8 control-label">
+                @FirstModel.PortName
+            </div>
+        </div>
+    </div>
+
+    @if (ViewBag.PageType != PageTypeEnum.Details)
+    {
+        <h3 class="popTitle">
+            待报关信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <div id="ChooseCabinet">
+                @if (FirstModel.list_cabinet != null)
+                {
+                    if (ViewBag.Type == 2)
+                    {
+                        <div id="ChooseCabinet0" class="ChooseCabinet">
+                            <div id="ChooseSubCabinet0"></div>
+                        </div>
+                    }
+                    else
+                    {
+                        for (int i = FirstModel.list_cabinet.Count - 1; i >= 0; i--)
+                        {
+                            var tempCabinet = FirstModel.list_cabinet[i];
+                            <div id="ChooseCabinet@(i)" class="ChooseCabinet">
+                                <input type="hidden" id="btnCabinet@(i)" value="@(tempCabinet.CabinetID)" data-text="@(tempCabinet.CabinetName+"[" + FirstModel.list_cabinet[i].CabinetSize + "(m³)]")" />
+                                <input type="hidden" id="btnShipToPortID@(i)" value="@(tempCabinet.ShipToPortID)" data-text="@(tempCabinet.ShipToPortName)" />
+                                <input type="hidden" id="btnCabinetIndex@(i)" value="@(i)" data-text="@(i)" />
+                                <div id="ChooseSubCabinet@(i)"></div>
+                            </div>
+                        }
+
+                    }
+                }
+            </div>
+        </div>
+
+        <h3 class="popTitle">
+            选择报检凭条
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <div id="ChooseCabinet">
+             
+                    <div class="row popContent">
+                        <table id="MyGrid_UploadReceipt" class="easyui-datagrid" data-options="singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:false,url:'@Url.Content("~/InspectionCustoms/GetUploadReceipt/"+ViewBag.ID)',method:'get',onLoadSuccess:onLoadSuccess">
+                            <thead>
+                                <tr>
+                                    <th data-options="field:'ck',checkbox:true"></th>
+                                    <th data-options="field:'DisplayFileName',width:200,align:'center'">附件名称</th>
+                                    <th data-options="field:'DT_CREATEDATE_Formatter',width:200,align:'center'">上传时间</th>
+                                    <th data-options="field:'ID',align:'center',formatter:operationFormatter">操作</th>
+                                    <th data-options="field:'ServerFileName',align:'center',hidden:true"></th>
+                                </tr>
+                            </thead>
+                        </table>
+
+                    </div>
+                
+            </div>
+        </div>
+
+        <div style="height:50px;">
+            <div class="form-group col-sm-6 has-feedback" style="margin-top:10px;">
+                <label class="col-sm-4 control-label text-danger">&nbsp;</label>
+                <div class="col-sm-8 control-label">
+                    <button id="btnConfirm" type="button" class="btn btn-success">选中报关</button>
+                    <button id="btnRefresh" type="button" class="btn btn-info">重新选择</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="beizhu red" style="float: none;">
+            <strong>PS：</strong><span>如果希望一票报关，请将你需要的code全选中，再点击选中报关按钮</span>
+        </div>
+    }
+
+    <h3 class="popTitle">
+        已报关信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+
+    <div class="row popContent">
+        <div id="ChooseCustoms">
+        </div>
+    </div>
+
+
+    <div class="form-group text-right tijiao">
+
+        <button type="button" class="btn btn-primary" data-loading-text="Loading..." data-bind="click: $root.submit.bind($data, @((int)ShipmentOrderStatusEnum.OutLine))">保存为草稿</button>
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+</form>
+
+@section scripts{
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+
+    <script type="text/javascript">
+
+
+        function operationFormatter(val, row, index) {
+            var ops = "";
+
+            ops = "<a class='btn-xs w_auto' href='"+row.ServerFileName+"' target='_blank' style='margin: 0 5px;'>查看</a>";
+
+            return ops;
+        }
+
+        function KOFirstModel() {
+            this.ID = ko.observable(@(FirstModel.ID));
+            this.InspectionCustomsID = ko.observable(@(ViewBag.ID));
+            this.StatusID = ko.observable();
+            this.OrderIDList = ko.observable();
+
+            this.list_cabinet = ko.observableArray();
+        }
+
+        function KOViewFirstModel() {
+            var self = this;
+
+            self.Model = ko.observable();
+            self.Model(new KOFirstModel(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(FirstModel)))));
+
+            var checkSubmit = false;//防止重复提交
+            //提交
+            self.submit = function (StatusID) {
+
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+
+                if (!bootstrapValidator.isValid()) {
+                    $(".glyphicon-remove:first").prev().focus();
+                    return false;
+                }
+
+
+                var HasRMBFactory = false;
+                var HasUSDFactory = false;
+                var Error = false;
+                var isContinue = true;
+
+                var list_ChooseCabinetIndex=[];
+                for (var i = $("#ChooseCabinet").children().length-1; i >= 0 ; i--) {
+                    var temp = $("#ChooseSubCabinet" + i).datagrid("getRows");
+                    if (temp.length>0) {
+                        for (var j = 0; j < temp.length; j++) {
+                            if (temp[j].CurrencyName == "美元") {
+                                HasUSDFactory=true;
+                            }else if (temp[j].CurrencyName == "人民币") {
+                                HasRMBFactory=true;
+                            }
+                        }
+                    }
+
+                }
+
+                if (HasRMBFactory) {
+                    isContinue=false;
+                    $.messager.alert("提示", "您还有待报关的人民币工厂的产品！", "info");
+                    return false;
+
+                }
+                if (HasUSDFactory) {
+                    isContinue=false;
+                    $.messager.confirm('提示','您还有待报关的美元工厂的产品，是否继续？', function(r){
+                        if (r) {
+                            isContinue=true;
+
+
+                            var data=[];
+                            for (var i = 0; i < $("#ChooseCustoms").children().length; i++) {
+                                data.push({
+                                    list_product:$("#ChooseSubCustoms" + i).datagrid("getRows"),
+                                });
+                            }
+                            //if (data == "") {
+                            //    $.messager.alert("提示", "已报关信息不能为空！");
+                            //    return;
+                            //}
+                            self.Model().list_cabinet(data);
+
+                            self.Model().OrderIDList("@(OrderIDList)");
+
+                            if (checkSubmit) {
+                                $.messager.alert("提示", "请勿重复提交！");
+                                return;
+                            }
+                            checkSubmit = true;
+                            loading();
+
+                            $.ajax({
+                                type: 'post',
+                                contentType: 'application/json',
+                                url: '@Url.Content("~/InspectionCustoms/Add")',
+                                data: ko.toJSON(self.Model)
+                            }).done(function (data) {
+                                checkSubmit = false;
+                                if (!data.IsSuccess) {
+                                    completeLoading();
+                                    $.messager.alert("提示", "失败了！");
+                                    return;
+                                } else {
+                                    parentGridReload();
+                                    OA.CloseMe(true);
+                                }
+                            });
+                        }
+                    });
+                }
+
+                if (!isContinue) {
+                    return false;
+                }
+
+
+                var data=[];
+                for (var i = 0; i < $("#ChooseCustoms").children().length; i++) {
+                    data.push({
+                        list_product:$("#ChooseSubCustoms" + i).datagrid("getRows"),
+                    });
+                }
+                //if (data == "") {
+                //    $.messager.alert("提示", "已报关信息不能为空！");
+                //    return;
+                //}
+                self.Model().list_cabinet(data);
+
+                self.Model().OrderIDList("@(OrderIDList)");
+
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/InspectionCustoms/Add")',
+                    data: ko.toJSON(self.Model)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    if (!data.IsSuccess) {
+                        completeLoading();
+                        $.messager.alert("提示", "失败了！");
+                        return;
+                    } else {
+                        parentGridReload();
+                        OA.CloseMe(true);
+                    }
+                });
+            }
+
+        }
+
+
+        var KOViewFirstModel = new KOViewFirstModel();
+        ko.applyBindings(KOViewFirstModel);
+
+        //绑定汇总列
+        function BindFotter(editGrid) {
+            var rows = $(editGrid).datagrid("getChecked");
+            BindFotterData(editGrid,rows);
+        }
+
+        function BindFotterData(gridID,rows) {
+            var SumOuterVolume = 0;
+            var SumOuterWeightGross = 0;
+            var SumOuterWeightNet = 0;
+            var Qty = 0;
+            var SumBoxQty = 0;
+            var RemainedBoxQty = 0;
+            var SelectBoxQty = 0;
+            var SelectVolume = 0;
+            var SelectSumOuterWeightGross = 0;
+            var SelectSumOuterWeightNet = 0;
+
+            for (var i = 0; i < rows.length; i++) {
+                var thisRow = rows[i];
+
+                if (thisRow.SumOuterVolume == parseFloat(thisRow.SumOuterVolume)) {
+                    SumOuterVolume += parseFloat(thisRow.SumOuterVolume);
+                }
+                if (thisRow.SumOuterWeightGross == parseFloat(thisRow.SumOuterWeightGross)) {
+                    SumOuterWeightGross += parseFloat(thisRow.SumOuterWeightGross);
+                }
+                if (thisRow.SumOuterWeightNet == parseFloat(thisRow.SumOuterWeightNet)) {
+                    SumOuterWeightNet += parseFloat(thisRow.SumOuterWeightNet);
+                }
+                if (thisRow.Qty == parseFloat(thisRow.Qty)) {
+                    Qty += parseFloat(thisRow.Qty);
+                }
+                if (thisRow.SumBoxQty == parseFloat(thisRow.SumBoxQty)) {
+                    SumBoxQty += parseFloat(thisRow.SumBoxQty);
+                }
+                if (thisRow.RemainedBoxQty == parseFloat(thisRow.RemainedBoxQty)) {
+                    RemainedBoxQty += parseFloat(thisRow.RemainedBoxQty);
+                }
+                if (thisRow.SelectBoxQty == parseInt(thisRow.SelectBoxQty)) {
+                    SelectBoxQty += parseInt(thisRow.SelectBoxQty);
+                }
+                if (thisRow.SelectVolume == parseFloat(thisRow.SelectVolume)) {
+                    SelectVolume += parseFloat(thisRow.SelectVolume);
+                }
+                if (thisRow.SelectSumOuterWeightGross == parseFloat(thisRow.SelectSumOuterWeightGross)) {
+                    SelectSumOuterWeightGross += parseFloat(thisRow.SelectSumOuterWeightGross);
+                }
+                if (thisRow.SelectSumOuterWeightNet == parseFloat(thisRow.SelectSumOuterWeightNet)) {
+                    SelectSumOuterWeightNet += parseFloat(thisRow.SelectSumOuterWeightNet);
+                }
+            }
+
+            //统计信息
+            $(gridID).datagrid('reloadFooter',
+                [
+                    {
+                        ProductID:-1,
+                        SumOuterVolume:NumberToRound(SumOuterVolume,2),
+                        SumOuterWeightGross:NumberToRound(SumOuterWeightGross,2),
+                        SumOuterWeightNet:NumberToRound(SumOuterWeightNet,2),
+                        Qty:Qty,
+                        SumBoxQty:SumBoxQty,
+                        RemainedBoxQty:NumberToRound(RemainedBoxQty,2),
+                        SelectBoxQty: NumberToRound(SelectBoxQty,2),
+                        SelectVolume: NumberToRound(SelectVolume, 2),
+                        SelectSumOuterWeightGross,SelectSumOuterWeightGross,
+                            SelectSumOuterWeightNet:SelectSumOuterWeightNet,
+                        },
+                        ]
+            );
+            InitPopover();
+                    }
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndex = undefined;
+        var editGrid = "";
+
+        function onBeforeEdit(index, row) {
+            row.editing = true;
+            updateActionsInfo(index);
+        }
+
+        function onAfterEdit(index, row) {
+            //计算列
+            if (row.SelectBoxQty != parseInt(row.SelectBoxQty)) {
+                row.SelectBoxQty = 0;
+            }
+            else if (row.SelectBoxQty>row.RemainedBoxQty) {
+                row.SelectBoxQty = 0;
+                $.messager.alert("提示", "当前报关箱数不能大于可报关箱数！", "info");
+            }
+            row.SelectBoxQty = parseInt(row.SelectBoxQty);
+            row.SelectVolume = Calculate_SumOuterVolume(row.OuterLength, row.OuterWidth, row.OuterHeight, row.SelectBoxQty);
+            row.SelectQty = row.SelectBoxQty * row.OuterBoxRate;
+
+            row.SelectSumOuterWeightGross = Calculate_SelectSumOuterWeightGross(row.SelectBoxQty,row.OuterWeightGross);
+            row.SelectSumOuterWeightNet = Calculate_SelectSumOuterWeightNet(row.SelectBoxQty,row.OuterWeightNet);
+
+
+            editGrid = "#" + $(this)[0].id;
+
+            BindFotter(editGrid);
+
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function onCancelEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function endEditingInfo() {
+            if (editIndex == undefined) { return true }
+            if ($(editGrid).datagrid('validateRow', editIndex)) {
+                $(editGrid).datagrid('endEdit', editIndex);
+                editIndex = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function updateActionsInfo(index) {
+            $(editGrid).datagrid('refreshRow', index);
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+
+        }
+
+        function acceptInfo(target) {
+            editIndex = getRowIndex(target);
+            if (endEditingInfo()) {
+                $(editGrid).datagrid('acceptChanges');
+            }
+        }
+
+        function onClickCell(index, field) {
+            editGrid = "#" + $(this)[0].id;
+            //debugger;
+            if (editIndex != index) {
+                if (endEditingInfo()) {
+                    $(editGrid).datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $(editGrid).datagrid('getEditor', { index: index, field: field });
+                    if (ed) {
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndex = index;
+                } else {
+                    setTimeout(function () {
+                        $(editGrid).datagrid('selectRow', editIndex);
+                    }, 0);
+                }
+            }
+            RemovePopover();
+        }
+
+        function productNoFormatter(val, row, index) {
+            if (row.ProductID == -1) {
+                return "";
+            }
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+        }
+
+        function onBeginEdit(index, row) {
+            $(".datagrid-editable-input,.validatebox-text").on("keypress", function (e) {
+                if (e.keyCode == 13) {
+                    acceptInfo(row);
+                }
+            });
+        }
+
+        //重新选择
+        $("#btnRefresh").click(function() {
+            location = location;
+        });
+
+        //选中报关
+        $("#btnConfirm").click(function() {
+            var ChooseCabinetCount=0;
+            var ChooseCabinetIndex=0;
+            var listCheckedRows=[];
+
+            var title_temp=[];
+
+            var list_ChooseCabinetIndex=[];
+            for (var i = $("#ChooseCabinet").children().length-1; i >= 0 ; i--) {
+                var temp = $("#ChooseSubCabinet" + i).datagrid("getChecked");
+                if (temp.length>0) {
+                    var list_UploadReceipt_DisplayFileName=[];
+                    var list_UploadReceipt_ID=[];
+                    var UploadReceipt= $("#MyGrid_UploadReceipt").datagrid("getChecked");
+                    if (UploadReceipt.length>0) {
+                        for (var j = 0; j < UploadReceipt.length; j++) {
+                            //$("#MyGrid_UploadReceipt").datagrid('deleteRow', j);
+                            list_UploadReceipt_DisplayFileName.push(UploadReceipt[j].DisplayFileName);
+                            list_UploadReceipt_ID.push(UploadReceipt[j].ID);
+                        }
+                    }
+
+                    var Letter = String.fromCharCode(65+parseInt($("#ChooseCustoms").children().length));
+                    var InvoiceNo = temp[0].InvoiceNo.substring(0,7) + Letter;
+                    var tempStr= "报检凭条："+ list_UploadReceipt_DisplayFileName.join(',')+" 发票号：" + InvoiceNo;
+
+                    var title = $("#btnCabinet"+i).data("text") + " Ship To:" + $("#btnShipToPortID"+i).data("text") + "  "+tempStr;
+                    if ($("#btnCabinet"+i).data("text")==undefined) {
+                        title = tempStr;
+                    }
+                    if (!title_temp.contains(title)) {
+                        title_temp.push(title);
+                    }
+
+                    for (var j = 0; j < temp.length; j++) {
+
+                        var tempData={};
+                        $.extend(true,tempData, temp[j]);
+
+                        tempData.InvoiceNo=InvoiceNo;
+                        tempData.SCNo=temp[0].SCNo.substring(0,9) + Letter;
+                        tempData.list_UploadReceipt_ID=list_UploadReceipt_ID.join(',');
+
+                        listCheckedRows.push(tempData);
+                    }
+                    ChooseCabinetCount++;
+                    ChooseCabinetIndex = i;
+                    list_ChooseCabinetIndex.push(i);
+
+                }
+
+            }
+
+            if (ChooseCabinetCount==0) {
+                $.messager.alert("提示", "请选择需要报关的产品！", "info");
+                return;
+            }else {
+                var listHSCode=[];
+                for (var i = 0; i < listCheckedRows.length; i++) {
+                    if(!listHSCode.contains(listCheckedRows[i].HSCode) && listCheckedRows[i].IsNeedInspectionName=="是"){//TODO 暂定 否
+                        listHSCode.push(listCheckedRows[i].HSCode);
+                    }
+                }
+                if (listHSCode.length>1) {
+                    $.messager.alert("提示", "只能包含有一个需要报检的产品！", "info");
+                    return;
+                }
+
+                var thisIndex = $("#ChooseCustoms").children().length;
+                var thisCabinet = "ChooseCustoms" + thisIndex;
+                var thisSubCabinet = "ChooseSubCustoms" + thisIndex;
+
+                var html="<div id='" + thisCabinet + "' class='ChooseCustoms'>";
+                html+="<div id='" + thisSubCabinet + "'></div>";
+                html+="</div>";
+
+                $("#ChooseCustoms").prepend(html);
+
+                var title=title_temp.join(',');
+                BindGrid(thisIndex,title,listCheckedRows,"ChooseSubCustoms" + thisIndex);
+
+                for (var a = 0; a < list_ChooseCabinetIndex.length; a++) {
+                    var ChooseCabinetIndex = list_ChooseCabinetIndex[a];
+
+                    var AllRows= $("#ChooseSubCabinet" + ChooseCabinetIndex).datagrid("getRows");
+                    var AllRows_length = AllRows.length;
+
+                    var CheckedRows = $("#ChooseSubCabinet" + ChooseCabinetIndex).datagrid("getChecked");
+
+                    if (AllRows_length>0) {
+                        var arrayDelete=[];
+                        for (var i = 0; i < AllRows.length; i++) {
+                            var thisRow = AllRows[i];
+                            for (var j = 0; j < CheckedRows.length; j++) {
+                                if (thisRow.ID == CheckedRows[j].ID) {
+                                    if (thisRow.RemainedBoxQty == thisRow.SelectBoxQty) {
+                                        arrayDelete.push(thisRow);
+                                    }
+                                    else if (thisRow.RemainedBoxQty >= thisRow.SelectBoxQty) {
+                                        thisRow.RemainedBoxQty -= thisRow.SelectBoxQty;
+                                        thisRow.SelectBoxQty = thisRow.RemainedBoxQty;
+                                        thisRow.SelectVolume = Calculate_SumOuterVolume(thisRow.OuterLength, thisRow.OuterWidth, thisRow.OuterHeight, thisRow.SelectBoxQty);
+                                        thisRow.SelectQty = thisRow.SelectBoxQty * thisRow.OuterBoxRate;
+
+                                        thisRow.SelectSumOuterWeightGross = Calculate_SelectSumOuterWeightGross(thisRow.SelectBoxQty, thisRow.OuterWeightGross);
+                                        thisRow.SelectSumOuterWeightNet =Calculate_SelectSumOuterWeightNet(thisRow.SelectBoxQty, thisRow.OuterWeightNet);
+
+                                        var updateRowIndex = $("#ChooseSubCabinet" + ChooseCabinetIndex).datagrid('getRowIndex',thisRow);
+                                        $("#ChooseSubCabinet" + ChooseCabinetIndex).datagrid('refreshRow', updateRowIndex);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (arrayDelete.length>0) {
+                            for (var k = 0; k < arrayDelete.length; k++) {
+                                var deleteRowIndex = $("#ChooseSubCabinet" + ChooseCabinetIndex).datagrid('getRowIndex',arrayDelete[k]);
+                                $("#ChooseSubCabinet" + ChooseCabinetIndex).datagrid('deleteRow', deleteRowIndex);
+                            }
+
+                            if (arrayDelete.length==AllRows_length) {
+                                $("#ChooseCabinet"+ ChooseCabinetIndex).hide();
+                            }
+                        }
+                    }
+
+                    BindFotterData("#ChooseSubCabinet" + ChooseCabinetIndex,$("#ChooseSubCabinet" + ChooseCabinetIndex).datagrid("getRows"));
+
+                }
+            }
+        });
+
+        //绑定已报关信息
+        function BindGrid(thisIndex,title,data,thisSubCabinet) {
+
+            $("#" + thisSubCabinet).datagrid({
+                collapsible: true,
+                showFooter:true,
+                title:title,
+                data:data,
+                frozenColumns:[[
+                    { field: 'OrderProductID',checkbox:true },
+                    { field: 'OrderNumber', title: '销售订单编号', width: 100, align: 'center' },
+                    { field: 'No', title: 'JK_NO', width: 100, align: 'center',formatter: productNoFormatter },
+                    { field: 'SkuNumber', title: 'SKU#', width: 100, align: 'center', hidden: true },
+                    { field: 'FactoryAbbreviation', title: 'FTY', width: 100, align: 'center' },
+                ]],
+                columns: [[
+                    { field: 'Desc', title: 'Description', width: 100, align: 'center' },
+                    { field: 'HTS', title: '海关编码', width: 100, align: 'center', hidden: true },
+                    { field: 'HSCode', title: '报关编码', width: 100, align: 'center' },
+                    { field: 'IsNeedInspectionName', title: '是否需要报检', width: 100, align: 'center' },
+                    { field: 'CurrencyName', title: '工厂币种', width: 100, align: 'center' },
+                    { field: 'InnerBoxRate', title: '内盒率', width: 50, align: 'center' },
+                    { field: 'OuterBoxRate', title: '外箱率', width: 50, align: 'center' },
+                    { field: 'OuterLength', title: '外箱长(cm)', width: 65, align: 'center' },
+                    { field: 'OuterWidth', title: '外箱宽(cm)', width: 65, align: 'center' },
+                    { field: 'OuterHeight', title: '外箱高(cm)', width: 65, align: 'center' },
+
+                    { field: 'OuterWeightGross', title: '单箱毛重', width: 65, align: 'center' },
+                    { field: 'SumOuterWeightGross', title: '总毛重', width: 65, align: 'center' },
+                    { field: 'OuterWeightNet', title: '单箱净重', width: 65, align: 'center' },
+                    { field: 'SumOuterWeightNet', title: '总净重', width: 65, align: 'center' },
+
+                    { field: 'SumOuterVolume', title: '总体积(M3)', width: 80, align: 'center' },
+                    { field: 'Qty', title: '总数量', width: 50, align: 'center' },
+                    { field: 'SumBoxQty', title: '总出运箱数', width: 70, align: 'center' },
+
+                    { field: 'OuterVolume', title: '产品体积', width: 50, align: 'center',hidden:true },
+                    { field: 'SelectBoxQty', title: '当前报关箱数', width: 80, align: 'center',editor:{type:'numberbox',options:{min:1}} },
+                    { field: 'SelectVolume', title: '当前报关体积(M3)', width: 110, align: 'center' },
+                    { field: 'SelectQty', title: '当前报关的产品数量', width: 120, align: 'center' },
+
+                    { field: 'SelectSumOuterWeightGross', title: '当前报关的总毛重', width: 110, align: 'center' },
+                    { field: 'SelectSumOuterWeightNet', title: '当前报关的总净重', width: 110, align: 'center' },
+
+                    { field: 'ProductID', hidden: true },
+                    { field: 'Image', hidden: true },
+                    { field: 'ShipmentOrderCabinetID', hidden: true },
+                    { field: 'SCNo', hidden: true },
+                    { field: 'InvoiceNo', hidden: true },
+                    { field: 'HSID', hidden: true },
+                    { field: 'HSCodeName', hidden: true },
+                    { field: 'HSCodeEngName', hidden: true },
+                    { field: 'ID', hidden: true },
+                ]],
+            });
+
+
+            BindFotterData("#" + thisSubCabinet,data);
+
+        }
+
+        function Calculate_SumOuterVolume( OuterLength,  OuterWidth,  OuterHeight,  SumBoxQty) {
+            return NumberToRound((OuterLength * OuterWidth * OuterHeight / 1000000 * SumBoxQty),2);
+        }
+
+        var decimals = 0;
+        var SelectCustomer = "@(FirstModel.SelectCustomer)";
+        if (SelectCustomer == "S135") {
+            decimals = 2;
+        }
+
+        function Calculate_SelectSumOuterWeightGross(SelectBoxQty,OuterWeightGross) {
+            return NumberToRound(SelectBoxQty * OuterWeightGross,decimals);
+        }
+
+        function Calculate_SelectSumOuterWeightNet(SelectBoxQty,OuterWeightNet) {
+            return NumberToRound((SelectBoxQty * OuterWeightNet),decimals);
+        }
+
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+
+            }
+        });
+
+        function onLoadSuccess(){
+
+        }
+    </script>
+    @if (FirstModel.list_cabinet != null)
+    {
+        if (ViewBag.Type == 2)
+        {
+            List<ERP.Models.ShipmentOrder.VMShipmentOrderProduct> list_product = new List<ERP.Models.ShipmentOrder.VMShipmentOrderProduct>();
+
+            for (int i = 0; i < FirstModel.list_cabinet.Count; i++)
+            {
+                list_product.AddRange(FirstModel.list_cabinet[i].list_product);
+            }
+            <script>
+                BindGrid(0,"",@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(list_product))),"ChooseSubCabinet0");
+
+                $("#ChooseSubCabinet0").datagrid({
+                    checkOnSelect:true,
+                    onBeforeEdit:onBeforeEdit,
+                    onAfterEdit:onAfterEdit,
+                    onCancelEdit:onCancelEdit,
+                    onLoadSuccess:onLoadSuccess,
+                    onClickCell: onClickCell,
+                    showFooter: false,
+                    onBeginEdit:onBeginEdit,
+                    //onCheck: function () {
+                    //    BindFotter();
+                    //},
+                    //onUncheck: function () {
+                    //    BindFotter();
+                    //},
+                    //onCheckAll: function () {
+                    //    BindFotter();
+                    //},
+                    //onUncheckAll: function () {
+                    //    BindFotter();
+                    //},
+                });
+                //BindFotter();
+            </script>
+
+        }
+        else
+        {
+            for (int i = 0; i < FirstModel.list_cabinet.Count; i++)
+            {
+                <script>
+                    BindGrid(@(i),"@(FirstModel.list_cabinet[i].CabinetName + " [" + FirstModel.list_cabinet[i].CabinetSize + "(m³)]") Ship To:@(FirstModel.list_cabinet[i].ShipToPortName)",@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(FirstModel.list_cabinet[i].list_product))),"ChooseSubCabinet@(i)");
+
+                    $("#ChooseSubCabinet@(i)").datagrid({
+                        checkOnSelect:true,
+                        onBeforeEdit:onBeforeEdit,
+                        onAfterEdit:onAfterEdit,
+                        onCancelEdit:onCancelEdit,
+                        onLoadSuccess:onLoadSuccess,
+                        onClickCell: onClickCell,
+                        showFooter: false,
+                        onBeginEdit:onBeginEdit,
+                        //onCheck: function () {
+                        //    BindFotter();
+                        //},
+                        //onUncheck: function () {
+                        //    BindFotter();
+                        //},
+                        //onCheckAll: function () {
+                        //    BindFotter();
+                        //},
+                        //onUncheckAll: function () {
+                        //    BindFotter();
+                        //},
+                    });
+
+                    //BindFotter();
+                </script>
+            }
+        }
+    }
+}

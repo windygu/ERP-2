@@ -1,0 +1,229 @@
+﻿@model ERP.Models.AdminUser.VMERPRoles
+
+@{
+    ViewBag.Title = "编辑角色信息";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@section styles{
+    <style>
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        li {
+            display: inline;
+        }
+    </style>
+}
+
+@using (Ajax.BeginForm("SaveRolePageViewPriv", "Auth", null, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit", @class = "form-horizontal bv-form" }))
+{
+    @Html.HiddenFor(p => p.RoleID)
+
+    <h3 class="popTitle">
+        角色信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-12">
+            <label class="col-sm-2 control-label text-danger">名称</label>
+            <div class="col-sm-10">
+                <input type="text" class="form-control" name="roleName" id="roleName" value="@Model.Name" disabled="disabled" />
+            </div>
+        </div>
+        <div class="form-group col-sm-12">
+            <label class="col-sm-2 control-label">描述</label>
+            <div class="col-sm-10">
+                <textarea class="form-control" disabled="disabled">@Model.Description</textarea>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        页面可见权限
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent" id="elementPrivilegesPanel">
+        <div class="form-group col-sm-12">
+            <table id="treeRoleMenuPrivileges" class="easyui-tree" style="width:500px;height:300px"
+                   data-options="url: '@(Url.Content("~/Auth/GetAllMenus/" + Model.RoleID))',method: 'get',checkbox:true,onDblClick:onDblClick"></table>
+        </div>
+    </div>
+
+    <div class="popBtns">
+        <button type="button" id="bntSave" class="btn btn-danger">保存</button>
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong>
+        <span>字体颜色为红色是必填项。</span>
+        <span>有效期必须大于价格输入日期。</span>
+    </div>
+}
+
+<div id="w" class="easyui-window" title="页面权限设置" data-options="modal:true,closed:true,iconCls:'icon-save',minimizable:false,collapsible:false,maximizable:false" style="width:400px;height:500px;">
+    <div class="easyui-layout" data-options="fit:true">
+        <div data-options="region:'center'" style="padding:10px;">
+            <div class="row">
+                <div class="form-group col-sm-12">
+                    <div class="row">
+                        <div class="col-sm-12  col-md-12  col-lg-12">
+                            页面元素权限:
+                        </div>
+                    </div>
+                    <div class="row">
+                        <table id="treeElementPrivileges" class="easyui-tree" style="width:350px" data-options="method: 'get',checkbox:true"></table>
+                    
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-options="region:'south',border:false" style="text-align:right;padding:5px 0 0;">
+            <a class="easyui-linkbutton" data-options="iconCls:'icon-ok'" href="javascript:void(0)" onclick="savePrivileges()" style="width:80px">保存</a>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+    <script type="text/javascript">
+
+        function onDblClick(row) {
+            $('#treeElementPrivileges').tree({
+                url: '@Url.Content("~/Auth/RolePagePriv")' + "?roleID=" +@(Model.RoleID) +'&menuID=' + row.id
+            });
+            vmMenuElementPrivileges.MenuID(row.id);
+            $('#w').window('open');
+        }
+
+        function RoleMenuPrivilegeModel() {
+            var self = this;
+            self.RoleID = ko.observable();
+            self.Pages = ko.observableArray();
+        };
+        var vmRoleMenuPrivileges = new RoleMenuPrivilegeModel();
+        vmRoleMenuPrivileges.RoleID(@Model.RoleID);
+        ko.applyBindings(vmRoleMenuPrivileges, document.getElementById("frmEdit"));
+
+        function MenuElementPrivilegeModel() {
+            var self = this;
+
+            self.MenuID = ko.observable();
+            self.RoleID = ko.observable();
+            self.Items = ko.observableArray();
+        };
+        var vmMenuElementPrivileges = new MenuElementPrivilegeModel();
+        vmMenuElementPrivileges.RoleID(@Model.RoleID);
+        ko.applyBindings(vmMenuElementPrivileges, document.getElementById("w"));
+
+        function savePrivileges() {
+            var selectedNodes = $('#treeElementPrivileges').tree('getChecked', ['checked', 'indeterminate']);
+            var arrSelectedRoles = [];
+            for (var i = 0; i < selectedNodes.length; i++) {
+                arrSelectedRoles.push({ text: selectedNodes[i].text, id: selectedNodes[i].id, checked: selectedNodes[i].checked });
+            }
+            vmMenuElementPrivileges.Items(arrSelectedRoles);
+            $.ajax({
+                type: 'post',
+                contentType: 'application/json',
+                url: "@Url.Content("~/Auth/SaveRolePageElementPriv/")",
+                data: ko.toJSON(vmMenuElementPrivileges)
+            }).done(function (data) {
+                if (data == 1) {
+                    $.messager.alert("提示", "更新成功", null, function () {
+                        $('#w').window('close');
+                    });
+                }
+                else if (data == 2) {
+                    $.messager.alert("提示", "数据并没有改变");
+                }
+                else {
+                    $.messager.alert("提示", "更新失败");
+                }
+            });
+        }
+
+        function urlFormatter(val, row, index) {
+            if (val) {
+                return "<a href='" + val + "' target='_blank'>" + val + "</a>";
+            }
+            else {
+                return "";
+            }
+        }
+
+        $(function () {
+            $("#elementPrivilegesPanel").panel({width:860,height:350});
+
+            // 表单验证
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+
+                fields: {
+                    roleName: {
+                        validators: {
+                            notEmpty: { message: '角色不能为空' },
+                            stringLength: {
+                                min: 1,
+                                max: 50,
+                                message: '长度在1-50之间'
+                            },
+                        }
+                    }
+                }
+            }).on('success.form.bv', function (e) {
+                e.preventDefault();
+
+                var $form = $(e.target);
+                $("#bntSave").removeAttr("disabled");
+
+                var selectedNodes = $('#treeRoleMenuPrivileges').tree('getChecked', ['checked', 'indeterminate']);
+                var arrSelectedPages = [];
+                for (var i = 0; i < selectedNodes.length; i++) {
+                    arrSelectedPages.push(selectedNodes[i].id);
+                }
+                vmRoleMenuPrivileges.Pages(arrSelectedPages);
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: "@Url.Content("~/Auth/SaveRolePageViewPriv/")",
+                    data: ko.toJSON(vmRoleMenuPrivileges)
+                }).done(function (data) {
+                    if (data == 1) {
+                        $.messager.alert("提示", "更新成功", null, function () {
+                            $('#w').window('close');
+                        });
+                    }
+                    else if (data == 2) {
+                        $.messager.alert("提示", "数据并没有改变");
+                    }
+                    else {
+                        $.messager.alert("提示", "更新失败");
+                    }
+                    $("#bntSave").removeAttr("disabled");
+                });
+            });
+
+            $("#bntSave").click(function () {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (!bootstrapValidator.isValid()) {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+                $("#bntSave").attr("disabled", "disabled");
+            });
+        });
+    </script>
+}

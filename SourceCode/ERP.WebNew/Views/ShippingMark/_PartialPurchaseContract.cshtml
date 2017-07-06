@@ -1,0 +1,381 @@
+﻿@using ERP.Models.CustomEnums
+
+@model ERP.Models.Purchase.VMPurchase
+
+<h3 class="popTitle">
+    采购合同信息
+    <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+</h3>
+<div class="row popContent">
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">工厂：</label>
+        <div class="col-sm-8 control-label">
+            @Model.FactoryName
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">采购订单编号：</label>
+        <div class="col-sm-8 control-label">
+            @Model.PurchaseNumber
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">联络人：</label>
+        <div class="col-sm-8 control-label">
+            @Model.CallPeople
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">采购日期：</label>
+        <div class="col-sm-8 control-label">
+            @Model.PurchaseDate
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">电话：</label>
+        <div class="col-sm-8 control-label">
+            @Model.Telephone
+        </div>
+    </div><div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label text-danger">交货地：</label>
+        <div class="col-sm-8 control-label">
+            @Model.Port
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">传真：</label>
+        <div class="col-sm-8 control-label">
+            @Model.Fax
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label text-danger">交货日期：</label>
+        <div class="col-sm-8 control-label">
+            <div class="col-sm-5" style="padding:0;">
+                @Html.TextBoxFor(d => d.DateStartFormatter, new { @class = "form-control Wdate", style = "padding-right: 20px;", disabled = "disabled" })
+            </div>
+            <span class="col-sm-2" style="padding: 0; text-align: center;display:none;">-</span>
+            <div class="col-sm-5" style="padding:0;display:none;">
+                @Html.TextBoxFor(d => d.DateEndFormatter, new { @class = "form-control Wdate", style = "padding-right: 20px;", disabled = "disabled" })
+            </div>
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">客户：</label>
+        <div class="col-sm-8 control-label">
+            @Model.CustomerCode
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label text-danger">付款方式：</label>
+        <div class="col-sm-8 control-label divPaymentType">
+
+            <div class="col-sm-6" style="padding:0;">
+                <select id="PaymentType" name="PaymentType" class="form-control" style="padding-right:0;" disabled="disabled">
+                    <option value="1" @(Model.PaymentType == "1" ? "selected='selected'" : "")>结关后</option>
+                    <option value="2" @(Model.PaymentType == "2" ? "selected='selected'" : "")>进仓后</option>
+                    <option value="3" @(Model.PaymentType == "3" ? "selected='selected'" : "")>发货后</option>
+                    <option value="4" @(Model.PaymentType == "4" ? "selected='selected'" : "")>收到正本单据后</option>
+                    <option value="5" @(Model.PaymentType == "5" ? "selected='selected'" : "")>收到正本单据扫描件后</option>
+                    <option value="6" @(Model.PaymentType == "6" ? "selected='selected'" : "")>L/C SIGHT</option>
+                    <option value="7" @(Model.PaymentType == "7" ? "selected='selected'" : "")>收到正本FCR后</option>
+                </select>
+            </div>
+            <div class="col-sm-4 divAfterDate">
+                @Html.TextBoxFor(d => d.AfterDate, new { @class = "form-control", style = "padding-right: 0;", disabled = "disabled" })
+            </div>
+            <div class="col-sm-2 divAfterDate" style="padding:0;">
+                天付款
+            </div>
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">销售订单编号：</label>
+        <div class="col-sm-8 control-label">
+            @(Model.OrderNumber)
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">采购订单总数量：</label>
+        <div class="col-sm-8 control-label">
+            @(Model.AllQty)
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">额外费用：</label>
+        <div class="col-sm-8 control-label">
+            @Html.TextBoxFor(d => d.OtherFee, new { @class = "form-control", disabled = "disabled" })
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">采购订单总金额：</label>
+        <div id="divAllAmount" class="col-sm-8 control-label">
+            @(Model.CurrentSign + Model.AllAmount)
+        </div>
+        <input id="hiddenAllAmount" type="hidden" value="@(Model.AllAmount - Model.OtherFee)" />
+    </div>
+
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label"></label>
+        <div class="col-sm-8 control-label">
+            <label>
+                @Html.CheckBoxFor(d => d.IsImmediatelySend, new { disabled = "disabled" })
+                审核成功后自动发送邮件给工厂
+            </label>
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label"></label>
+        <div class="col-sm-8 control-label">
+            <label>
+                @Html.CheckBoxFor(d => d.IsThirdVerification, new { disabled = "disabled" })
+                第三方验货
+            </label>
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label"></label>
+        <div class="col-sm-8 control-label">
+            <label>
+                @Html.CheckBoxFor(d => d.IsThirdAudits, new { disabled = "disabled" })
+                第三方验厂
+            </label>
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label"></label>
+        <div class="col-sm-8 control-label">
+            <label>
+                @Html.CheckBoxFor(d => d.IsThirdTest, new { disabled = "disabled" })
+                第三方检测
+            </label>
+        </div>
+    </div>
+</div>
+<h3 class="popTitle">
+    产品信息
+    <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+</h3>
+
+<div class="popContent">
+    <div class="Factory_ProductList">
+        <table id="MyPopGrid" class="easyui-datagrid dg" style="width:100%;overflow:auto; display:none;">
+            <thead data-options="frozen:true">
+                <tr>
+                    <th data-options="field:'No',width:100,align:'center',formatter:productNoFormatter">产品货号</th>
+                    <th data-options="field:'Name',width:150,align:'center'">品名</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr class="t_bg">
+                    <th data-options="field:'PackageName',width:100,align:'center'">包装方式</th>
+                    <th data-options="field:'PriceFactoryFormatter',width:60,align:'center'">工厂价格</th>
+                    <th data-options="field:'Qty',width:60,align:'center'">数量</th>
+                    <th data-options="field:'UnitName',width:60,align:'center'">单位</th>
+                    <th data-options="field:'ProductAmountFormatter',width:60,align:'center'">金额</th>
+                    <th data-options="field:'InnerBoxRate',width:60,align:'center'">内盒率</th>
+                    <th data-options="field:'OuterBoxRate',width:60,align:'center'">外箱率</th>
+                    <th data-options="field:'PDQPackRate',width:60,align:'center'">PDQ装箱率</th>
+                    <th data-options="field:'StyleName',width:60,align:'center'">款式</th>
+                    <th data-options="field:'MixedMode',width:100,align:'center'">混装方式</th>
+                    <th data-options="field:'OtherComment',width:100,align:'center'">产品其它要求备注</th>
+                    <th data-options="field:'IsFragile3',width:100,align:'center'">是否易碎品</th>
+                    <th data-options="field:'CarbinetType',width:100,align:'center'@(Model.SelectCustomer == SelectCustomerEnum.S13.ToString()?"":",hidden:true"),editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:list_CabinetType,
+                                    editable:false,
+                                }
+                            },formatter:formatCarbinetType">箱子类型</th>
+
+                    <th data-options="field:'ID',width:80,align:'center',hidden:true"></th>
+                    <th data-options="field:'ProductID',width:80,align:'center',hidden:true"></th>
+                    <th data-options="field:'Image',width:80,align:'center',hidden:true"></th>
+                    <th data-options="field:'PriceFactory',width:80,align:'center',hidden:true"></th>
+                    <th data-options="field:'ProductAmount',width:80,align:'center',hidden:true"></th>
+                    <th data-options="field:'IsProductMixed',width:80,align:'center',hidden:true"></th>
+                    <th data-options="field:'OrderProductID',width:80,align:'center',hidden:true"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.list_batch != null)
+                {
+
+                    foreach (var item_product in Model.list_batch[0].listProduct)
+                    {
+                        <tr>
+                            <td>@item_product.No</td>
+                            <td>@item_product.Name</td>
+                            <td>@item_product.PackageName</td>
+                            <td>@item_product.PriceFactoryFormatter</td>
+                            <td>@item_product.Qty</td>
+                            <td>@item_product.UnitName</td>
+                            <td>@item_product.ProductAmountFormatter</td>
+                            <td>@item_product.InnerBoxRate</td>
+                            <td>@item_product.OuterBoxRate</td>
+                            <td>@item_product.PDQPackRate</td>
+                            <td>@item_product.StyleName</td>
+                            <td>@item_product.MixedMode</td>
+                            <td>@item_product.OtherComment</td>
+                            <td>@item_product.IsFragile3</td>
+                            <td>@item_product.CarbinetType</td>
+
+                            <td>@item_product.ID</td>
+                            <td>@item_product.ProductID</td>
+                            <td>@item_product.Image</td>
+                            <td>@item_product.PriceFactory</td>
+                            <td>@item_product.ProductAmount</td>
+                            <td>@item_product.IsProductMixed</td>
+                            <td>@item_product.OrderProductID</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+
+    var list_CabinetType = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.list_CabinetType)));
+
+    function formatCarbinetType(value,row,index){
+        for(var i=0; i < list_CabinetType.length; i++){
+            if (list_CabinetType[i].Value == value)
+                return list_CabinetType[i].Text;
+        }
+        return value;
+    }
+
+    function productNoFormatter(val, row, index) {
+        return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+    }
+
+    $(function () {
+        $(".Factory_ProductList .Factory").each(function (index) {
+            $(this).find(".dg" + index).datagrid();
+        });
+        jav.initGridCellTooltips();
+        InitPopover();
+
+
+        $("#MyPopGrid").datagrid({
+            checkOnSelect:true,
+            onBeforeEdit:onBeforeEdit,
+            onAfterEdit:onAfterEdit,
+            onCancelEdit:onCancelEdit,
+            onLoadSuccess:onLoadSuccess,
+            onClickCell: @(Model.PageType == PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+            showFooter: true,
+            onBeginEdit:onBeginEdit,
+
+        });
+    });
+
+
+    function formatStatus(value,row,index){
+
+        var temp = @((int)CommonStatusEnum.Yes);
+        if (value==0) {
+            return "&nbsp;";
+        }
+        else if (value==temp) {
+            return "是";
+        }
+        else {
+            return "否";
+        }
+    }
+
+
+    function getRowIndex(target) {
+        var tr = $(target).closest('tr.datagrid-row');
+        return parseInt(tr.attr('datagrid-row-index'));
+    }
+
+    var editIndex = undefined;
+    var editGrid = "";
+
+    function onBeforeEdit(index, row) {
+        row.editing = true;
+        updateActionsInfo(index);
+        
+        UpdateExpander();
+    }
+
+    function onAfterEdit(index, row) {
+        row.editing = false;
+        updateActionsInfo(index);
+
+        UpdateExpander();
+    }
+    function onCancelEdit(index, row) {
+        row.editing = false;
+        updateActionsInfo(index);
+    }
+    function endEditingInfo() {
+        if (editIndex == undefined) { return true }
+        if ($(editGrid).datagrid('validateRow', editIndex)) {
+            $(editGrid).datagrid('endEdit', editIndex);
+            editIndex = undefined;
+            return true;
+        } else {
+            return false;
+        }
+    }
+    function updateActionsInfo(index) {
+        $(editGrid).datagrid('refreshRow', index);
+        //jav.initGridCellTooltips(["OrderID"]);
+        InitPopover();
+
+    }
+
+    function acceptInfo(target) {
+        editIndex = getRowIndex(target);
+        if (endEditingInfo()) {
+            $(editGrid).datagrid('acceptChanges');
+        }
+    }
+
+    function onClickCell(index, field,a,b,c) {
+        editGrid = "#" + $(this)[0].id;
+        if (editIndex != index) {
+            if (endEditingInfo()) {
+                $(editGrid).datagrid('selectRow', index).datagrid('beginEdit', index);
+                var ed = $(editGrid).datagrid('getEditor', { index: index, field: field });
+                if (ed) {
+                    ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                }
+                editIndex = index;
+            } else {
+                setTimeout(function () {
+                    $(editGrid).datagrid('selectRow', editIndex);
+                }, 0);
+            }
+        }
+        RemovePopover();
+    }
+
+    function productNoFormatter(val, row, index) {
+        return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+    }
+
+    function onBeginEdit(index, row) {
+        $(".datagrid-editable-input").on("keypress", function (e) {
+            if (e.keyCode == 13) {
+                acceptInfo(row);
+            }
+        });
+    }
+
+    function emptyFunc() {
+
+    }
+
+    function onLoadSuccess(){
+        InitPopover();
+    }
+
+</script>

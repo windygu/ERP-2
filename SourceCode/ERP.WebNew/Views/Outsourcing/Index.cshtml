@@ -1,0 +1,74 @@
+﻿@model ERP.Models.OutSourcing.VMFilterOC
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using ERP.Models.CustomEnums;
+@{
+    ViewBag.Title = "待审核代购合同列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts{
+    <script type="text/javascript">
+        var AuditOutsouringDataList = "#MyGrid";
+        var showView = @(Model.PageElementPrivileges & (int)OutSourcingElementPrivileges.OutWatch);
+        var showEdit = @(Model.PageElementPrivileges & (int)OutSourcingElementPrivileges.OutEdit);
+        var showCheck = @(Model.PageElementPrivileges & (int)OutSourcingElementPrivileges.OutCheck);
+        var statusPendingCheck=@((int)OutContractStatusEnum.PendingCheck);
+
+        var controllerDelURL = '@(Url.Content("~/Outsourcing/DeleteData"))';
+
+        function operationFormatter(val, row, index) {
+            var url = "href='@(Url.Content("~/Outsourcing/Edit"))?id=" + val;
+
+            var ops = "";
+            if(showView>0){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + " &pageType=2' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showEdit>0&&row.OutContractStatusID!=statusPendingCheck){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + " &pageType=3' style='margin: 0 5px;'>编辑</a>";
+            }
+
+            if(showCheck>0&&row.OutContractStatusID==statusPendingCheck&&row.IsCanAudit){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + " &pageType=4' style='margin: 0 5px;'>审核</a>";
+            }
+
+            return ops;
+        }
+
+        function DeleteSelected() {
+            var idArray = getSelections(AuditOutsouringDataList, "ID");
+            if (idArray.length == 0) {
+                $.messager.alert('提示', '请选择要删除的数据', 'info'); return;
+
+            } else {
+                $.messager.confirm('提示', '确定要删除选中的数据', function (r) {
+                    if (r) {
+                        $.post(controllerDelURL, { ID: idArray.toString() }, function (data) {
+                            if (data == 0) {
+                                $.messager.alert('提示', '提交出错', 'info'); return;
+
+                            } else if (data == 1) {
+                                $(AuditOutsouringDataList).datagrid("reload");
+
+                            } else {
+                                $.messager.alert('提示', '没有更新任何数据', 'info'); return;
+
+                            }
+
+                        });
+                    }
+                });
+
+            }
+        }
+
+        //列表数据加载成功时，使单元格鼠标移动呈现title
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","ID"]);
+        }
+    </script>
+}

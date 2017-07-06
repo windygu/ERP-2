@@ -1,0 +1,2536 @@
+﻿@model ERP.Models.Product.VMProductInfo
+
+@using ERP.Models.CustomEnums
+@{
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@section styles
+{
+
+    <style type="text/css">
+        .box_1k {
+            margin-top: 0px;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+    </style>
+
+    <style>
+        .conversion {
+            padding-top: 5px;
+            color: red;
+            font-weight: normal;
+        }
+
+        .price-td {
+            font-weight: normal;
+            color: red;
+        }
+
+        .upload_progress {
+            display: none;
+            padding: 5px;
+            border-radius: 10px;
+            color: #fff;
+            background-color: rgba(0,0,0,.6);
+            position: absolute;
+            left: 80px;
+            top: 90px;
+        }
+
+        .popContent {
+            overflow: inherit;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            border-top: 0;
+        }
+
+        .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10,
+        .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12,
+        .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3,
+        .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9 {
+            padding-left: 0;
+        }
+
+        .form-horizontal .form-group {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .form-horizontal .has-feedback .form-control-feedback {
+            top: -2px;
+        }
+    </style>
+}
+@Html.Partial("_PartialSelectProduct")
+@using (Ajax.BeginForm("Edit2", "Product", new { }, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit", @class = "form-horizontal bv-form" }))
+{
+    @Html.HiddenFor(p => p.ID)
+    @Html.HiddenFor(p => p.ParentProductID)
+    @Html.HiddenFor(p => p.RootProductID)
+    @Html.HiddenFor(p => p.Status)
+
+    <h3 class="popTitle">
+        基本信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label text-danger">货号</td>
+                <td class="col-sm-4">
+                    <div class="form-group">
+                        @Html.TextBoxFor(d => d.No, new { @class = "form-control" })
+                    </div>
+                </td>
+                <td class="col-sm-2 control-label text-danger">客户</td>
+                <td class="col-sm-4">
+                    <div class="form-group">
+                        @{
+                            if (Model.ParentProductID.HasValue)
+                            {
+                                @InlineHelpers.GetSelectionForCustomers(ViewBag.CustomerInfos, "CustomerID", false, Model.CustomerID)
+                            }
+                            else
+                            {
+                                @InlineHelpers.GetSelectionForCustomers(ViewBag.CustomerInfos, "CustomerID", true, Model.CustomerID)
+                            }
+                        }
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label">工厂货号</td>
+                <td>
+                    <div class="form-group">
+                        @Html.TextBoxFor(d => d.NoFactory, new { @class = "form-control" })
+                    </div>
+                </td>
+                <td class="control-label text-danger">工厂</td>
+                <td>
+                    <div class="form-group">
+                        @InlineHelpers.GetSelectionForFactories(ViewBag.FactoryInfos, "FactoryID", true, Model.FactoryID)
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        产品信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="control-label text-danger">品名</td>
+                <td colspan="3">
+                    <div class="form-group">
+                        @Html.TextBoxFor(d => d.Name, new { @class = "form-control" })
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label">Product Description</td>
+                <td colspan="3">
+                    <div class="form-group">
+                        @Html.TextAreaFor(d => d.Desc, new { @class = "form-control", row = "2" })
+                        <div class="help-block"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">产品分类</td>
+                <td>
+                    <div class="form-group">
+                        @InlineHelpers.GetSelectionForProductClassifications(ViewBag.ProductClassifications, "ClassifyID", true, Model.ClassifyID)
+                    </div>
+                </td>
+                <td class="control-label text-danger">单位</td>
+                <td>
+                    <div class="form-group">
+                        @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.Units, "UnitID", true, (int?)Model.UnitID)
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">款式</td>
+                <td>
+                    <div class="form-group">
+                        @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.Styles, "StyleID", true, (int?)Model.StyleID)
+                    </div>
+                </td>
+                <td class="control-label text-danger">出运港</td>
+                <td>
+                    <div class="form-group">
+                        @InlineHelpers.GetSelectionForDictionaryInfos(ViewBag.Ports, "PortID", true, (int?)Model.PortID)
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label">起订量</td>
+                <td>
+                    <div class="form-group">
+                        @Html.TextBoxFor(d => d.MOQZh, new { @class = "form-control translation" })
+                    </div>
+                </td>
+                <td>&nbsp;</td>
+                <td colspan="2" rowspan="8">
+                    <a href="javascript:void(0)" id="img" class="help-block">
+                        <div class="ProductImageDiv" style="width: 250px; height: 250px; overflow: auto; border: 1px solid #ccc; line-height: 248px; margin:0;">
+                            <img id="ProductImage" src="@(string.IsNullOrEmpty(Model.Image) ? Url.Content("~/images/default/upload.jpg") : Model.Image)" class="form-control-static" style="width: 100%;" />
+                        </div>
+                        <br />
+                        (产品图片,jpg格式)
+                    </a>
+                    @Html.HiddenFor(d => d.Image, new { @class = "form-control" })
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label">UPC</td>
+                <td>
+                    <div class="form-group">
+                        @Html.TextBoxFor(d => d.UPC, new { @class = "form-control translation" })
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">长(CM)</td>
+                <td>
+                    <div class="form-group">
+                        <span class="col-sm-6">
+                            <input id="Length" type="text" class="form-control translation" value="@Model.Length" name="Length" />
+                        </span>
+                        <span class="col-sm-6">
+                            <label id="LengthIN" class="conversion">@(Model.LengthIN ?? 0)</label>(in)
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">宽(CM)</td>
+                <td>
+                    <div class="form-group">
+                        <span class="col-sm-6">
+                            @Html.TextBoxFor(d => d.Width, new { @class = "form-control translation" })
+                        </span>
+                        <span class="col-sm-6">
+                            <label class="conversion" id="WidthIN">@(Model.WidthIN ?? 0)</label>(in)
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">高(CM)</td>
+                <td>
+                    <div class="form-group">
+                        <span class="col-sm-6">
+                            @Html.TextBoxFor(d => d.Height, new { @class = "form-control translation" })
+                        </span>
+                        <span class="col-sm-6">
+                            <label class="conversion" id="HeightIN">@(Model.HeightIN ?? 0)</label>(in)
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label">重量(KGS)</td>
+                <td>
+                    <div class="form-group">
+                        <span class="col-sm-6">
+                            @Html.TextBoxFor(d => d.Weight, new { @class = "form-control translation" })
+                        </span>
+                        <span class="col-sm-6">
+                            <label class="conversion" id="WeightIN">@(Model.WeightLBS ?? 0)</label>(LBS)
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">包装方式</td>
+                <td>
+                    <div class="form-group">
+                        @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.Packings, "PackingMannerZhID", true, (int?)Model.PackingMannerZhID)
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">产品成分构成</td>
+                <td>
+                    <div class="form-group">
+                        @Html.TextBoxFor(d => d.IngredientZh, new { @class = "form-control translation" })
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">产品版权</td>
+                <td>
+                    <div class="form-group">
+                        <select name="ProductCopyRight" id="ProductCopyRight" class="form-control">
+                            <option value="" @(Model.ProductCopyRight == null ? "selected='selected'" : "")></option>
+                            <option value="@((int)ProductCopyRightTypeEnum.OurCompany)" @(Model.ProductCopyRight == (int)ProductCopyRightTypeEnum.OurCompany ? "selected='selected'" : "")>我方</option>
+                            <option value="@((int)ProductCopyRightTypeEnum.Customer)" @(Model.ProductCopyRight == (int)ProductCopyRightTypeEnum.Customer ? "selected='selected'" : "")>客户</option>
+                            <option value="@((int)ProductCopyRightTypeEnum.Factory)" @(Model.ProductCopyRight == (int)ProductCopyRightTypeEnum.Factory ? "selected='selected'" : "")>工厂</option>
+                        </select>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="control-label">季节</td>
+                <td>
+                    <div class="form-group">
+                        <select id="Season" name="Season" class="form-control">
+                            @Html.Raw(ViewBag.SeasonList)
+                        </select>
+                    </div>
+                </td>
+                <td class="control-label">颜色</td>
+                <td>
+                    <div class="form-group">
+                        @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.Color, "ColorID", true, (int?)Model.ColorID)
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="col-sm-2 control-label"></td>
+                <td class="col-sm-4"></td>
+                <td class="col-sm-2 control-label"></td>
+                <td class="col-sm-4"></td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        混装产品信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+        <div class="popContent select_table row chanpin">
+
+            <div class="form-group">
+                <button id="btnSelectProduct" type="button" class="btn btn-info" data-toggle="modal">选择产品</button>
+                <button id="btnDelete" type="button" onclick="deleteSelected_ProductMixed()" class="btn btn-danger">删除选中产品</button>
+            </div>
+
+            <div class="table-responsive">
+
+                <table id="ProductMixedDataList" class="easyui-datagrid" style="width:100%;overflow:auto;">
+                    <thead data-options="frozen:true">
+                        <tr>
+                            <th data-options="field:'ID',checkbox:true"></th>
+                            <!--基本信息-->
+                            <th data-options="field:'No',width:100,sortable:true,align:'center',formatter:productNoFormatter">货号</th>
+                            <th data-options="field:'NoFactory',width:100,sortable:true,align:'center'">工厂货号</th>
+                            <th data-options="field:'Name',width:100,sortable:true,align:'center'">品名</th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr>
+                            <th data-options="field:'Qty',width:110,sortable:true,editor:{type:'numberbox',options:{precision:0}}">数量</th>
+                            <th data-options="field:'FactoryName',width:80,sortable:true">工厂</th>
+                            <th data-options="field:'Desc',width:130,sortable:true">Product Description</th>
+                            <!--产品信息-->
+                            <th data-options="field:'CustomerNo',width:110,sortable:true">客户</th>
+                            <th data-options="field:'IsProductFittingFormatter',width:60,align:'center'">配件产品</th>
+                            <th data-options="field:'UnitName',width:40,sortable:true">单位</th>
+                            <th data-options="field:'StyleName',width:40,sortable:true">款式</th>
+                            <th data-options="field:'Length',width:50,sortable:true">长/CM</th>
+                            <th data-options="field:'LengthIN',width:50,sortable:true">长/in</th>
+                            <th data-options="field:'Width',width:50,sortable:true">宽/CM</th>
+                            <th data-options="field:'WidthIN',width:60,sortable:true">宽/in</th>
+                            <th data-options="field:'Height',width:60,sortable:true">高/CM</th>
+                            <th data-options="field:'HeightIN',width:60,sortable:true">高/in</th>
+                            <th data-options="field:'Weight',width:90,sortable:true">产品重量KGS</th>
+                            <th data-options="field:'WeightLBS',width:90,sortable:true">产品重量LBS</th>
+                            <!--PDQ信息-->
+                            <th data-options="field:'PDQPackRate',width:70,sortable:true">PDQ装率</th>
+                            <th data-options="field:'PDQLength',width:70,sortable:true">PDQ长/CM</th>
+                            <th data-options="field:'PDQLengthIN',width:70,sortable:true">PDQ长/in</th>
+                            <th data-options="field:'PDQWidth',width:70,sortable:true">PDQ宽/CM</th>
+                            <th data-options="field:'PDQWidthIN',width:70,sortable:true">PDQ宽/in</th>
+                            <th data-options="field:'PDQHeight',width:70,sortable:true">PDQ高/CM</th>
+                            <th data-options="field:'PDQHeightIN',width:70,sortable:true">PDQ高/in</th>
+                            <!--内盒信息-->
+                            <th data-options="field:'InnerBoxRate',sortable:true,width:70,editor:{type:'numberbox',options:{precision:0}}">内盒率</th>
+                            <th data-options="field:'InnerLength',sortable:true,width:70">内盒长/CM</th>
+                            <th data-options="field:'InnerLengthIN',sortable:true,width:70">内盒长/in</th>
+                            <th data-options="field:'InnerWidth',sortable:true,width:70">内盒宽/CM</th>
+                            <th data-options="field:'InnerWidthIN',sortable:true,width:70">内盒宽/in</th>
+                            <th data-options="field:'InnerHeight',sortable:true,width:70">内盒高/CM</th>
+                            <th data-options="field:'InnerHeightIN',sortable:true,width:70">内盒高/in</th>
+                            <th data-options="field:'InnerVolume',sortable:true,width:70">内盒材积Cuft</th>
+                            <th data-options="field:'InnerWeight',sortable:true,width:90">内盒重量KGS</th>
+                            <th data-options="field:'InnerWeightLBS',sortable:true,width:90">内盒重量LBS</th>
+                            <!--外箱信息-->
+                            <th data-options="field:'OuterBoxRate',sortable:true,width:70,editor:{type:'numberbox',options:{precision:0}}">外箱率</th>
+                            <th data-options="field:'OuterLength',sortable:true,width:70">外箱长/CM</th>
+                            <th data-options="field:'OuterLengthIN',sortable:true,width:70">外箱长/in</th>
+                            <th data-options="field:'OuterWidth',sortable:true,width:70">外箱宽/CM</th>
+                            <th data-options="field:'OuterWidthIN',sortable:true,width:70">外箱宽/in</th>
+                            <th data-options="field:'OuterHeight',sortable:true,width:70">外箱高/CM</th>
+                            <th data-options="field:'OuterHeightIN',sortable:true,width:70">外箱高/in</th>
+                            <th data-options="field:'OuterVolume',sortable:true,width:70">外箱材积Cuft</th>
+                            <!--价格信息-->
+                            <th data-options="field:'PriceFactory',sortable:true,width:70">工厂价格</th>
+                            <th data-options="field:'CurrencyName',sortable:true,width:70">币种</th>
+                            <!--外箱信息-->
+                            <th data-options="field:'OuterWeightGross',sortable:true,width:90">外箱毛重KGS</th>
+                            <th data-options="field:'OuterWeightGrossLBS',sortable:true,width:70">外箱毛重LBS</th>
+                            <th data-options="field:'OuterWeightNet',sortable:true,width:90">外箱净重KGS</th>
+                            <th data-options="field:'OuterWeightNetLBS',sortable:true,width:70">外箱净重LBS</th>
+                            <!--产品信息-->
+                            <th data-options="field:'PortName',sortable:true,width:70">出运港</th>
+                            <th data-options="field:'PackingMannerZhName',sortable:true,width:110">包装方式</th>
+                            <th data-options="field:'IngredientZh',sortable:true,width:90">产品成分构成</th>
+                            <th data-options="field:'MOQZh',sortable:true,width:70">起订量</th>
+                            <!--备注信息-->
+                            <th data-options="field:'Comment',width:90">备注</th>
+                            <!--报价有效期-->
+                            <th data-options="field:'PriceInputDateFormat',width:90,sortable:true">价格输入日期</th>
+                            <th data-options="field:'ValidDateFormat',width:90,sortable:true">有效期</th>
+                            <th data-options="field:'DT_MODIFYDATE',width:150,sortable:true,formatter:formateDate">修改日期</th>
+                            <th data-options="field:'FactoryID',hidden:true"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody data-bind="foreach: MyModel().list_ProductMixed">
+                        <tr>
+                            <td data-bind="text:ID"></td>
+                            <td data-bind="text:No"></td>
+                            <td data-bind="text:NoFactory"></td>
+                            <td data-bind="text:Name"></td>
+
+                            <td data-bind="text:Qty"></td>
+                            <td data-bind="text:FactoryName"></td>
+                            <td data-bind="text:Desc"></td>
+                            <!--产品信息-->
+                            <td data-bind="text:CustomerNo"></td>
+                            <td data-bind="text:IsProductFittingFormatter"></td>
+                            <td data-bind="text:UnitName"></td>
+                            <td data-bind="text:StyleName"></td>
+                            <td data-bind="text:Length"></td>
+                            <td data-bind="text:LengthIN"></td>
+                            <td data-bind="text:Width"></td>
+                            <td data-bind="text:WidthIN"></td>
+                            <td data-bind="text:Height"></td>
+                            <td data-bind="text:HeightIN"></td>
+                            <td data-bind="text:Weight"></td>
+                            <td data-bind="text:WeightLBS"></td>
+                            <!--PDQ信息-->
+                            <td data-bind="text:PDQPackRate"></td>
+                            <td data-bind="text:PDQLength"></td>
+                            <td data-bind="text:PDQLengthIN"></td>
+                            <td data-bind="text:PDQWidth"></td>
+                            <td data-bind="text:PDQWidthIN"></td>
+                            <td data-bind="text:PDQHeight"></td>
+                            <td data-bind="text:PDQHeightIN"></td>
+                            <!--内盒信息-->
+                            <td data-bind="text:InnerBoxRate"></td>
+                            <td data-bind="text:InnerLength"></td>
+                            <td data-bind="text:InnerLengthIN"></td>
+                            <td data-bind="text:InnerWidth"></td>
+                            <td data-bind="text:InnerWidthIN"></td>
+                            <td data-bind="text:InnerHeight"></td>
+                            <td data-bind="text:InnerHeightIN"></td>
+                            <td data-bind="text:InnerVolume"></td>
+                            <td data-bind="text:InnerWeight"></td>
+                            <td data-bind="text:InnerWeightLBS"></td>
+                            <!--外箱信息-->
+                            <td data-bind="text:OuterBoxRate"></td>
+                            <td data-bind="text:OuterLength"></td>
+                            <td data-bind="text:OuterLengthIN"></td>
+                            <td data-bind="text:OuterWidth"></td>
+                            <td data-bind="text:OuterWidthIN"></td>
+                            <td data-bind="text:OuterHeight"></td>
+                            <td data-bind="text:OuterHeightIN"></td>
+                            <td data-bind="text:OuterVolume"></td>
+                            <!--价格信息-->
+                            <td data-bind="text:PriceFactory"></td>
+                            <td data-bind="text:CurrencyName"></td>
+                            <!--外箱信息-->
+                            <td data-bind="text:OuterWeightGross"></td>
+                            <td data-bind="text:OuterWeightGrossLBS"></td>
+                            <td data-bind="text:OuterWeightNet"></td>
+                            <td data-bind="text:OuterWeightNetLBS"></td>
+                            <!--产品信息-->
+                            <td data-bind="text:PortName"></td>
+                            <td data-bind="text:PackingMannerZhName"></td>
+                            <td data-bind="text:IngredientZh"></td>
+                            <td data-bind="text:MOQZh"></td>
+                            <!--备注信息-->
+                            <td data-bind="text:Comment"></td>
+                            <!--报价有效期-->
+                            <td data-bind="text:PriceInputDateFormat"></td>
+                            <td data-bind="text:ValidDateFormat"></td>
+                            <td data-bind="text:DT_MODIFYDATE"></td>
+                            <td data-bind="text:FactoryID"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <h3 class="popTitle">
+            PDQ信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <table class="table">
+                <tr>
+                    <td class="col-sm-2 control-label">PDQ装率</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.PDQPackRate, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                            </span>
+                        </div>
+                    </td>
+                    <td class="col-sm-2 control-label">长(CM)</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.PDQLength, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="PDQLengthIN">@(Model.PDQLengthIN ?? 0)</label>(in)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="control-label">宽(CM)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.PDQWidth, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="PDQWidthIN">@(Model.PDQWidthIN ?? 0)</label>(in)
+                            </span>
+                        </div>
+                    </td>
+                    <td class="control-label">高(CM)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.PDQHeight, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="PDQHeightIN">@(Model.PDQHeightIN ?? 0)</label>(in)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <h3 class="popTitle">
+            内盒信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <table class="table">
+                <tr>
+                    <td class="col-sm-2 control-label">内盒率</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.InnerBoxRate, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                            </span>
+                        </div>
+                    </td>
+                    <td class="col-sm-2 control-label">长(CM)</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.InnerLength, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="InnerLengthIN">@(Model.InnerLengthIN ?? 0)</label>(in)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="control-label">内盒材积</td>
+                    <td>
+                        <label class="conversion" id="InnerVolume">@(Model.InnerVolume ?? 0)</label>(Cuft)
+                    </td>
+                    <td class="control-label">宽(CM)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.InnerWidth, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="InnerWidthIN">@(Model.InnerWidthIN ?? 0)</label>(in)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="control-label">内盒毛重(KGS)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.InnerWeight, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="InnerWeightLBS">@(Model.InnerWeightLBS ?? 0)</label>(LBS)
+                            </span>
+                        </div>
+                    </td>
+                    <td class="control-label">高(CM)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.InnerHeight, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="InnerHeightIN">@(Model.InnerHeightIN ?? 0)</label>(in)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="control-label">内盒净重(KGS)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.InnerWeightGross, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="InnerWeightGrossLBS">@(Model.InnerWeightGrossLBS ?? 0)</label>(LBS)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <h3 class="popTitle">
+            外箱信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <table class="table">
+                <tr>
+                    <td class="col-sm-2 control-label text-danger">外箱率</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.OuterBoxRate, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                            </span>
+                        </div>
+                    </td>
+                    <td class="col-sm-2 control-label text-danger">长(CM)</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.OuterLength, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="OuterLengthIN">@(Model.OuterLengthIN ?? 0)</label>(in)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="control-label">外箱材积</td>
+                    <td>
+                        <label class="conversion" id="OuterVolume">@Model.OuterVolume</label>(Cuft)
+                    </td>
+                    <td class="control-label text-danger">宽(CM)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.OuterWidth, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="OuterWidthIN">@(Model.OuterWidthIN ?? 0)</label>(in)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="control-label">外箱毛重(KGS)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.OuterWeightGross, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="OuterWeightGrossLBS">@(Model.OuterWeightGrossLBS ?? 0)</label>(LBS)
+                            </span>
+                        </div>
+                    </td>
+                    <td class="control-label text-danger">高(CM)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.OuterHeight, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="OuterHeightIN">@(Model.OuterHeightIN ?? 0)</label>(in)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="control-label">外箱净重(KGS)</td>
+                    <td>
+                        <div class="form-group">
+                            <span class="col-sm-6">
+                                @Html.TextBoxFor(d => d.OuterWeightNet, new { @class = "form-control translation" })
+                            </span>
+                            <span class="col-sm-6">
+                                <label class="conversion" id="OuterWeightNetLBS">@(Model.OuterWeightNetLBS ?? 0)</label>(LBS)
+                            </span>
+                        </div>
+                    </td>
+                    <td class="control-label"></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+
+        <h3 class="popTitle">
+            价格信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <table class="table">
+                <tr>
+                    <td class="col-sm-2 control-label text-danger">工厂价格</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            @Html.TextBoxFor(d => d.PriceFactory, new { @class = "form-control translation" })
+                        </div>
+                    </td>
+                    <td class="col-sm-2 control-label text-danger">币种</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.Currencies, "CurrencyType", false, (int?)Model.CurrencyType)
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <h3 class="popTitle">
+            报价有效期
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <table class="table">
+                <tr>
+                    <td class="col-sm-2 control-label text-danger">价格输入日期</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            <input id="PriceInputDate" name="PriceInputDate" type="text" value="@Model.PriceInputDateFormat" class="Wdate form-control" />
+                        </div>
+                    </td>
+                    <td class="col-sm-2 control-label">有效期</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            <input id="ValidDate" name="ValidDate" type="text" value="@Model.ValidDateFormat" class="Wdate form-control" />
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <h3 class="popTitle">
+            备注信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <table class="table">
+                <tr>
+                    <td class="col-sm-2 control-label">备注</td>
+                    <td class="col-sm-10">
+                        <div class="form-group">
+                            @Html.TextAreaFor(d => d.Comment, new { @class = "form-control", row = "2" })
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <h3 class="popTitle">
+            其他
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <table class="table">
+                <tr>
+                    <td class="col-sm-2 control-label">海关编码</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            @InlineHelpers.GetSelectionForHSCode(ViewBag.HTS, "HTS", true, Model.HTS)
+                        </div>
+                    </td>
+                    <td class="col-sm-2 control-label">Duty</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            <select id="DutyPercent" class="form-control" data-val="@Model.DutyPercent"></select>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="col-sm-2 control-label">报关编码</td>
+                    <td class="col-sm-4">
+                        <div class="form-group">
+                            @InlineHelpers.GetSelectionForHSCode(ViewBag.HSCode, "HSCode", true, Model.HSCode)
+                        </div>
+                    </td>
+                    <td class="control-label">Material Composition</td>
+                    <td>
+                        <div class="form-group">
+                            @Html.TextBoxFor(d => d.IngredientEn, new { @class = "form-control translation" })
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <h3 class="popTitle">
+            产品成分信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <table id="ProductIngredientDataList" class="easyui-datagrid" style="width:100%;"
+                   data-options="singleSelect:true
+                       ,pageList:[10,20,50,100]
+                       ,pageSize:10
+                       ,pagination:false
+                       ,checkOnSelect:true
+                       ,onBeforeEdit:onBeforeEditProductIngredient
+                       ,onAfterEdit:onAfterEditProductIngredient
+                       ,onCancelEdit:onCancelEditProductIngredient
+                       ,toolbar: '#tbProductIngredientInfo'">
+                <thead data-options="frozen:true">
+
+                    <tr>
+                        @if (!(bool)ViewData["IsView"])
+                        {
+                            <th data-options="field:'ID',width:100,formatter:actionsFormatterProductIngredient">操作</th>
+                        }
+                        <th data-options="field:'IngredientName',width:200,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,100]']}}">产品成分构成</th>
+                        <th data-options="field:'IngredientPercent',width:100,editor:{type:'numberbox',options:{required:true,precision:2}}">百分比(%)</th>
+                    </tr>
+                </thead>
+
+                <tbody data-bind="foreach: MyModel().list_ProductIngredient">
+                    <tr>
+                        @if (!(bool)ViewData["IsView"])
+                        {
+                            <td></td>
+                        }
+                        <td data-bind="text: IngredientName"></td>
+                        <td data-bind="text: IngredientPercent"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="tbProductIngredientInfo" style="height:auto">
+            <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="appendAcceptProductIngredient()">新建产品成分</a>
+        </div>
+
+                            //设置默认值
+                            <input class="hide" name="Agent" type="text" value="2.5" />
+                            <input class="hide" name="CtnsPallet" type="text" value="40" />
+                            <input class="hide" name="FreightRate" type="text" value="2.5" />
+                            <input class="hide" name="MiscImportLoad" type="text" value="1.5" />
+
+                                <div class="popBtns">
+                                    @if (Model.ID == 0 || Model.Status == ERP.Models.CustomEnums.ProductStatusEnum.Draft)
+                                    {
+                                        <button type="button" id="bntSave" class="btn btn-primary" data-bind="click: $root.save.bind($data,1)">保存为草稿</button>
+                                    }
+                                    <button type="button" class="btn btn-danger" data-bind="click: $root.save.bind($data, 0)">保存</button>
+
+                                    <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+                                </div>
+
+                                <div class="beizhu red">
+                                    <strong>PS：</strong>
+                                    <span>字体颜色为红色是必填项。</span>
+                                    <span>有效期必须大于价格输入日期。</span>
+                                    <span>产品的币种取工厂的结算币种。</span>
+                                </div>
+                            }
+<!-- 选择产品分类弹出框 -->
+<div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="myModalLabel2">选择产品分类</h3>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+
+                    <input type="hidden" id="C_ID" />
+                    <div id="tree">
+                    </div>
+                    <div class="row" style="text-align: right; margin-top: 15px;">
+                        <input type="button" id="fileSubmit2" class="btn btn-success" value="确定" onclick="selectProductClassification()">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 上传图片弹出框 -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="myModalLabel">上传图片</h3>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+
+                    <form id="uploadForm" action="@Url.Content("~/FileUploader/ProductImg")" method="post">
+                        <div class="row">
+                            <input type="file" width="500" name="fileSelect" id="fileSelect" value="" />
+                        </div>
+                        <div class="row">
+                            预览：
+                            <span id="uploadProgress" class="upload_progress">NaN%</span>
+                            <div class="imgPreviewDiv">
+                                <img id="imgPreview" src="@(string.IsNullOrEmpty(Model.Image) ? Url.Content("~/images/default/upload.jpg") : Model.Image)" />
+                            </div>
+                        </div>
+
+                        <div class="row" style="text-align: right; margin-top: 15px;">
+                            <input type="button" id="fileSubmit" class="btn btn-success" value="确认上传图片" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button id="model1" type="button" class="btn btn-info" data-toggle="modal" data-target="#myModal1" style="display: none;">选择产品</button>
+
+@section scripts{
+
+    <script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+    <script src="@Url.Content("~/Scripts/h5uploader.js")" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript">
+        function selectProductClassification() {
+            var C_ID = $("#C_ID").val();
+            $("#ClassifyID").val(C_ID);
+            $('#myModal2').modal('hide');
+        }
+        var isCaching = false;
+
+        $(function () {
+            var hasCachedProduct = @(new ERP.BLL.ERP.Product.ProductServices().GetOneCachedProduct(ERP.WebNew.Service.CurrentUserServices.Me.UserID, Model.ID) == null ? "false" : "true");
+            if(@((string.IsNullOrEmpty(Request.QueryString["openCached"]) || Request.QueryString["openCached"] == "false") ? "true" : "false") && hasCachedProduct){
+                $.messager.confirm("提示", "发现您有未保存的产品信息，是否加载？", function(r){
+                    if(r){
+                        var url = $("form#frmEdit").attr('action');
+                        if(/\?/.test(url)){
+                            url = url + "&openCached=true";
+                        }
+                        else{
+                            url = url + "?openCached=true";
+                        }
+                        window.location.href = url;
+                    }
+                });
+            }
+
+            $("#frmEdit input[name=PriceInputDate]").blur(function () {
+                var PriceInputDate = $("#frmEdit input[name=PriceInputDate]").val();
+                var ValidDate = formateDate3(PriceInputDate, 0, 6, 0);
+                $("#frmEdit input[name=ValidDate]").attr("value", ValidDate);
+                $('#frmEdit').bootstrapValidator('revalidateField', 'PriceInputDate');
+            });
+
+            // 表单验证
+            $('#frmEdit')
+                .find('#CustomerID')
+                .selectpicker()
+                .change(function(e) {
+                    $('#bootstrapSelectForm').bootstrapValidator('revalidateField', 'CustomerID');
+
+                    $("#Season").val("");
+                    if ($('#CustomerID').val()!="") {
+
+                        $.post('@Url.Content("~/ProductMixed/GetSelectCustomer_SeasonList?CustomerID=")'+$('#CustomerID').val(), { },
+                           function (result) {
+                               $("#Season").html(result);
+                           }, "json");
+                    }
+
+                }).end()
+                .find('#FactoryID')
+                .selectpicker()
+                .change(function(e) {
+                    $('#bootstrapSelectForm').bootstrapValidator('revalidateField', 'FactoryID');
+                    
+                    $("#myModal1 input[name=FactoryName]").val($('#FactoryID option:selected').text().trim());
+
+                    $("#CurrencyType").val("");
+                    $.post('@Url.Content("~/ProductMixed/GetFactoryCurrencyType?FactoryID=")'+$('#FactoryID').val(), { },
+                       function (result) {
+                           $("#CurrencyType").val(result);
+                       }, "json");
+
+                }).end()
+                .bootstrapValidator({
+                    message: '信息不能为空值',
+                    excluded: ':disabled',
+                    container: 'popover',
+                    feedbackIcons: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-ProductIngredienteat fa-spin'
+                    },
+                    onError: function(e) {
+                        e.preventDefault();
+                        return false;
+                    },
+                    //onSuccess: function(e){
+                    //    e.preventDefault();
+                    //    var $form = $(e.target);
+                    //    // Use Ajax to submit form data
+                    //    $.post($form.attr('action'), $form.serialize(),
+                    //        function (result) {
+                    //            if (result == 0) {
+                    //                $.messager.alert("错误", "出错了，错误信息 = " + result.msg);
+                    //            }
+                    //            else if (result == 4) {
+                    //                $.messager.alert("错误", "货号不能重复！");
+                    //            }
+                    //            else {
+                    //                parent.$('#tblProducts').datagrid('reload');
+                    //                OA.CloseMe(true);
+                    //            }
+                    //        }, "text");
+                    //},
+                    fields: {
+                        //基本信息
+                        No: {
+                            validators: {
+                                notEmpty: { message: '货号不能为空' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 128,
+                                    message: '长度在1-128之间'
+                                },
+                            }
+                        },
+                        CustomerID: {
+                            validators: {
+                                notEmpty: { message: '客户不能为空' },
+                            }
+                        },
+                        NoFactory: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 128,
+                                    message: '长度在1-128之间'
+                                },
+                            }
+                        },
+                        FactoryID: {
+                            validators: {
+                                notEmpty: { message: '工厂不能为空值' },
+                            }
+                        },
+
+                        //产品信息
+                        Name: {
+                            validators: {
+                                notEmpty: { message: '品名不能为空' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 128,
+                                    message: '长度在1-128之间'
+                                },
+                            }
+                        },
+                        //Desc: {
+                        //    validators: {
+                        //        notEmpty: { message: '产品描述不能为空' }
+                        //    }
+                        //},
+                        ClassifyID: {
+                            validators: {
+                                notEmpty: { message: '产品分类不能为空值' }
+                            }
+                        },
+                        UnitID: {
+                            validators: {
+                                notEmpty: { message: '单位不能为空' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 128,
+                                    message: '长度在1-128之间'
+                                },
+                            }
+                        },
+                        StyleID: {
+                            validators: {
+                                notEmpty: { message: '款式不能为空' }
+                            }
+                        },
+                        PortID: {
+                            validators: {
+                                notEmpty: { message: '出运港不能为空' }
+                            }
+                        },
+                        MOQZh: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 10,
+                                    message: '长度在1-10之间'
+                                },
+                                regexp: {
+                                    regexp: /^[0-9]*$/,
+                                    message: '请输入大于0的整数！'
+                                }
+                            }
+                        },
+                        UPC: {
+                            validators: {
+                                stringLength: {
+                                    min: 12,
+                                    max: 128,
+                                    message: '长度在12-128之间'
+                                },
+                            }
+                        },
+                        Length: {
+                            validators: {
+                                notEmpty: { message: '长不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        Width: {
+                            validators: {
+                                notEmpty: { message: '宽不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        Height: {
+                            validators: {
+                                notEmpty: { message: '高不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        Weight: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        PackingMannerZhID: {
+                            validators: {
+                                notEmpty: { message: '包装方式不能为空值' }
+                            }
+                        },
+                        IngredientZh: {
+                            validators: {
+                                notEmpty: { message: '产品成分构成不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 1024,
+                                    message: '长度在1-1024之间'
+                                }
+                            }
+                        },
+                        ProductCopyRight: {
+                            validators: {
+                                notEmpty: { message: '产品版权不能为空值' },
+                            }
+                        },
+                        //PDQ信息
+                        PDQPackRate: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 10,
+                                    message: '长度在1-10之间'
+                                },
+                                regexp: {
+                                    regexp: /^[0-9]*$/,
+                                    message: '请输入大于0的整数！'
+                                }
+                            }
+                        },
+                        PDQLength: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        PDQWidth: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        PDQHeight: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        //内盒信息
+                        InnerBoxRate: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 10,
+                                    message: '长度在1-10之间'
+                                },
+                                regexp: {
+                                    regexp: /^[0-9]*$/,
+                                    message: '请输入大于0的整数！'
+                                }
+                            }
+                        },
+                        InnerLength: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        InnerWidth: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        InnerHeight: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        InnerWeight: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        InnerWeightGross: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        //外箱信息
+                        OuterBoxRate: {
+                            validators: {
+                                notEmpty: { message: '外箱率不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 10,
+                                    message: '长度在1-10之间'
+                                },
+                                regexp: {
+                                    regexp: /^[0-9]*$/,
+                                    message: '请输入大于0的整数！'
+                                }
+                            }
+                        },
+                        OuterLength: {
+                            validators: {
+                                notEmpty: { message: '外箱长不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        OuterWidth: {
+                            validators: {
+                                notEmpty: { message: '外箱宽不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        OuterHeight: {
+                            validators: {
+                                notEmpty: { message: '外箱高不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        OuterWeightGross: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        OuterWeightNet: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        //价格信息
+                        PriceFactory: {
+                            validators: {
+                                notEmpty: { message: '工厂价格不能为空' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        CurrencyType: {
+                            validators: {
+                                notEmpty: { message: '币种不能为空' }
+                            }
+                        },
+                        HTS: {
+                            validators: {
+                            }
+                        },
+                        HSCode: {
+                            validators: {
+                            }
+                        },
+                        //价格输入日期
+                        PriceInputDate: {
+                            validators: {
+                                //notEmpty: { message: '价格输入日期不能为空' },
+                                callback: {
+                                    callback: function (value, validator, $field) {
+                                        if(value === ""){
+                                            return {
+                                                valid:false,
+                                                message:"价格输入日期不能为空！"
+                                            };
+                                        }
+
+                                        var validDate = $("input[name=ValidDate]").val();
+                                        if (validDate != "") {
+                                            if (value > validDate) {
+                                                return {
+                                                    valid:false,
+                                                    message:"有效期必须大于价格输入日期！"
+                                                };
+                                            }
+                                        }
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+            BindCalculatorData();
+            $("#select_ProductType option:eq(2)").remove();
+            $("#myModal1 input[name=FactoryName]").val($('#FactoryID option:selected').text().trim()).attr("disabled","disabled");
+
+            //绑定需要计算的内容
+            function BindCalculatorData() {
+                $("#LengthIN").text(product.getInch($("#Length").val()));
+                $("#HeightIN").text(product.getInch($("#Height").val()));
+                $("#WidthIN").text(product.getInch($("#Width").val()));
+                $("#WeightIN").text(product.getLBS($("#Weight").val()));
+
+                $("#PDQLengthIN").text(product.getInch($("#PDQLength").val()));
+                $("#PDQWidthIN").text(product.getInch($("#PDQWidth").val()));
+                $("#PDQHeightIN").text(product.getInch($("#PDQHeight").val()));
+
+                $("#InnerWeightLBS").text(product.getLBS($("#InnerWeight").val()));
+                $("#InnerWeightGrossLBS").text(product.getLBS($("#InnerWeightGross").val()));
+                $("#OuterWeightGrossLBS").text(product.getLBS($("#OuterWeightGross").val()));
+                $("#OuterWeightNetLBS").text(product.getLBS($("#OuterWeightNet").val()));
+
+                $("#InnerLengthIN").text(product.getInch($("#InnerLength").val()));
+                $("#InnerHeightIN").text(product.getInch($("#InnerHeight").val()));
+                $("#InnerWidthIN").text(product.getInch($("#InnerWidth").val()));
+                $("#InnerVolume").text((($("#InnerLength").val() * $("#InnerWidth").val() * $("#InnerHeight").val()) / 1000000 * 35.315).toFixed(4));
+                $("#OuterLengthIN").text(product.getInch($("#OuterLength").val()));
+                $("#OuterHeightIN").text(product.getInch($("#OuterHeight").val()));
+                $("#OuterWidthIN").text(product.getInch($("#OuterWidth").val()));
+                $("#OuterVolume").text((($("#OuterLength").val() * $("#OuterWidth").val() * $("#OuterHeight").val()) / 1000000 * 35.315).toFixed(4));
+
+            }
+
+            ///JS运算
+            $(".translation").on("keyup", function (e) {
+                var current = $(this);
+                var id = current.attr('id');
+                //产品长
+                if (id == "Length") {
+                    $("#LengthIN").text(product.getInch(current.val()));
+                }
+                    //产品高
+                else if (id == "Height") {
+                    $("#HeightIN").text(product.getInch(current.val()));
+                }
+
+                    //产品宽
+                else if (id == "Width") {
+                    $("#WidthIN").text(product.getInch(current.val()));
+                }
+
+                    //产品重量转换为LBS
+                else if (id == "Weight") {
+                    $("#WeightIN").text(product.getLBS(current.val()));
+                }
+
+                    //PDQ长
+                else if (id == "PDQLength") {
+                    $("#PDQLengthIN").text(product.getInch(current.val()));
+                }
+
+                    //PDQ宽
+                else if (id == "PDQWidth") {
+                    $("#PDQWidthIN").text(product.getInch(current.val()));
+                }
+
+                    //PDQ高
+                else if (id == "PDQHeight") {
+                    $("#PDQHeightIN").text(product.getInch(current.val()));
+                }
+
+                    //内盒重量
+                else if (id == "InnerWeight") {
+                    $("#InnerWeightLBS").text(product.getLBS(current.val()));
+                }
+                    //内盒净重
+                else if (id == "InnerWeightGross") {
+                    $("#InnerWeightGrossLBS").text(product.getLBS(current.val()));
+                }
+
+                    //外箱毛重
+                else if (id == "OuterWeightGross") {
+                    $("#OuterWeightGrossLBS").text(product.getLBS(current.val()));
+                }
+
+                    //外箱净重
+                else if (id == "OuterWeightNet") {
+                    $("#OuterWeightNetLBS").text(product.getLBS(current.val()));
+                }
+
+                    //价格信息
+                else if (id == "InnerLength" || id == "InnerWidth" || id == "InnerHeight" || id == "OuterLength" || id == "OuterWidth" || id == "OuterHeight" || id == "OuterBoxRate") {
+                    $("#InnerLengthIN").text(product.getInch($("#InnerLength").val()));
+                    $("#InnerHeightIN").text(product.getInch($("#InnerHeight").val()));
+                    $("#InnerWidthIN").text(product.getInch($("#InnerWidth").val()));
+                    $("#InnerVolume").text((($("#InnerLength").val() * $("#InnerWidth").val() * $("#InnerHeight").val()) / 1000000 * 35.315).toFixed(4));
+                    $("#OuterLengthIN").text(product.getInch($("#OuterLength").val()));
+                    $("#OuterHeightIN").text(product.getInch($("#OuterHeight").val()));
+                    $("#OuterWidthIN").text(product.getInch($("#OuterWidth").val()));
+                    $("#OuterVolume").text((($("#OuterLength").val() * $("#OuterWidth").val() * $("#OuterHeight").val()) / 1000000 * 35.315).toFixed(4));
+
+                }
+            });
+
+            // 选择图片
+            $('#img').click(function () {
+                $('#myModal').modal();
+                return false;
+            });
+
+            // 上传文件
+            var params = {
+                fileInput: document.getElementById("fileSelect"),
+                upButton: document.getElementById("fileSubmit"),
+                url: $("#uploadForm").attr("action"),
+                filter: function (file) {
+                    var f = null;
+                    if (file.type.indexOf("image") == 0) {
+                        if (file.size >= 3600000) {	// 3M
+                            $.messager.alert("提示", '您这张"' + file.name + '"图片大小过大,请不要超过3M');
+                        } else {
+                            f = file;
+                        }
+                    } else {
+                        $.messager.alert("提示", '文件"' + file.name + '"不是图片。');
+                    }
+                    return f;
+                },
+                onSelect: function (file) {
+                    if (file) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            $("#imgPreview").attr('src', e.target.result);
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                    else {
+                        $("#imgPreview").attr('src', '');
+                    }
+                    $("#uploadProgress").hide();
+                },
+                onProgress: function (file, loaded, total) {
+                    var eleProgress = $("#uploadProgress"), percent = (loaded / total * 100).toFixed(2) + '%';
+                    eleProgress.show().html(percent);
+                },
+                onSuccess: function (file, response) {
+                    var result = JSON.parse(response);
+                    if (result.ok) {
+                        $("#ProductImage").attr('src', result.data.imgPath);
+                        $('#Image').val(result.data.imgPath);
+                        $('#myModal').modal('hide');
+                    }
+                },
+                onFailure: function (file) {
+                    $("#uploadProgress").html('失败');
+                    $.messager.alert("提示", '上传失败');
+                },
+            };
+            h5uploader = $.extend(h5uploader, params);
+            h5uploader.init();
+
+            // 选择产品分类
+            $("#ClassifyID").click(function (evt) {
+                if ($("#ClassifyID option").length > 1) {
+                    evt.preventDefault();
+                    $('#myModal2').modal();
+                    $('#tree').jstree("refresh");
+                }
+                else {
+                    $.messager.alert("提示", "没有分类记录可供选取，请录入分类信息");
+                }
+            });
+
+            $(window).resize(function () {
+                var size = OA.getWinSize();
+                var h = Math.max($(window).height() - 0, 420);
+                $('#container, #data, #tree, #data .content').height(h);
+                $('#data').outerWidth(size.width - $('#tree').outerWidth() - 20);
+            });
+
+            $('#tree')
+                .jstree({
+                    'core': {
+                        lang: { loading: "加载中…" },
+                        'data': {
+                            'url': '@Url.Content("~/ProductClassification/Get?show=true")',
+                            'data': function (node) {
+                                return {
+                                    action: 'get',
+                                    pid: node.id,
+                                    _: Random(),
+                                };
+                            },
+                        },
+                        'check_callback': true,
+                        'themes': {
+                            'responsive': false,
+                            'icon': true
+                        }
+                    }
+                })
+                .on('changed.jstree', function (e, data) {
+                    if (data && data.selected && data.selected.length == 1) {
+                        var id = data.selected.join(':');
+                        $("#C_ID").val(id);
+                        var disabled = (id == "#" || id <= 0);
+                        if (disabled) {
+                            $("#aaa").attr("disabled", true);
+                        }
+                        else {
+                            $("#aaa").removeAttr("disabled");
+                            $("#aaa input,#tree select,textarea,button").removeAttr("disabled");//,disabled);
+                        }
+                        if (!disabled) {
+                            More(id);
+                        }
+                    }
+                    else {
+                    }
+                });
+
+            $("input.form-control").on("change", function(){
+                if(!isCaching){
+                    isCaching = true;
+                };
+            })
+
+            //TODO 待定
+            //// 每隔一分钟自动保存草稿
+            //setInterval(function(){
+            //    if(isCaching){
+            //        var $form = $("form#frmEdit");
+            //        var actionUrl = $form.attr('action');
+            //        var saveDraftUrl = actionUrl.ProductIngredientlace(/Edit/,"SaveDraft");
+            //        $.post(saveDraftUrl, $form.serialize(), function(result){
+            //            if(result){
+            //                $.messager.show({title:"自动保存", msg:"自动保存成功！", timeout:2000, showType:'slide' });
+            //            }
+            //        });
+            //    }
+            //}, 60000);
+
+        });
+
+        //$("#bntSaveAsDraft").click(function () {
+        //    $("#Status").val(1);
+
+        //    var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+        //    bootstrapValidator.validate();
+        //    if (!bootstrapValidator.isValid()) {
+        //        $(".has-error:first input").focus();
+        //        return;
+        //    }
+        //});
+
+        //$("#bntSave").click(function () {
+        //    $("#Status").val(0);
+
+        //    var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+        //    bootstrapValidator.validate();
+        //    if (!bootstrapValidator.isValid()) {
+        //        $(".has-error:first input").focus();
+        //        return;
+        //    }
+        //});
+
+        function Random() {
+            return Math.random() * Math.random() * Math.random();
+        }
+
+        function More(id) {
+            if (typeof (id) == "undefined") id = $("#C_ID").val();
+            if (id < 1)
+                $.messager.alert("提示", "没有记录可供选取");
+            $("#C_ID").val(id);
+
+            if ($("#" + id).find(".jstree-icon").hasClass("fa-folder")) {
+                $("#fileSubmit2").attr("disabled", true);
+            } else {
+                $("#fileSubmit2").removeAttr("disabled");
+            }
+
+            $(window).resize();
+            $.getJSON('@Url.Content("~/ProductClassification/MoreInfo/")' + id + '?show=true&_=' + Random(),
+                function (data) {
+                    for (var k in data) {
+                        var id = k;
+                        var val = data[k];
+                        if (val == null) {
+                            val = "";
+                        }
+                        switch (id) {
+                            case "Image":
+                                $("#" + id).attr("src", val);
+                                break;
+                            case "Show":
+                                $("#" + id).val(val);
+                                break;
+                            default:
+                                $("#" + id).val(val);
+                                break;
+                        }
+                    }
+                });
+        }
+
+        //选择产品：提交产品
+        $("#btnSelect").click(function () {
+            var idArray = getSelections("#modalGrid", "ID");
+            if (idArray.length <= 0) {
+                $.messager.alert("提示", "请选择产品！");
+                return;
+            }
+            
+            var ProductArray = [];
+            var rows = $('#ProductMixedDataList').datagrid('getRows');
+            for (var i = 0; i < rows.length; i++) {
+                var thisProductID = rows[i].ID;
+                if (idArray.contains(thisProductID)) {
+                    ProductArray.push(rows[i].No);
+                    idArray = idArray.remove(thisProductID);
+                }
+            }
+            if (ProductArray.length > 0) {
+                $.messager.alert("提示", "产品货号：[" + ProductArray.join(',') + "]已存在！");
+            }
+
+            $.get("@Url.Content("~/Product/GetProductInfoByMixed")", {
+                idList: idArray.join(','),
+            },function (data) {
+                
+                var rows = $('#ProductMixedDataList').datagrid('getRows');
+                
+                for (var i = 0; i < data.length; i++) {
+                    rows.push(data[i]);
+                }
+
+                if (data.length > 0) {
+                    $('#ProductMixedDataList').datagrid({data:rows});                    
+                    $.messager.show({ title: "提示", msg: "产品添加成功！", timeout: 2000, showType: 'slide' });
+                    InitPopover();
+                }
+
+            }, "json");
+            //$(".modal-header .close").click();//关闭
+        });
+
+        var product = {
+            getInch: function (cm) {
+                if (!OA.isNumeric(cm)) {
+                    return "0.00";
+                }
+
+                return (parseFloat(cm) / 2.54).toFixed(2);
+            },
+            getLBS: function (cm) {
+                if (!OA.isNumeric(cm)) {
+                    return "0.00";
+                }
+
+                return (parseFloat(cm) * 2.2).toFixed(2);
+            },
+            outervolemn: function (cm) {
+                if (!OA.isNumeric(cm)) {
+                    return "0.00";
+                }
+
+                return (parseFloat(cm) / 1000000 * 35.315).toFixed(3);
+            },
+            fobfty: function (cm) {
+                if (!OA.isNumeric(cm)) {
+                    return "0.00";
+                }
+
+                return (parseFloat(cm) / 6.1).toFixed(2);
+            },
+            FOBCHINAPORT: function (cm) {
+                if (!OA.isNumeric(cm)) {
+                    return "0.00";
+                }
+
+                return (parseFloat(cm) / 5.4).toFixed(2);
+            },
+            ratellfo: function (cm) {
+                if (!OA.isNumeric(cm)) {
+                    return "0.00";
+                }
+
+                return (parseFloat(cm)).toFixed(2);
+            },
+            ratell: function (cm) {
+                if (!OA.isNumeric(cm)) {
+                    return "0.00";
+                }
+
+                return (parseFloat(cm)).toFixed(0);
+            },
+            FOBNET: function (cm) {
+                if (!OA.isNumeric(cm)) {
+                    return "0.00";
+                }
+
+                return (parseFloat(cm)).toFixed(2);
+            },
+        };
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            //jav.initGridCellTooltips(["ck","DT_MODIFYDATE","ID"]);
+        }
+
+        //ProductIngredient信息
+
+        function formatProductIngredient(value,row,index){
+            for(var i=0; i<ProductIngredient.length; i++){
+                if (ProductIngredient[i].Value == value)
+                    return ProductIngredient[i].Text;
+            }
+            return value;
+        }
+
+        var editProductIngredient=undefined;
+
+        function updateActionsProductIngredient(index){
+            $('#ProductIngredientDataList').datagrid('refreshRow', index);
+        }
+
+        function onBeforeEditProductIngredient(index,row){
+            row.editing=true;
+            updateActionsProductIngredient(index);
+        }
+
+        function onCancelEditProductIngredient(index,row){
+            row.editing = false;
+            updateActionsProductIngredient(index);
+        }
+
+        function onAfterEditProductIngredient(index,row){
+            row.editing = false;
+            updateActionsProductIngredient(index);
+        }
+
+        function endEditingProductIngredient(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editProductIngredient == undefined){return true}
+            if ($('#ProductIngredientDataList').datagrid('validateRow', editProductIngredient)){
+                $('#ProductIngredientDataList').datagrid('endEdit', editProductIngredient);
+                editProductIngredient = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function EditProductIngredient(target){
+            acceptProductIngredient(target, true);
+            $('#ProductIngredientDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendProductIngredient(){
+            if (endEditingAcceptProductIngredient()){
+                $('#ProductIngredientDataList').datagrid('appendRow',{});
+                editProductIngredient = $('#ContactsDataList').datagrid('getRows').length-1;
+                $('#ProductIngredientDataList').datagrid('selectRow', editProductIngredient)
+                        .datagrid('beginEdit', editProductIngredient);
+            }
+        }
+        function removeProductIngredient(target){
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#ProductIngredientDataList').datagrid('deleteRow', getRowIndex(target));
+
+                }
+            });
+        }
+        function acceptProductIngredient(target, justAccept){
+            editProductIngredient = getRowIndex(target);
+            if(justAccept){
+                if (endEditingProductIngredient()){
+                    $('#ProductIngredientDataList').datagrid('acceptChanges');
+                }
+            }
+            else{
+                if (endEditingProductIngredient()){
+                    $('#ProductIngredientDataList').datagrid('acceptChanges');
+                }
+            }
+
+            onLoadSuccess();
+        }
+        function rejectProductIngredient(){
+            $('#ProductIngredientDataList').datagrid('rejectChanges');
+            editProductIngredient = undefined;
+        }
+        function actionsFormatterProductIngredient(value,row,index){
+            if (row.editing){
+                var s = '<input type="button" onclick="acceptProductIngredient(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectProductIngredient()" value="Cancel" style="width:40px"></input>';
+                return s+c;
+            } else {
+                var e = '<input type="button" onclick="EditProductIngredient(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeProductIngredient(this)" value="Delete" style="width:40px"></input>';
+                return e+d;
+            }
+        }
+        function endEditingAcceptProductIngredient(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editProductIngredient == undefined){return true}
+            if ($('#ProductIngredientDataList').datagrid('validateRow', editProductIngredient)){
+                $('#ProductIngredientDataList').datagrid('endEdit', editProductIngredient);
+                editProductIngredient = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function appendAcceptProductIngredient(){
+            if (endEditingAcceptProductIngredient()){
+                $('#ProductIngredientDataList').datagrid('appendRow',{});
+                editProductIngredient = $('#ProductIngredientDataList').datagrid('getRows').length-1;
+                $('#ProductIngredientDataList').datagrid('selectRow', editProductIngredient)
+                        .datagrid('beginEdit', editProductIngredient);
+            }
+        }
+        function removeitProductIngredient(){
+            if (editProductIngredient == undefined){return}
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#ProductIngredientDataList').datagrid('cancelEdit', editProductIngredient)
+                        .datagrid('deleteRow', editProductIngredient);
+                    editProductIngredient = undefined;
+                }else{
+                    return;
+                }
+            });
+        }
+
+
+        $(function(){
+
+            $("#ProductMixedDataList").datagrid({
+                checkOnSelect:true,
+                onBeforeEdit:onBeforeEdit_ProductMixed,
+                onAfterEdit:onAfterEdit_ProductMixed,
+                onCancelEdit:onCancelEdit_ProductMixed,
+                onLoadSuccess:onLoadSuccess,
+                onClickCell:onClickCell_ProductMixed,
+                showFooter: true,
+                onBeginEdit:onBeginEdit_ProductMixed,
+            });
+        });
+
+        $("#btnSelectProduct").click(function () {
+            if ($("#FactoryID").val() == "") {
+                $.messager.alert("提示", "请先选择工厂！");
+                return;
+            }
+            $('#myModal1').modal({
+                keyboard: true
+            });
+        });
+
+        $("#btnConfirm_ProductMixed").click(function () {
+            var idArray = getSelections("#modalGrid", "ID");
+            var noArray = getSelections("#modalGrid", "No");
+            if (idArray.length <= 0) {
+                $.messager.alert("提示", "请选择产品！");
+                return;
+            }
+
+            var ProductArray = [];
+            var rows = $('#ProductMixedDataList').datagrid('getRows');
+            for (var i = 0; i < rows.length; i++) {
+                var thisProductNo = rows[i].No;
+                if (noArray.contains(thisProductNo)) {
+                    ProductArray.push(rows[i].No);
+                    idArray = idArray.remove(rows[i].ID);
+                }
+            }
+            if (ProductArray.length > 0) {
+                $.messager.alert("提示", "产品货号：[" + ProductArray.join(',') + "]已存在！");
+                //return;
+            }
+
+            $.get("@Url.Content("~/ProductMixed/GetProductMixedInfo")", {
+                idList: idArray.join(','),
+                ModuleType:@((int)ModuleTypeEnum.ProductMixed),
+            },function (data) {
+                if (data.length > 0) {
+                    var rows = $('#ProductMixedDataList').datagrid('getRows');
+                    for (var i = 0; i < data.length; i++) {
+                        if (!ProductArray.contains(data[i].No)) {
+                            rows.push(data[i]);
+                        }
+                    }
+
+                    $('#ProductMixedDataList').datagrid({
+                        data: rows,
+                    });
+
+                    $.messager.show({ title: "提示", msg: "产品添加成功！", timeout: 2000, showType: 'slide' });
+
+                    $('#ProductMixedDataList').datagrid();
+                    InitPopover();
+                }
+
+            }, "json");
+            //$(".modal-header .close").click();//关闭
+        });
+
+        //ProductMixed信息
+
+        function onBeginEdit_ProductMixed(index,row){
+            $(".datagrid-editable-input,.validatebox-text").on("keypress",function(e){
+                if(e.keyCode == 13){
+                    acceptInfo_ProductMixed(row);
+                }
+            });
+
+
+            $(".datagrid-editable-input").on("change", function (e) {
+                var field = $(this).parents("td[field]").attr("field");
+            });
+        }
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndex = undefined;
+        function onBeforeEdit_ProductMixed(index, row) {
+            row.editing = true;
+            updateActionsInfo(index);
+        }
+
+        function onAfterEdit_ProductMixed(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function onCancelEdit_ProductMixed(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function endEditingInfo_ProductMixed() {
+            //var isView = ((bool)ViewData["IsView"] ? 1 : 0);
+            //if(isView === 1){
+            //    return false;
+            //}
+            if (editIndex == undefined) { return true }
+            if ($('#ProductMixedDataList').datagrid('validateRow', editIndex)) {
+                $('#ProductMixedDataList').datagrid('endEdit', editIndex);
+                editIndex = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editInfo(target) {
+            acceptInfo_ProductMixed(target);
+            $('#ProductMixedDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendInfo() {
+            if (endEditingInfo_ProductMixed()) {
+                $('#ProductMixedDataList').datagrid('appendRow', { ID: -1 });
+                editIndex = $('#ProductMixedDataList').datagrid('getRows').length - 1;
+                $('#ProductMixedDataList').datagrid('selectRow', editIndex)
+                        .datagrid('beginEdit', editIndex);
+            }
+        }
+        function removeInfo(target) {
+            rejectInfo();
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#ProductMixedDataList').datagrid('deleteRow', getRowIndex(target));
+                    GetTotal();
+                }
+            });
+        }
+        function acceptInfo_ProductMixed(target) {
+            editIndex = getRowIndex(target);
+
+            if (endEditingInfo_ProductMixed()) {
+                $('#ProductMixedDataList').datagrid('acceptChanges');
+            }
+        }
+        function rejectInfo() {
+            $('#ProductMixedDataList').datagrid('rejectChanges');
+            editIndex = undefined;
+        }
+        function updateActionsInfo(index) {
+            $('#ProductMixedDataList').datagrid('refreshRow', index);
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+
+        }
+
+        function ProductMixedNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/ProductMixed/Edit/"))' + row.RootID + "?Type=Detail", row.No);
+        }
+
+        function onClickCell_ProductMixed(index, field){
+            if (editIndex != index){
+                if (endEditingInfo_ProductMixed()){
+                    $('#ProductMixedDataList').datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $('#ProductMixedDataList').datagrid('getEditor', {index:index,field:field});
+                    if (ed){
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndex = index;
+                } else {
+                    setTimeout(function(){
+                        $('#ProductMixedDataList').datagrid('selectRow', editIndex);
+                    },0);
+                }
+            }
+            RemovePopover();
+        }
+        function emptyFunc() {
+
+        }
+
+
+        function deleteSelected_ProductMixed() {
+
+            var rows = $("#ProductMixedDataList").datagrid('getSelections');
+            if (rows.length>0) {
+                $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                    if (r) {
+                        var idArray = [];
+                        for (var i = 0; i < rows.length; i++) {
+                            var rowIndex=$('#ProductMixedDataList').datagrid('getRowIndex',rows[i]);
+                            if (rowIndex >= 0) {
+                                $('#ProductMixedDataList').datagrid('deleteRow', rowIndex);
+                            }
+                        }
+                        editIndex = undefined;
+                    }
+                });
+            }else {
+                $.messager.alert("提示","请选中要删除的配件产品！");
+                return;
+
+            }
+
+        }
+        function MyModel() {
+            this.createAsQuote    = ko.observable(),
+            this.extraNo          = ko.observable(),
+            this.extraCustomerID  = ko.observable(),
+
+            this.ID               = ko.observable(),
+            this.ParentProductID  = ko.observable(),
+            this.RootProductID    = ko.observable(),
+            this.Status           = ko.observable(),
+            this.No               = ko.observable(),
+            this.CustomerID       = ko.observable(),
+            this.NoFactory        = ko.observable(),
+            this.FactoryID        = ko.observable(),
+            this.Name             = ko.observable(),
+            this.Desc             = ko.observable(),
+            this.ClassifyID       = ko.observable(),
+            this.UnitID           = ko.observable(),
+            this.StyleID          = ko.observable(),
+            this.PortID           = ko.observable(),
+            this.MOQZh            = ko.observable(),
+            this.Image            = ko.observable(),
+            this.UPC              = ko.observable(),
+            this.Length           = ko.observable(),
+            this.Width            = ko.observable(),
+            this.Height           = ko.observable(),
+            this.Weight           = ko.observable(),
+            this.PackingMannerZhID= ko.observable(),
+            this.IngredientZh     = ko.observable(),
+            this.ProductCopyRight = ko.observable(),
+            this.Season           = ko.observable(),
+            this.ColorID          = ko.observable(),
+            this.PDQPackRate      = ko.observable(),
+            this.PDQLength        = ko.observable(),
+            this.PDQWidth         = ko.observable(),
+            this.PDQHeight        = ko.observable(),
+            this.InnerBoxRate     = ko.observable(),
+            this.InnerLength      = ko.observable(),
+            this.InnerWidth       = ko.observable(),
+            this.InnerWeight      = ko.observable(),
+            this.InnerWeightGross = ko.observable(),
+            this.InnerHeight      = ko.observable(),
+            this.OuterBoxRate     = ko.observable(),
+            this.OuterLength      = ko.observable(),
+            this.OuterWidth       = ko.observable(),
+            this.OuterWeightGross = ko.observable(),
+            this.OuterHeight      = ko.observable(),
+            this.OuterWeightNet   = ko.observable(),
+            this.PriceFactory     = ko.observable(),
+            this.CurrencyType     = ko.observable(),
+            this.PriceInputDate   = ko.observable(),
+            this.ValidDate        = ko.observable(),
+            this.Comment          = ko.observable(),
+            this.HTS              = ko.observable(),
+            this.HSCode           = ko.observable(),
+            this.IngredientEn     = ko.observable(),
+            this.Agent            = ko.observable(),
+            this.CtnsPallet       = ko.observable(),
+            this.FreightRate      = ko.observable(),
+            this.MiscImportLoad   = ko.observable(),
+            this.DutyPercent      = ko.observable(),
+
+            this.list_ProductIngredient = ko.observableArray();
+            this.list_ProductMixed = ko.observableArray();
+        }
+
+        function MyModelViewModel() {
+            var self = this;
+
+            self.MyModel = ko.observable();
+            var currentMyModel = new MyModel();
+
+            currentMyModel.list_ProductIngredient(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_ProductIngredient))));
+            currentMyModel.list_ProductMixed(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_ProductMixed))));
+            self.MyModel(currentMyModel);
+
+            var checkSubmit = false;//防止重复提交
+
+            self.save = function (StatusID) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (bootstrapValidator.isValid()) {
+                    $("#bntSave").removeAttr("disabled");
+
+                    if($("#CurrencyType").val()==""){
+                        $.messager.alert("提示", "产品的币种不能为空！产品的币种取工厂的结算币种");
+                        return;
+                    }
+
+                    if (editIndex != undefined) {
+                        $.messager.confirm("提示", "发现您有正在编辑状态的配件产品，是否保存？", function(r){
+                            if(r){
+                                endEditingInfo_ProductMixed();
+                            }
+                        });
+                        return false;
+                    }
+
+                    self.MyModel().extraNo = ko.observable("@(Model.No)"),
+                    self.MyModel().extraCustomerID = ko.observable(@(Model.CustomerID)),
+
+                    self.MyModel().ID                    ($("#ID").val());
+                    self.MyModel().ParentProductID       ($("#ParentProductID").val());
+                    self.MyModel().RootProductID         ($("#RootProductID").val());
+                    self.MyModel().Status                (StatusID);
+                    self.MyModel().No                    ($("#No").val());
+                    self.MyModel().CustomerID            ($("#CustomerID").val());
+                    self.MyModel().NoFactory             ($("#NoFactory").val());
+                    self.MyModel().FactoryID             ($("#FactoryID").val());
+                    self.MyModel().Name                  ($("#Name").val());
+                    self.MyModel().Desc                  ($("#Desc").val());
+                    self.MyModel().ClassifyID            ($("#ClassifyID").val());
+                    self.MyModel().UnitID                ($("#UnitID").val());
+                    self.MyModel().StyleID               ($("#StyleID").val());
+                    self.MyModel().PortID                ($("#PortID").val());
+                    self.MyModel().MOQZh                 ($("#MOQZh").val());
+                    self.MyModel().Image                 ($("#Image").val());
+                    self.MyModel().UPC                   ($("#UPC").val());
+                    self.MyModel().Length                ($("#Length").val());
+                    self.MyModel().Width                 ($("#Width").val());
+                    self.MyModel().Height                ($("#Height").val());
+                    self.MyModel().Weight                ($("#Weight").val());
+                    self.MyModel().PackingMannerZhID     ($("#PackingMannerZhID").val());
+                    self.MyModel().IngredientZh          ($("#IngredientZh").val());
+                    self.MyModel().ProductCopyRight      ($("#ProductCopyRight").val());
+                    self.MyModel().Season                ($("#Season").val());
+                    self.MyModel().ColorID               ($("#ColorID").val());
+                    self.MyModel().PDQPackRate           ($("#PDQPackRate").val());
+                    self.MyModel().PDQLength             ($("#PDQLength").val());
+                    self.MyModel().PDQWidth              ($("#PDQWidth").val());
+                    self.MyModel().PDQHeight             ($("#PDQHeight").val());
+                    self.MyModel().InnerBoxRate          ($("#InnerBoxRate").val());
+                    self.MyModel().InnerLength           ($("#InnerLength").val());
+                    self.MyModel().InnerWidth            ($("#InnerWidth").val());
+                    self.MyModel().InnerWeight           ($("#InnerWeight").val());
+                    self.MyModel().InnerWeightGross      ($("#InnerWeightGross").val());
+                    self.MyModel().InnerHeight           ($("#InnerHeight").val());
+                    self.MyModel().OuterBoxRate          ($("#OuterBoxRate").val());
+                    self.MyModel().OuterLength           ($("#OuterLength").val());
+                    self.MyModel().OuterWidth            ($("#OuterWidth").val());
+                    self.MyModel().OuterWeightGross      ($("#OuterWeightGross").val());
+                    self.MyModel().OuterHeight           ($("#OuterHeight").val());
+                    self.MyModel().OuterWeightNet        ($("#OuterWeightNet").val());
+                    self.MyModel().PriceFactory          ($("#PriceFactory").val());
+                    self.MyModel().CurrencyType          ($("#CurrencyType").val());
+                    self.MyModel().PriceInputDate        ($("#PriceInputDate").val());
+                    self.MyModel().ValidDate             ($("#ValidDate").val());
+                    self.MyModel().Comment               ($("#Comment").val());
+                    self.MyModel().HTS                   ($("#HTS").val());
+                    self.MyModel().HSCode                ($("#HSCode").val());
+                    self.MyModel().IngredientEn          ($("#IngredientEn").val());
+                    self.MyModel().Agent                 ($("#Agent").val());
+                    self.MyModel().CtnsPallet            ($("#CtnsPallet").val());
+                    self.MyModel().FreightRate           ($("#FreightRate").val());
+                    self.MyModel().MiscImportLoad        ($("#MiscImportLoad").val());
+                    self.MyModel().DutyPercent           ($("#DutyPercent").val());
+                    
+                    
+                    
+                    var SumInnerBoxRate=0;
+                    var SumQty=0;
+                    var acceptInfos = $('#ProductMixedDataList').datagrid("getRows");
+                    if(acceptInfos && acceptInfos.length > 0){
+                        if (acceptInfos[0].FactoryID!=$("#FactoryID").val()) {
+                            $.messager.alert("提示", "只能选同一家工厂的产品！");
+                            return;
+                        }
+                        
+                        for (var i = 0; i < acceptInfos.length; i++) {
+                            SumInnerBoxRate += parseInt(acceptInfos[i].InnerBoxRate);
+                            SumQty += parseInt(acceptInfos[i].Qty);
+                        }
+
+                        var InnerBoxRate=$("#InnerBoxRate").val();
+                        var OuterBoxRate=$("#OuterBoxRate").val();
+                        if (parseInt(InnerBoxRate)>0) {//当内盒率大于0时，混装产品的数量之和=内盒率，混装产品的内盒率之和=内盒率。
+                            if (SumInnerBoxRate!=parseInt(InnerBoxRate)) {
+                                $.messager.alert("提示", "选择的产品的内盒率之和要等于混装产品的内盒率！");
+                                return;
+                            }
+                            if (SumQty!=parseInt(InnerBoxRate)) {
+                                $.messager.alert("提示", "选择的产品的数量之和要等于混装产品的内盒率！");
+                                return;
+                            }
+                        }else {//当内盒率等于空或者等于0时，混装产品的数量之和=外箱率。
+                            if (SumQty!=parseInt(OuterBoxRate)) {
+                                $.messager.alert("提示", "选择的产品的数量之和要等于混装产品的外箱率！");
+                                return;
+                            }
+    
+                        }
+                        self.MyModel().list_ProductMixed(acceptInfos);
+                    }else {
+                        self.MyModel().list_ProductMixed(null);
+                    }
+
+                    var acceptInfos = $('#ProductIngredientDataList').datagrid("getRows");
+                    if(acceptInfos && acceptInfos.length > 0){
+                        var percent=0;
+                        for (var i = 0; i < acceptInfos.length; i++) {
+                            percent+= parseFloat( acceptInfos[i].IngredientPercent);
+                        }
+                        if (percent != 100) {
+                            $.messager.alert("提示", "产品成分构百分比总和必须为100%");
+                            return;
+                        }
+                        self.MyModel().list_ProductIngredient(acceptInfos);
+                    } else{
+                        self.MyModel().list_ProductIngredient(null);
+                    }
+
+
+                    if (checkSubmit) {
+                        $.messager.alert("提示", "请勿重复提交！");
+                        return;
+                    }
+                    checkSubmit = true;
+                    loading();
+
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@Url.Content("~/ProductMixed/Edit/"+Model.ID)",
+                        data: ko.toJSON(self.MyModel())
+                    }).done(function (data) {
+                        checkSubmit = false;
+                        completeLoading();
+
+                        if (data == 0) {
+                            $.messager.alert("出错了","出错了！");
+                        }
+                        else if (data == 4) {
+                            $.messager.alert("出错了","货号重复了！");
+                        }
+                        else {
+                            parent.$('#tblProducts').datagrid('reload');
+                            OA.CloseMe(true);
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    });
+                }
+                else{
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            };
+        };
+        ko.applyBindings(new MyModelViewModel());
+
+        $(function(){
+            UpdateDuty();
+            $("#HTS").change(function(){
+                UpdateDuty();
+            });
+        });
+
+        function UpdateDuty(){
+            var HTS = $("#HTS").val();
+
+            $("#DutyPercent").html("");
+            if (HTS=="") {
+                return;
+            }
+            $.ajax({
+                type: 'get',
+                contentType: 'application/json',
+                url: "@Url.Content("~/ProductMixed/GetDutyPercentList/")" + HTS,
+                data: {}
+            }).done(function (data) {
+                $("#DutyPercent").append("<option></option>");
+                for (var i = 0; i < data.length; i++) {
+                    var val= $("#DutyPercent").data("val");
+                    var temp = "";
+                    if (data[i]==val) {
+                        temp = " selected='selected'";
+                    }
+                    $("#DutyPercent").append("<option value='" + data[i] + "' " + temp + ">"+data[i]+"</option>");
+                }
+            });
+        }
+     
+        function productNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ID, row.No);
+        }   
+    </script>
+}

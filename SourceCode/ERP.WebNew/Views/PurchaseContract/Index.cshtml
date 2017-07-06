@@ -1,0 +1,97 @@
+﻿@{
+    ViewBag.Title = "待审核的采购合同";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@model ERP.Models.Purchase.VMPurchaseSearch
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+    //删除选中
+    function deleteSelected() {
+        var idArray = getSelections(tableName, "ID");
+        if (idArray.length <= 0) {
+            $.messager.alert("提示","请选中要删除的采购合同！");
+            return;
+        }
+        $.messager.confirm("提示","是否删除选中的采购合同？",function(r){
+            if (r){
+                $.post("@Url.Content("~/PurchaseContract/BatchDelete")", { idList: idArray.join(',') },
+                    function (result) {
+                        switch (result) {
+                            case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect):
+                                $.messager.alert("提示","没有可以删除的记录");
+                                break;
+                            case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success):
+                                $.messager.alert("成功","删除成功");
+                                $(tableName).datagrid('reload');
+                                break;
+                            default:
+                                break;
+                        }
+                    }, "json");
+            }
+        });
+    }
+
+    //删除采购合同
+    function deleteData(id) {
+        $.messager.confirm("提示","确定要删除吗？",function(r){
+            if (r){
+                $.post("@Url.Content("~/PurchaseContract/Delete")", { id: id },
+            function (result) {
+                switch (result) {
+                    case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect):
+                        $.messager.alert("提示","没有可以删除的记录");
+                        break;
+                    case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success):
+                        $.messager.alert("成功","删除成功");
+                        $(tableName).datagrid('reload');
+                        break;
+                    default:
+                        break;
+                }
+            }, "json");
+            }
+        });
+
+    }
+
+    function operationFormatter_AllAmount(val,row,index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        return row.CurrentSign+ row.AllAmount;
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)PurchaseContractElementPrivileges.View);
+        var showEdit = @(Model.PageElementPrivileges & (int)PurchaseContractElementPrivileges.Edit);
+        var showCheck = @(Model.PageElementPrivileges & (int)PurchaseContractElementPrivileges.Check);
+        var showDelete = @(Model.PageElementPrivileges & (int)PurchaseContractElementPrivileges.Delete);
+
+        var ops = "";
+
+        if (showView > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/PurchaseContract/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+
+        var PurchaseStatusID = row.PurchaseStatusID;
+        var IsHasApprovalPermission=row.IsHasApprovalPermission;
+        if ((PurchaseStatusID == 1 || PurchaseStatusID == 4) && showEdit) {//草稿或审核不通过
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/PurchaseContract/Edit/"))" + val + "' style='margin: 0 5px;'>编辑</a>";
+        }
+        else if (PurchaseStatusID == 2 && showCheck && IsHasApprovalPermission) {//待审核
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/PurchaseContract/Edit/"))" + val + "' style='margin: 0 5px;'>审核</a>";
+        }
+        if (showDelete > 0) {
+            ops += "<button class='btn btn-danger btn-xs w_auto' onclick='deleteData(" + val + ")' style='margin: 0 5px;'>删除</button>";
+        }
+        return ops;
+    }
+</script>

@@ -1,0 +1,69 @@
+﻿@model List<ERP.Models.InspectionReceipt.DTOInspectionReceipt>
+@using ERP.Models.CustomEnums
+@using ERP.Tools
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    var ThisModel = Model;
+}
+@if (FirstModel.InspectionReceiptStatusID == (int)InspectionReceiptStatusEnum.Uploaded)
+{
+    <div title="上传凭条">
+
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var item2 = Model[i];
+            <div class="Factory">
+                <div style="margin-bottom:0px;" class="modal-title">
+                    @item2.InvNo
+                    <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+                </div>
+
+                <div class="history_box">
+                    <h3 class="popTitle">
+                        已上传的附件信息<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+                    </h3>
+                    <div class="popContent">
+                        <div class="history_box">
+                            <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                                <thead>
+                                    <tr class="t_bg">
+                                        <td width="50%">附件名称</td>
+                                        <td width="20%">上传时间</td>
+                                        <td width="30%">操作</td>
+                                    </tr>
+                                </thead>
+                                @if (item2.UploadReceipt != null)
+                                {
+                                    for (var j = 0; j < item2.UploadReceipt.Count; j++)
+                                    {
+                                        <tr>
+                                            <td style="display:none;">
+                                                @Html.TextBoxFor(p => ThisModel[i].UploadReceipt[j].ID, new { })
+                                                @Html.TextBoxFor(p => ThisModel[i].UploadReceipt[j].IsDelete, new { @class = "IsDelete" })
+                                            </td>
+
+                                            <td>@ThisModel[i].UploadReceipt[j].DisplayFileName</td>
+
+                                            <td>@Utils.DateTimeToStr2(ThisModel[i].UploadReceipt[j].DT_CREATEDATE)</td>
+
+                                            <td>
+                                                <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item2.UploadReceipt[j].ServerFileName')">下载</button>
+
+                                                <!--编辑时才能删除-->
+                                                @if (ViewBag.PageTypeID == PageTypeEnum.Edit)
+                                                {
+                                                    <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item2.UploadReceipt[j].ServerFileName')">删除</button>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

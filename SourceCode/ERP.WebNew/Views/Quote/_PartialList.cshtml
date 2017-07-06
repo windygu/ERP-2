@@ -1,0 +1,132 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using ERP.Tools.EnumHelper
+
+@model ERP.Models.Quote.VMQuoteSearch
+
+<div class="content-wrapper">
+    <div align="right">
+        <form class="form-horizontal">
+            <div class="search_Condition box_1k">
+                <ul>
+                    <li>
+                        <label class="col-xs-2">报价单号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.QuotNumber, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">报价日期：</label>
+                        <div class="col-sm-10">
+                            <div class="col-xs-5" style="padding: 0;">
+                                @Html.TextBoxFor(d => d.QuotDateStart, new { @class = "form-control Wdate" })
+                            </div>
+                            <span class="col-xs-1" style="padding: 0;">-</span>
+                            <div class="col-xs-5" style="padding: 0;">
+                                @Html.TextBoxFor(d => d.QuotDateEnd, new { @class = "form-control Wdate" })
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">产品货号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.Name, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">客户：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.CustomerCode, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">工厂：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.FactoryName, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    @if (Model.PageType == PageTypeEnum.List)
+                    {
+                        <li>
+                            <label class="col-xs-2">报价单状态：</label>
+                            <div class="col-sm-10">
+                                <select class="form-control" id="StatusID" name="StatusID">
+                                    <option selected="selected" value=""></option>
+                                    <option @(Model.StatusID == ((short)QuoteStatusEnum.OutLine).ToString() ? "selected='selected'" : "") value="@((short)QuoteStatusEnum.OutLine)">@(EnumHelper.GetCustomEnumDesc(typeof(QuoteStatusEnum), QuoteStatusEnum.OutLine))</option>
+                                    <option @(Model.StatusID == ((short)QuoteStatusEnum.NotPassCheck).ToString() ? "selected='selected'" : "") value="@((short)QuoteStatusEnum.NotPassCheck)">@(EnumHelper.GetCustomEnumDesc(typeof(QuoteStatusEnum), QuoteStatusEnum.NotPassCheck))</option>
+                                    <option @(Model.StatusID == ((short)QuoteStatusEnum.PassedCheck).ToString() ? "selected='selected'" : "") value="@((short)QuoteStatusEnum.PassedCheck)">@(EnumHelper.GetCustomEnumDesc(typeof(QuoteStatusEnum), QuoteStatusEnum.PassedCheck))</option>
+                                    <option @(Model.StatusID == ((short)QuoteStatusEnum.HadSend).ToString() ? "selected='selected'" : "") value="@((short)QuoteStatusEnum.HadSend)">@(EnumHelper.GetCustomEnumDesc(typeof(QuoteStatusEnum), QuoteStatusEnum.HadSend))</option>
+                                    <option @(Model.StatusID == ((short)QuoteStatusEnum.ReQutes).ToString() ? "selected='selected'" : "") value="@((short)QuoteStatusEnum.ReQutes)">@(EnumHelper.GetCustomEnumDesc(typeof(QuoteStatusEnum), QuoteStatusEnum.ReQutes))</option>
+                                    <option @(Model.StatusID == ((short)QuoteStatusEnum.HadConfirm).ToString() ? "selected='selected'" : "") value="@((short)QuoteStatusEnum.HadConfirm)">@(EnumHelper.GetCustomEnumDesc(typeof(QuoteStatusEnum), QuoteStatusEnum.HadConfirm))</option>
+                                    <option @(Model.StatusID == ((short)QuoteStatusEnum.HadInvalid).ToString() ? "selected='selected'" : "") value="@((short)QuoteStatusEnum.HadInvalid)">@(EnumHelper.GetCustomEnumDesc(typeof(QuoteStatusEnum), QuoteStatusEnum.HadInvalid))</option>
+                                </select>
+                            </div>
+                        </li>
+                    }
+                    <li class="search">
+                        <button type="submit" onclick="return OA.s(this)" class="btn btn-info">查询</button>
+                        <button type="button" class="btn btn-info" onclick="clearAll(this)">清空所有</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+
+    <div class="Control">
+        @if (Model.PageType == PageTypeEnum.List)
+        {
+            if ((Model.PageElementPrivileges & (int)QuoteElementPrivileges.Create) > 0)
+            {
+                <button type="button" class="btn btn-danger" wintype="idialog" winsize="1200,800,yes" onclick="return OA.i(this);" href="@Url.Content("~/Quote/Edit/-1")">新建报价单</button>
+            }
+            if ((Model.PageElementPrivileges & (int)QuoteElementPrivileges.BatchDelete) > 0)
+            {
+                <button type="button" class="btn btn-default" onclick="deleteSelected()">批量删除</button>
+            }
+            if ((Model.PageElementPrivileges & (int)QuoteElementPrivileges.SendEmail) > 0)
+            {
+                <button id="btn_SendEmail" href="#" class="btn btn-default" onclick="if(ActionSelected('SendEmail'))return OA.i(this);" wintype="idialog" winsize="1200,800,yes" type="button">发送邮件给客户</button>
+            }
+            if ((Model.PageElementPrivileges & (int)QuoteElementPrivileges.CopyQuote) > 0)
+            {
+                <button id="btn_Copy" href="#" class="btn btn-default" onclick="if(ActionSelected('Copy'))return OA.i(this);" wintype="idialog" winsize="1200,800,yes" type="button">复制报价单</button>
+            }
+            if ((Model.PageElementPrivileges & (int)QuoteElementPrivileges.ViewProductList) > 0)
+            {
+                <button id="btn_ProductList" href="#" class="btn btn-default" onclick="ActionSelected('ProductList')" type="button">查看产品图片</button>
+            }
+        }
+    </div>
+
+    <div class="box_1k" style="width:100%;overflow:auto">
+        <table id="MyGrid" class="easyui-datagrid" data-options="singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/Quote/GetAll")?PageType=@((int)Model.PageType)&@Request.QueryString',method:'get',onLoadSuccess:onLoadSuccess,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+            <thead>
+                <tr>
+                    @if (Model.PageType == PageTypeEnum.List)
+                    {
+                        <th data-options="field:'ck',checkbox:true"></th>
+                    }
+                    <th data-options="field:'QuotNumber',width:140,sortable:true,align:'center'">报价单号</th>
+                    <th data-options="field:'CustomerCode',width:100,sortable:true,align:'center'">客户</th>
+                    <th data-options="field:'QuotDate',width:100,sortable:true,align:'center'">报价日期</th>
+                    <th data-options="field:'ValidDate',width:100,sortable:true,align:'center'">报价有效期</th>
+                    <th data-options="field:'AuthorName',width:100,sortable:true,align:'center'">制单人</th>
+                    <th data-options="field:'OrderID1',width:130,sortable:true,align:'center'">对应销售订单</th>
+                    <th data-options="field:'StatusName',width:100,sortable:true,align:'center'">状态</th>
+                    @if (Model.PageType == PageTypeEnum.PendingCheckList)
+                    {
+                        <th data-options="field:'NextApproverDisplayNames',width:100,align:'center'">待审批人</th>
+                    }
+                    <th data-options="field:'DT_MODIFYDATE',width:130,sortable:true,align:'center'">最后修改时间</th>
+                    <th data-options="field:'ID',align:'center',formatter:operationFormatter">操作</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<script>
+    function onLoadSuccess() {
+        jav.initGridCellTooltips(["ID"]);
+    }
+</script>

@@ -1,0 +1,45 @@
+
+<a href="" ></a>
+
+size=="窗口类别"
+xtype="iframe|rel|dialog|pop|"
+at=""
+closebutton="yes|auto|no|" 是否显示关闭按钮(默认显示)
+quickClose=""   允许快速关闭(通过ESC,点击背景图)
+reload=""  关闭窗口后自动刷新
+reloadrel="" /></a>
+
+[]://para  
+
+ xtype ="数据类型"  //类别 
+ format=""   //数据格式
+ mask="" //
+ min= 最小值
+ max=　最大值
+ step="" 
+ valueRange="[]" 
+required="" 可否为空
+ minlength　最小长度
+ maxlength　取大長度
+ vs=""　　　比較對象
+ vsMethod="" //比較方法
+ pattern=""     //正則表達式,多种表达式请用 ;; 分开
+ placeholder=""
+ expMethod="({0})"
+ defaultValue="" //默认值
+ isMuli="" 可否多值
+ list=""
+ for=""
+ muliSplit="" //多值分隔符
+ para=""  //其它参数表达式（通过json格式）
+ encode="" //编码方式，目前支持md5 sh1 sh2 sh3 base64 url 
+
+int
+float
+decimal
+bool
+string
+date
+datetime
+time
+http://blog.icanghai.com/post/2013-01-30/40048298435

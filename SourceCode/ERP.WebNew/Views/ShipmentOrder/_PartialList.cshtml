@@ -1,0 +1,101 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using ERP.Tools.EnumHelper
+
+@model ERP.Models.ShipmentOrder.VMShipmentOrderSearch
+
+<div class="content-wrapper">
+    <div align="right">
+        <form class="form-inline frmFind" role="form" method="get">
+            <div class="search_Condition box_1k">
+                <ul>
+                    <li>
+                        <label class="col-xs-2">销售订单编号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.OrderNumber, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">客户：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.CustomerCode, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">要求交货期：</label>
+                        <div class="col-sm-10">
+                            <div class="col-xs-5" style="padding:0;">
+                                @Html.TextBoxFor(d => d.OrderDateStart, new { @class = "form-control Wdate" })
+                            </div>
+                            <span class="col-xs-1" style="padding:0;">-</span>
+                            <div class="col-xs-5" style="padding:0;">
+                                @Html.TextBoxFor(d => d.OrderDateEnd, new { @class = "form-control Wdate" })
+                            </div>
+                        </div>
+                    </li>
+                    <li class="search">
+                        <button type="submit" class="btn btn-info" onclick="return OA.s(this)">查询</button>
+                        <button type="button" class="btn btn-info" onclick="clearAll(this)">清空所有</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+
+    <div class="Control">
+        @if (Model.PageType == PageTypeEnum.PendingApproval)
+        {
+            if ((Model.PageElementPrivileges & (int)ShipmentOrderElementPrivileges.Merge) > 0)
+            {
+                <button id="btn_Merge" type="button" class="btn btn-danger" wintype="idialog" winsize="1200,800,yes" onclick="if(ActionSelected())return OA.i(this);" href="#">合并订舱</button>
+            }
+        }
+    </div>
+
+    <div class="box_1k" style="width:100%;overflow:auto">
+        <table id="MyGrid" class="easyui-datagrid" data-options="singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/ShipmentOrder/GetAll")?PageType=@((int)Model.PageType)&@Request.QueryString',method:'get',onLoadSuccess:onLoadSuccess,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+            <thead data-options="frozen:true">
+                <tr>
+                    @if (Model.PageType == PageTypeEnum.PendingApproval)
+                    {
+                        <th data-options="field:'ck',checkbox:true"></th>
+                    }
+                    <th data-options="field:'OrderNumber',width:130,sortable:true,align:'center'">销售订单编号</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr>
+                    <th data-options="field:'POID',width:100,sortable:true,align:'center'">@ERP.Tools.Keys.CustomerPO</th>
+                    <th data-options="field:'EHIPO',width:100,sortable:true,align:'center'">@ERP.Tools.Keys.ECHPO</th>
+                    <th data-options="field:'CustomerCode',sortable:true,align:'center',width:100">客户</th>
+                    <th data-options="field:'PortName',align:'center',width:150">出运港</th>
+                    <th data-options="field:'DestinationPortName',align:'center',width:150">DESTINATION</th>
+                    <th data-options="field:'OrderDateStartFormatter',width:100,sortable:true,align:'center'">开始交货日期</th>
+                    <th data-options="field:'OrderDateEndFormatter',width:100,sortable:true,align:'center'">结束交货日期</th>
+                    <th data-options="field:'Merge',width:100,sortable:true,align:'center'">合并/分批订舱</th>
+                    <th data-options="field:'OrderNumberList',width:120,sortable:true,align:'center'">合并订舱的订单编号</th>
+                    <th data-options="field:'StatusName',sortable:true,align:'center',width:100">状态</th>
+                    @if (Model.PageType == PageTypeEnum.PendingApproval)
+                    {
+                        <th data-options="field:'NextApproverDisplayNames',width:100,align:'center'">待审批人</th>
+                    }
+                    <th data-options="field:'DT_MODIFYDATEFormatter',sortable:true,align:'center',width:130">最后修改时间</th>
+                    <th data-options="field:'ID',align:'center',formatter:operationFormatter">操作</th>
+                    <th data-options="field:'OrderID',width:130,sortable:true,align:'center',hidden:true"></th>
+                    <th data-options="field:'CustomerID',width:130,sortable:true,align:'center',hidden:true"></th>
+                    <th data-options="field:'OrderIDList',width:130,sortable:true,align:'center',hidden:true"></th>
+                    <th data-options="field:'DestinationPortID',width:130,sortable:true,align:'center',hidden:true"></th>
+                    <th data-options="field:'PortID',width:130,sortable:true,align:'center',hidden:true"></th>
+                    <th data-options="field:'IsBatchShipped',width:130,sortable:true,align:'center',hidden:true"></th>
+                    <th data-options="field:'SelectCustomer',width:130,sortable:true,align:'center',hidden:true"></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<script>
+    function onLoadSuccess() {
+        jav.initGridCellTooltips(["ID"]);
+    }
+</script>

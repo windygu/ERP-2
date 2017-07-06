@@ -1,0 +1,57 @@
+﻿@model ERP.Models.AdminUser.VMLogs
+
+@{
+    ViewBag.Title = "日志";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <div align="right">
+        <form class="form-inline frmFind" role="form" runat="server" method="get">
+            <div class="search_Condition box_1k">
+                <ul>
+                    <li>
+                        <label class="col-xs-2">类型：</label>
+                        <div class="col-sm-10">
+                            @Html.DropDownListFor(p => p.Type, new SelectList(new List<SelectListItem>() { new SelectListItem() { Text = "Error", Value = "LogError" }, new SelectListItem() { Text = "Info", Value = "LogInfo" }, new SelectListItem() { Text = "Email", Value = "LogEmail" }, new SelectListItem() { Text = "ApprovalWorkflowLogs", Value = "ApprovalWorkflowLogs" } }, "Value", "Text"), new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">起始日期：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(p => p.Date, new { @class = "form-control Wdate" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">关键词：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(p => p.Keyword, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li class="search">
+                        <button type="submit" class="btn btn-info" onclick="return OA.s(this)">查询</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+
+    <div class="box_1k" style="width:100%;overflow:auto">
+        <table id="MyGrid" class="easyui-datagrid" data-options="singleSelect:false,pageList: [50,100,200,500], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("/Account/GetLogs")?@Request.QueryString',method:'get',onLoadSuccess:onLoadSuccess,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+            <thead>
+                <tr>
+                    <th data-options="field:'Date',sortable:true,align:'center',width:200">Date</th>
+                    <th data-options="field:'Message',sortable:true,align:'Left',width:1400">Message</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        function onLoadSuccess() {
+            jav.initGridCellTooltips();
+        }
+    </script>
+}

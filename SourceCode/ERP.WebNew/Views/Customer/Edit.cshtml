@@ -1,0 +1,1421 @@
+﻿@model ERP.Models.Customer.DTOOrderCustomers
+
+@{
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@section styles{
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+
+    <style type="text/css">
+        .box_1k {
+            margin-top: 0px;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+    </style>
+}
+@using (Ajax.BeginForm("Edit", "Customer", new { id = @Model.OCID }, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit", @class = "form-horizontal bv-form" }))
+{
+    @Html.HiddenFor(p => p.OCID)
+    <h3 class="popTitle">
+        基本信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">Company Code：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="CustomerCode" name="CustomerCode" data-bind="value:customer().CustomerCode" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">Company Name：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="CustomerName" name="CustomerName" data-bind="value:customer().CustomerName" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="country col-sm-4 control-label text-danger">Country：</label>
+            <div class="col-sm-8 control-label">
+                @InlineHelpers.GetSelectionForCountries(ViewData["Countries"] as IEnumerable<System.Web.Mvc.SelectListItem>, "ddlCountries", !(bool)ViewData["IsView"], Model.Country, "value:customer().Country")
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="state col-sm-4 control-label text-danger">State/Province/Region：</label>
+            <div class="col-sm-8 control-label">
+                @if (ViewData["Provinces"] != null)
+                {
+                    @InlineHelpers.GetSelectionForProvinces(ViewData["Provinces"] as IEnumerable<System.Web.Mvc.SelectListItem>, "ddlProvinces", !(bool)ViewData["IsView"], Model.Province, "value:customer().Province")
+                }
+                else
+                {
+                    @InlineHelpers.GetSelectionForProvinces(Enumerable.Empty<System.Web.Mvc.SelectListItem>(), "ddlProvinces", !(bool)ViewData["IsView"], Model.Province, "value:customer().Province")
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger city">City or APO/AFO：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="City" name="City" data-bind="value:customer().City" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="stree col-sm-4 control-label text-danger">Street Address：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="StreetAddress" name="StreetAddress" data-bind="value:customer().StreetAddress" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 zip control-label">Zip/Postal Code：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="PostalCode" name="PostalCode" data-bind="value:customer().PostalCode" />
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 zip control-label text-danger">Customer Code：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="Code" name="Code" data-bind="value:customer().Code" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="state col-sm-4 control-label">收款方式：</label>
+            <div class="col-sm-8 control-label">
+                @if (ViewData["list_PaymentType"] != null)
+                {
+                    @InlineHelpers.GetSelection(ViewData["list_PaymentType"] as IEnumerable<System.Web.Mvc.SelectListItem>, "PaymentType", !(bool)ViewData["IsView"], Model.PaymentType, "value:customer().PaymentType")
+                }
+                else
+                {
+                    @InlineHelpers.GetSelection(ViewData["list_PaymentType"] as IEnumerable<System.Web.Mvc.SelectListItem>, "PaymentType", !(bool)ViewData["IsView"], Model.PaymentType, "value:customer().PaymentType")
+                }
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        客户参数
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">Misc%/Import Load%：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control translation" @((bool)ViewData["IsView"] ? "disabled" : "") id="MiscImportLoadAmount" name="MiscImportLoadAmount" data-bind="value:customer().MiscImportLoadAmount" />
+            </div>
+            <div class="col-sm-1 control-label">
+                <p>%</p>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="st col-sm-4 control-label">Commission%：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" id="Commission" name="Commission" data-bind="value:customer().Commission" disabled="disabled" />
+            </div>
+            <div class="col-sm-1 control-label">
+                <p>%</p>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">Agent%：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="Agent" name="Agent" data-bind="value:customer().Agent" />
+            </div>
+            <div class="col-sm-1 control-label">
+                <p>%</p>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">Allowance%：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="Allowance" name="Allowance" data-bind="value:customer().Allowance" />
+            </div>
+            <div class="col-sm-1 control-label">
+                <p>%</p>
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">MU%：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="MU" name="MU" data-bind="value:customer().MU" />
+            </div>
+            <div class="col-sm-1 control-label">
+                <p>%</p>
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label ">FOB NET：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FOBNET" name="FOBNET" data-bind="value:customer().FOBNET" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">Final FOB：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FinalFOB" name="FinalFOB" data-bind="value:customer().FinalFOB" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">Palletpc $：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="Palletpc" name="Palletpc" data-bind="value:customer().Palletpc" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">报价单模版：</label>
+            <div class="col-sm-8 control-label">
+                @InlineHelpers.GetSelectionForQuoteTemplateFileName(ViewData["GetSelectionQuote"] as IEnumerable<System.Web.Mvc.SelectListItem>, "QuoteTemplateFileName", Model.QuoteTemplateFileName, "value:customer().QuoteTemplateFileName")
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">唛头、单证客户：</label>
+            <div class="col-sm-8 control-label">
+                @InlineHelpers.GetSelectionForQuoteTemplateFileName(ViewData["GetSelectionCustomer"] as IEnumerable<System.Web.Mvc.SelectListItem>, "SelectCustomer", Model.SelectCustomer, "value:customer().SelectCustomer")
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">ELC补差%：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="ELCFill" name="ELCFill" data-bind="value:customer().ELCFill" />
+            </div>
+            <div class="col-sm-1 control-label">
+                <p>%</p>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        联系人信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="search_Condition box_1k p_t0">
+        <ul>
+            <li class="col-sm-12">
+                <table id="ContactsDataList" class="easyui-datagrid" style="width:100%;"
+                       data-options="singleSelect:true
+                       ,pageList:[10,20,50,100]
+                       ,pageSize:10
+                       ,pagination:false
+                       ,checkOnSelect:true
+                       ,onBeforeEdit:onBeforeEditContacts
+                       ,onAfterEdit:onAfterEditContacts
+                       ,onCancelEdit:onCancelEditContacts
+                       ,onLoadSuccess:onLoadSuccess
+                       ,toolbar: '#tbContact'">
+                    <thead data-options="frozen:true">
+                        <tr>
+                            @if (!(bool)ViewData["IsView"])
+                            {
+                            <th data-options="field:'action',align:'center',width:100,formatter:actionsFormatterContacts">操作</th>
+                            }
+                            <th data-options="field:'IsDefault',align:'center',editor:{
+							                                                            type:'checkbox',
+							                                                            options:{
+								                                                            on: 'Yes',
+								                                                            off: 'No'
+							                                                            }
+						                                                            }">Default</th>
+                            <th data-options="field:'FirstName',width:85,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,100]']}}">First Name</th>
+                            <th data-options="field:'LastName',width:85,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,100]']}}">Last Name</th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr>
+                            <th data-options="field:'Duty',width:120,align:'center',editor:{type:'validatebox',options:{validType:['length[0,500]']}}">Title</th>
+                            <th data-options="field:'SeasonIDList',width:250,height:30,align:'center',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:list_Season,
+                                    editable:false,
+                                    multiple:true,
+                                    multiline:true,
+                                    height:'50px',
+                                }
+                            },formatter:formatSeason">季节</th>
+                            <th data-options="field:'TelPhone',width:100,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,50]']}}">Tel.#</th>
+                            <th data-options="field:'MobilePhone',width:100,align:'center',editor:{type:'validatebox',options:{validType:['length[0,50]']}}">Cell Phone#</th>
+                            <th data-options="field:'Fax',width:100,align:'center',editor:{type:'validatebox',options:{validType:['length[0,100]']}}">Fax.#</th>
+                            <th data-options="field:'Email',width:250,align:'center',editor:{type:'validatebox',options:{required:true,validType:['email','length[0,200]']}}">Email Address</th>
+                            <th data-options="field:'OLID',hidden:true">OLID</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: customer().Contacts">
+                        <tr>
+                            @if (!(bool)ViewData["IsView"])
+                            {
+                            <td></td>
+                            }
+                            <td data-bind="text: IsDefault"></td>
+                            <td data-bind="text: FirstName"></td>
+                            <td data-bind="text: LastName"></td>
+                            <td data-bind="text: Duty"></td>
+                            <td data-bind="text: SeasonIDList"></td>
+
+                            <td data-bind="text: TelPhone"></td>
+                            <td data-bind="text: MobilePhone"></td>
+                            <td data-bind="text: Fax"></td>
+                            <td data-bind="text: Email"></td>
+                            <td data-bind="text: OLID"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </li>
+        </ul>
+    </div>
+
+    <h3 class="popTitle">
+        收货地址信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="search_Condition box_1k p_t0">
+        <ul>
+            <li class="col-sm-12">
+                <table id="AcceptInfoDataList" class="easyui-datagrid" style="width:100%;"
+                       data-options="singleSelect:true
+                       ,pageList:[10,20,50,100]
+                       ,pageSize:10
+                       ,pagination:false
+                       ,checkOnSelect:true
+                       ,onBeforeEdit:onBeforeEditAcceptInfo
+                       ,onAfterEdit:onAfterEditAcceptInfo
+                       ,onCancelEdit:onCancelEditAcceptInfo
+                       ,onLoadSuccess:onLoadSuccess
+                       ,toolbar: '#tbAcceptInfo'">
+                    <thead data-options="frozen:true">
+                        <tr>
+                            @if (!(bool)ViewData["IsView"])
+                            {
+                                <th data-options="field:'action',align:'center',width:100,formatter:actionsFormatterAcceptInfo">操作</th>
+                            }
+                            <th data-options="field:'IsDefault',align:'center',editor:{
+							                                                            type:'checkbox',
+							                                                            options:{
+								                                                            on: 'Yes',
+								                                                            off: 'No'
+							                                                            }
+						                                                            }">Default</th>
+                            <th data-options="field:'FirstName',width:80,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,100]']}}">First Name</th>
+                            <th data-options="field:'LastName',width:80,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,100]']}}">Last Name</th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr>
+                            <th data-options="field:'CompanyName',width:100,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,500]']}}">Company</th>
+                            <th data-options="field:'TelPhone',width:100,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,50]']}}">Tel.#</th>
+                            <th data-options="field:'MobilePhone',width:100,align:'center',editor:{type:'validatebox',options:{validType:['length[0,50]']}}">Cell Phone#</th>
+                            <th data-options="field:'PostalCode',width:100,align:'center',editor:{type:'validatebox',options:{validType:['length[0,50]']}}">Postal Code</th>
+                            <th data-options="field:'StreetAddress',width:150,align:'center',editor:{type:'validatebox',options:{required:true,validType:['length[0,100]']}}">Street Address</th>
+                            <th data-options="field:'AddressType',width:100,align:'center',editor:'text',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'value',
+                                    textField:'name',
+                                    data:addressTypes,
+                                    editable:false,
+                                }
+                            },formatter:formatAddressTypes">AddressType</th>
+                            <th data-options="field:'Country',width:100,align:'center',editor:'text',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:countries,
+                                    required:true,
+                                    onChange:onChangeAcceptInfoCountry,
+                                    editable:false,
+                                }
+                            },formatter:formatCountry">Country</th>
+                            <th data-options="field:'Province',width:120,align:'center',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'ARID',
+                                    textField:'AreaName',
+                                    required:true,
+                                    editable:false,
+                                }
+                            },formatter:formatProvince">State</th>
+                            <th data-options="field:'City',width:100,align:'center',editor:'text',editor:{type:'validatebox',options:{required:true,validType:['length[0,500]']}}">City</th>
+                            <th data-options="field:'Comment',width:100,align:'center',editor:'text',editor:{type:'validatebox'}">备注</th>
+                            <th data-options="field:'AIID',hidden:true">AIID</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: customer().AcceptInformations">
+                        <tr>
+                            @if (!(bool)ViewData["IsView"])
+                            {
+                                <td></td>
+                            }
+                            <td data-bind="text: IsDefault"></td>
+                            <td data-bind="text: FirstName"></td>
+                            <td data-bind="text: LastName"></td>
+                            <td data-bind="text: CompanyName"></td>
+                            <td data-bind="text: TelPhone"></td>
+                            <td data-bind="text: MobilePhone"></td>
+                            <td data-bind="text: PostalCode"></td>
+                            <td data-bind="text: StreetAddress"></td>
+                            <td data-bind="text: AddressType"></td>
+                            <td data-bind="text: Country"></td>
+                            <td data-bind="text: Province"></td>
+                            <td data-bind="text: City"></td>
+                            <td data-bind="text: Comment"></td>
+                            <td data-bind="text: AIID"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </li>
+        </ul>
+    </div>
+
+    <h3 class="popTitle">
+        Frieght Rate
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table id="ProtyDataList" class="easyui-datagrid" style="width:100%;"
+               data-options="singleSelect:true
+                       ,pageList:[10,20,50,100]
+                       ,pageSize:10
+                       ,pagination:false
+                       ,checkOnSelect:true
+                       ,onBeforeEdit:onBeforeEditPorty
+                       ,onAfterEdit:onAfterEditProty
+                       ,onCancelEdit:onCancelEditProty
+                       ,toolbar: '#tbToolbar'">
+            <thead data-options="frozen:true">
+
+                <tr>
+                    @if (!(bool)ViewData["IsView"])
+                    {
+                    <th data-options="field:'ID',width:100,formatter:actionsFormatterProty">操作</th>
+                    }
+                    <th data-options="field:'PortID',width:150,editor:'text',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:Porty,
+                                    required:true,
+                                    editable:false,
+                                }
+                            },formatter:formatPorty">港口</th>
+                    <th data-options="field:'FreightRate',width:100,editor:{type:'numberbox',options:{required:true,precision:2}}">Freight Rate</th>
+                </tr>
+            </thead>
+
+            <tbody data-bind="foreach: customer().VMFreight">
+                <tr>
+                    @if (!(bool)ViewData["IsView"])
+                    {
+                    <td></td>
+                    }
+                    <td data-bind="text: PortID"></td>
+                    <td data-bind="text: FreightRate"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        Rep信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table id="RepDataList" class="easyui-datagrid" style="width:100%;"
+               data-options="singleSelect:true
+                       ,pageList:[10,20,50,100]
+                       ,pageSize:10
+                       ,pagination:false
+                       ,checkOnSelect:true
+                       ,onBeforeEdit:onBeforeEditRep
+                       ,onAfterEdit:onAfterEditRep
+                       ,onCancelEdit:onCancelEditRep
+                       ,toolbar: '#tbRepInfo'">
+            <thead data-options="frozen:true">
+
+                <tr>
+                    @if (!(bool)ViewData["IsView"])
+                    {
+                    <th data-options="field:'ID',width:100,formatter:actionsFormatterRep">操作</th>
+                    }
+                    <th data-options="field:'RepID',width:250,editor:'text',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:Rep,
+                                    required:true,
+                                    editable:false,
+                                }
+                            },formatter:formatRep">Rep</th>
+                    <th data-options="field:'Commission',width:100,editor:{type:'numberbox',options:{required:true,precision:2}}">Commission%</th>
+                </tr>
+            </thead>
+
+            <tbody data-bind="foreach: customer().RepDataList">
+                <tr>
+                    @if (!(bool)ViewData["IsView"])
+                    {
+                    <td></td>
+                    }
+                    <td data-bind="text: RepID"></td>
+                    <td data-bind="text: Commission"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-group text-right tijiao">
+        @if (!(bool)ViewData["IsView"])
+        {
+            <button type="button" id="bntSave" class="btn btn-danger" data-bind="click: save.bind($data)">保存</button>
+        }
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong><span>字体颜色为红色是必填项。</span>
+    </div>
+}
+
+@if (!(bool)ViewData["IsView"])
+{
+    <div id="tbContact" style="height:auto">
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="appendContact()">新建联系人信息</a>
+    </div>
+
+    <div id="tbAcceptInfo" style="height:auto">
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="appendAcceptInfo()">新建收货地址信息</a>
+    </div>
+
+    <div id="tbToolbar" style="height:auto">
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="appendAcceptProty()">新建Freight Rate</a>
+    </div>
+
+    <div id="tbRepInfo" style="height:auto">
+        <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add',plain:true" onclick="appendAcceptRep()">新建Rep</a>
+    </div>
+}
+
+@section scripts{
+
+    <script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+    <script type="text/javascript">
+        var addressTypes = [
+            {value:'1',name:'Commercial'},
+            {value:'2',name:'Residential'},
+            {value:'0',name:'Unknown'}
+        ];
+
+        var countries = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["Countries"])));
+
+        var provinces = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["AllProvinces"])));
+        var Porty = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["Porty"])));
+        var Rep = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["Rep"])));
+
+        $(function () {
+            $("#frmEdit").attr("disabled", "disabled");
+            bindProvince("ddlCountries", "ddlProvinces");
+            bindProvince("ddlAcceptInfo_AcceptCountry", "ddlAcceptInfo_Provinces");
+        });
+        function formatPorty(value,row,index){
+            for(var i=0; i<Porty.length; i++){
+                if (Porty[i].Value == value) return Porty[i].Text;
+            }
+            return value;
+        }
+        function formatAddressTypes(value,row,index){
+            for(var i=0; i<addressTypes.length; i++){
+                if (addressTypes[i].value == value) return addressTypes[i].name;
+            }
+            return value;
+        }
+
+        function formatCountry(value,row,index){
+            for(var i=0; i<countries.length; i++){
+                if (countries[i].Value == value) return countries[i].Text;
+            }
+            return value;
+        }
+
+        function formatProvince(value,row,index){
+            for(var i=0; i<provinces.Data.length; i++){
+                if (provinces.Data[i].ARID == value) return provinces.Data[i].AreaName;
+            }
+            return value;
+        }
+
+        var list_Season = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["Season"])));
+
+        function formatSeason(value,row,index){
+            if (value != null && value != "") {
+                if (value.indexOf(',')>0) {
+                    var arr=value.split(',');
+                    var listSeasonName=[];
+                    for (var i = 0; i < arr.length; i++) {
+                        listSeasonName.push(GetSeasonName(arr[i]));
+                    }
+                    return listSeasonName.join(',');
+                }else {
+                    return GetSeasonName(value);
+                }
+            }
+            return value;
+        }
+
+        function GetSeasonName(SeasonID){
+            for(var i=0; i < list_Season.length; i++){
+                if (list_Season[i].Value == SeasonID)
+                    return list_Season[i].Text;
+            }
+            return "";
+        }
+
+        function onChangeAcceptInfoCountry(newValue, oldValue){
+            var ed = $('#AcceptInfoDataList').datagrid('getEditor',{index:editIndexAcceptInfo,field:'Province'});
+            $(ed.target).combobox('reload','@Url.Content("~/Customer/Provinces/")' + newValue);
+        }
+
+        function bindProvince(countrySelectorID, provinceSelectorID) {
+            $("#" + countrySelectorID).on("change", function () {
+                var countryID = $(this).val();
+
+                $.ajax({
+                    url: '@Url.Content("~/Customer/Provinces/")' + countryID,
+                    type: 'GET',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    success: function (data) {
+                        $("#" + provinceSelectorID).html("");
+                        $("#" + provinceSelectorID).append('<option value=""></option>');
+                        $.each(data, function (key, province) {
+                            $("#" + provinceSelectorID).append(
+                                    '<option value="' + province.ARID + '">'
+                                    + province.AreaName +
+                                    '</option>');
+                        });
+                    }
+                });
+            });
+        }
+
+        function Customer() {
+            this.CustomerCode = ko.observable(),
+            this.CustomerName =ko.observable(),
+            this.StreetAddress = ko.observable(),
+            this.City = ko.observable(),
+            this.Country = ko.observable(),
+            this.Province = ko.observable(),
+            this.PostalCode = ko.observable(),
+            this.Code = ko.observable(),
+            this.MiscImportLoadAmount = ko.observable(),
+            this.Commission = ko.observable(),
+            this.Agent = ko.observable(),
+            this.Allowance = ko.observable(),
+            this.MU=ko.observable(),
+            this.FOBNET=ko.observable(),
+            this.FinalFOB=ko.observable(),
+            this.Palletpc=ko.observable(),
+            this.QuoteTemplateFileName=ko.observable(),
+            this.SelectCustomer=ko.observable(),
+            this.ELCFill=ko.observable(),
+            this.PaymentType = ko.observable(),
+
+            this.Contacts = ko.observableArray(),
+            this.VMFreight = ko.observableArray(),
+            this.RepDataList = ko.observableArray(),
+            this.AcceptInformations = ko.observableArray();
+        }
+
+        function CustomerViewModel() {
+            var self = this;
+
+            self.customer = ko.observable();
+            var currentCustomer = new Customer();
+            currentCustomer.CustomerCode = "@Model.CustomerCode";
+            currentCustomer.CustomerName = "@Model.CustomerName";
+            currentCustomer.StreetAddress = "@Model.StreetAddress";
+            currentCustomer.City = "@Model.City";
+            currentCustomer.Country = "@Model.Country";
+            currentCustomer.Province = "@Model.Province";
+            currentCustomer.PostalCode = "@Model.PostalCode";
+            currentCustomer.Code = "@Model.Code";
+            currentCustomer.MiscImportLoadAmount = "@Model.MiscImportLoadAmount";
+            currentCustomer.Commission = "@Model.Commission";
+            currentCustomer.Agent = "@Model.Agent";
+            currentCustomer.Allowance = "@Model.Allowance";
+            currentCustomer.MU="@Model.MU";
+            currentCustomer.FOBNET="@Model.FOBNET";
+            currentCustomer.FinalFOB="@Model.FinalFOB";
+            currentCustomer.Palletpc="@Model.Palletpc";
+            currentCustomer.ELCFill="@Model.ELCFill";
+            currentCustomer.QuoteTemplateFileName="@Model.QuoteTemplateFileName";
+            currentCustomer.SelectCustomer="@Model.SelectCustomer";
+            currentCustomer.PaymentType = "@Model.PaymentType";
+
+            currentCustomer.Contacts(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Contacts))));
+            currentCustomer.AcceptInformations(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.AcceptInformations))));
+            currentCustomer.VMFreight(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.VMFreight))));
+            currentCustomer.RepDataList(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.RepDataList))));
+
+            self.customer(currentCustomer);
+
+            self.save = function (cust) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (bootstrapValidator.isValid()) {
+                    $("#bntSave").removeAttr("disabled");
+
+                    self.customer().Commission=ko.observable();
+                    self.customer().Commission($("#Commission").val());
+
+                    var S13_IsValid = true;
+                    var contactInfos = $('#ContactsDataList').datagrid("getRows");
+                    if(contactInfos && contactInfos.length > 0){
+                        if ($("#SelectCustomer").val()=="S13") {
+                            for (var i = 0; i < contactInfos.length; i++) {
+                                var duty = contactInfos[i].Duty;
+                                if (duty!="Buyer" && duty!="Assistant" && duty!="Merchandise Manager-Seasonal") {
+                                    S13_IsValid = false;
+                                }
+                            }
+                        }
+                        if (!S13_IsValid) {
+                            $.messager.alert("出错了","S13客户联系人的Title必须输入Buyer或者Assistant！");
+                            return false;
+                        }
+                        self.customer().Contacts(contactInfos);
+                    }
+                    else{
+                        self.customer().Contacts(null);
+                    }
+
+                    var acceptInfos = $('#AcceptInfoDataList').datagrid("getRows");
+                    if(acceptInfos && acceptInfos.length > 0){
+                        self.customer().AcceptInformations(acceptInfos);
+                    } else{
+                        self.customer().AcceptInformations(null);
+                    }
+
+                    var ProtyDataList = $('#ProtyDataList').datagrid("getRows");
+                    if(ProtyDataList && ProtyDataList.length > 0){
+                        self.customer().VMFreight(ProtyDataList);
+                    } else{
+                        self.customer().VMFreight(null);
+                    }
+
+                    var RepDataList = $('#RepDataList').datagrid("getRows");
+                    if(RepDataList && RepDataList.length > 0){
+                        self.customer().RepDataList(RepDataList);
+                    } else{
+                        self.customer().RepDataList(null);
+                    }
+
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@Url.Content("~/Customer/Edit/" + Model.OCID)",
+                        data: ko.toJSON(cust.customer())
+                    }).done(function (data) {
+                        if (!data.IsSuccess) {
+                            $.messager.alert("出错了","出错了！" + data.Msg);
+                        }
+                        else {
+                            parentGridReload();
+                            OA.CloseMe(true);
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    });
+                }
+                else{
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            };
+        };
+        ko.applyBindings(new CustomerViewModel());
+
+        function getRowIndex(target){
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndexContacts = undefined;
+        function onBeforeEditContacts(index,row){
+            row.editing = true;
+            updateActionsContact(index);
+        }
+
+        var editPorty=undefined;
+        function onBeforeEditPorty(index,row){
+            row.editing=true;
+            updateActionsPROTY(index);
+        }
+
+        function onAfterEditContacts(index,row){
+            row.editing = false;
+            updateActionsContact(index);
+        }
+
+        function onCancelEditProty(index,row){
+            row.editing = false;
+            updateActionsPROTY(index);
+        }
+
+        function onAfterEditProty(index,row){
+            row.editing = false;
+            updateActionsPROTY(index);
+        }
+
+        function onCancelEditContacts(index,row){
+            row.editing = false;
+            updateActionsContact(index);
+        }
+        function endEditingContact(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editIndexContacts == undefined){return true}
+            if ($('#ContactsDataList').datagrid('validateRow', editIndexContacts)){
+                $('#ContactsDataList').datagrid('endEdit', editIndexContacts);
+                editIndexContacts = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function endEditingProty(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editPorty == undefined){return true}
+            if ($('#ProtyDataList').datagrid('validateRow', editPorty)){
+                $('#ProtyDataList').datagrid('endEdit', editPorty);
+                editPorty = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editContact(target){
+            acceptContact(target, true);
+            $('#ContactsDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function editProty(target){
+            acceptProty(target, true);
+            $('#ProtyDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendProty(){
+            if (endEditingAcceptProty()){
+                $('#ProtyDataList').datagrid('appendRow',{IsDefault:0});
+                editPorty = $('#ContactsDataList').datagrid('getRows').length-1;
+                $('#ProtyDataList').datagrid('selectRow', editPorty)
+                        .datagrid('beginEdit', editPorty);
+            }
+        }
+        function removeProty(target){
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#ProtyDataList').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptProty(target, justAccept){
+            editPorty = getRowIndex(target);
+
+            if(justAccept){
+                if (endEditingProty()){
+                    $('#ProtyDataList').datagrid('acceptChanges');
+                }
+            }
+            else{
+                // 判断是否已经有IsDefault了
+                var hasDefault = false;
+                var rows = $('#ProtyDataList').datagrid('getRows');
+                for(var i = 0; i < rows.length; i++){
+                    if(rows[i].IsDefault === "Yes" && $($('#ProtyDataList').datagrid('getEditor', {index:editPorty,field:'IsDefault'}).target)[0].checked
+                        && editPorty != i){
+                        hasDefault = true;
+                        break;
+                    }
+                }
+                if(hasDefault){
+                    $.messager.alert('已存在默认联系人','您已经设置了其他联系人为默认联系人！');
+                }
+                else{
+                    if (endEditingProty()){
+                        $('#ProtyDataList').datagrid('acceptChanges');
+                    }
+                }
+            }
+            onLoadSuccess();
+        }
+        function rejectProty(){
+            $('#ProtyDataList').datagrid('rejectChanges');
+            editPorty = undefined;
+        }
+        function actionsFormatterProty(value,row,index){
+            if (row.editing){
+                var s = '<input type="button" onclick="acceptProty(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectProty()" value="Cancel" style="width:40px"></input>';
+                return s+c;
+            } else {
+                var e = '<input type="button" onclick="editProty(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeProty(this)" value="Delete" style="width:40px"></input>';
+                return e+d;
+            }
+        }
+        function endEditingAcceptProty(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editPorty == undefined){return true}
+            if ($('#ProtyDataList').datagrid('validateRow', editPorty)){
+                $('#ProtyDataList').datagrid('endEdit', editPorty);
+                editPorty = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function appendAcceptProty(){
+            if (endEditingAcceptProty()){
+                $('#ProtyDataList').datagrid('appendRow',{IsDefault:0, PortID:$("#PortID").val() });
+                editPorty = $('#ProtyDataList').datagrid('getRows').length-1;
+                $('#ProtyDataList').datagrid('selectRow', editPorty)
+                        .datagrid('beginEdit', editPorty);
+            }
+        }
+        function removeitProty(){
+            if (editPorty == undefined){return}
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#ProtyDataList').datagrid('cancelEdit', editPorty)
+                        .datagrid('deleteRow', editPorty);
+                    editPorty = undefined;
+                }else{
+                    return;
+                }
+            });
+        }
+        function appendContact(){
+            if (endEditingContact()){
+                $('#ContactsDataList').datagrid('appendRow',{
+                    IsDefault:0,
+                    OLID:-1,
+                });
+                editIndexContacts = $('#ContactsDataList').datagrid('getRows').length-1;
+                $('#ContactsDataList').datagrid('selectRow', editIndexContacts)
+                        .datagrid('beginEdit', editIndexContacts);
+            }
+        }
+        function removeitContact(){
+            if (editIndexContacts == undefined){return}
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#ContactsDataList').datagrid('cancelEdit', editIndexContacts)
+                        .datagrid('deleteRow', editIndexContacts);
+                    editIndexContacts = undefined;
+                }else{
+                    return;
+                }
+            });
+        }
+        function removeContact(target){
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#ContactsDataList').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptContact(target, justAccept){
+            editIndexContacts = getRowIndex(target);
+
+            if(justAccept){
+                if (endEditingContact()){
+                    $('#ContactsDataList').datagrid('acceptChanges');
+                }
+            }
+            else{
+                // 判断是否已经有IsDefault了
+                var hasDefault = false;
+                var rows = $('#ContactsDataList').datagrid('getRows');
+                for(var i = 0; i < rows.length; i++){
+                    if(rows[i].IsDefault === "Yes" && $($('#ContactsDataList').datagrid('getEditor', {index:editIndexContacts,field:'IsDefault'}).target)[0].checked
+                        && editIndexContacts != i){
+                        hasDefault = true;
+                        break;
+                    }
+                }
+                if(hasDefault){
+                    $.messager.alert('已存在默认联系人','您已经设置了其他联系人为默认联系人！');
+                }
+                else{
+                    if (endEditingContact()){
+                        $('#ContactsDataList').datagrid('acceptChanges');
+                    }
+                }
+            }
+            onLoadSuccess();
+        }
+        function rejectContact(){
+            $('#ContactsDataList').datagrid('rejectChanges');
+            editIndexContacts = undefined;
+        }
+        function actionsFormatterContacts(value,row,index){
+            if (row.editing){
+                var s = '<input type="button" onclick="acceptContact(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectContact()" value="Cancel" style="width:40px"></input>';
+                return s+c;
+            } else {
+                var e = '<input type="button" onclick="editContact(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeContact(this)" value="Delete" style="width:40px"></input>';
+                return e+d;
+            }
+        }
+        function updateActionsContact(index){
+            $('#ContactsDataList').datagrid('refreshRow', index);
+        }
+
+        function updateActionsPROTY(index){
+            $('#ProtyDataList').datagrid('refreshRow', index);
+        }
+        var editIndexAcceptInfo = undefined;
+        function onBeforeEditAcceptInfo(index,row){
+            editIndexAcceptInfo = index;
+            row.editing = true;
+            updateActionsAcceptInfo(index);
+        }
+        function onAfterEditAcceptInfo(index,row){
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function onCancelEditAcceptInfo(index,row){
+            row.editing = false;
+            updateActionsAcceptInfo(index);
+        }
+        function endEditingAcceptInfo(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editIndexAcceptInfo == undefined){return true}
+            if ($('#AcceptInfoDataList').datagrid('validateRow', editIndexAcceptInfo)){
+                $('#AcceptInfoDataList').datagrid('endEdit', editIndexAcceptInfo);
+                editIndexAcceptInfo = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editAcceptInfo(target){
+            acceptAcceptInfo(target, true);
+            $('#AcceptInfoDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendAcceptInfo(){
+            if (endEditingAcceptInfo()){
+                $('#AcceptInfoDataList').datagrid('appendRow',{
+                    IsDefault:0,
+                    PostalCode:$("#PostalCode").val(),
+                    StreetAddress:$("#StreetAddress").val(),
+                    Country:$("#ddlCountries").val(),
+                    Province: $("#ddlProvinces").val(),
+                    City:$("#City").val(),
+                    AIID:-1,
+                });
+                editIndexAcceptInfo = $('#AcceptInfoDataList').datagrid('getRows').length-1;
+                $('#AcceptInfoDataList').datagrid('selectRow', editIndexAcceptInfo)
+                        .datagrid('beginEdit', editIndexAcceptInfo);
+            }
+        }
+        function removeitAcceptInfo(){
+            if (editIndexAcceptInfo == undefined){return}
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#AcceptInfoDataList').datagrid('cancelEdit', editIndexAcceptInfo)
+                    .datagrid('deleteRow', editIndexAcceptInfo);
+                    editIndexAcceptInfo = undefined;
+                }
+                else{
+                    return;
+                }
+            });
+        }
+        function removeAcceptInfo(target){
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#AcceptInfoDataList').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptAcceptInfo(target, justAccept){
+            editIndexAcceptInfo = getRowIndex(target);
+
+            if(justAccept){
+                if (endEditingContact()){
+                    $('#ContactsDataList').datagrid('acceptChanges');
+                }
+            }
+            else{
+                // 判断是否已经有IsDefault了
+                var hasDefault = false;
+                var rows = $('#AcceptInfoDataList').datagrid('getRows');
+                for(var i = 0; i < rows.length; i++){
+                    if(rows[i].IsDefault === "Yes" && $($('#AcceptInfoDataList').datagrid('getEditor', {index:editIndexAcceptInfo,field:'IsDefault'}).target)[0].checked
+                        && editIndexAcceptInfo != i){
+                        hasDefault = true;
+                        break;
+                    }
+                }
+                if(hasDefault){
+                    $.messager.alert('已存在默认收货地址','您已经设置了其他收货地址为默认收货地址！');
+                }
+                else{
+                    if (endEditingAcceptInfo()){
+                        $('#AcceptInfoDataList').datagrid('acceptChanges');
+                    }
+                }
+            }
+
+            onLoadSuccess();
+        }
+        function rejectAcceptInfo(){
+            $('#AcceptInfoDataList').datagrid('rejectChanges');
+            editIndexAcceptInfo = undefined;
+        }
+        function actionsFormatterAcceptInfo(value,row,index){
+            if (row.editing){
+                var s = '<input type="button" onclick="acceptAcceptInfo(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectAcceptInfo()" value="Cancel" style="width:40px"></input>';
+                return s+c;
+            } else {
+                var e = '<input type="button" onclick="editAcceptInfo(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeAcceptInfo(this)" value="Delete" style="width:40px"></input>';
+                return e+d;
+            }
+        }
+        function updateActionsAcceptInfo(index){
+            $('#AcceptInfoDataList').datagrid('refreshRow', index);
+        }
+
+        //Rep信息
+
+        function formatRep(value,row,index){
+            for(var i=0; i<Rep.length; i++){
+                if (Rep[i].Value == value)
+                    return Rep[i].Text;
+            }
+            return value;
+        }
+
+        var editRep=undefined;
+
+        function updateActionsRep(index){
+            $('#RepDataList').datagrid('refreshRow', index);
+        }
+
+        function onBeforeEditRep(index,row){
+            row.editing=true;
+            updateActionsRep(index);
+        }
+
+        function onCancelEditRep(index,row){
+            row.editing = false;
+            updateActionsRep(index);
+        }
+
+        function onAfterEditRep(index,row){
+            row.editing = false;
+            updateActionsRep(index);
+        }
+
+        function endEditingRep(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editRep == undefined){return true}
+            if ($('#RepDataList').datagrid('validateRow', editRep)){
+                $('#RepDataList').datagrid('endEdit', editRep);
+                editRep = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function EditRep(target){
+            acceptRep(target, true);
+            $('#RepDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendRep(){
+            if (endEditingAcceptRep()){
+                $('#RepDataList').datagrid('appendRow',{});
+                editRep = $('#ContactsDataList').datagrid('getRows').length-1;
+                $('#RepDataList').datagrid('selectRow', editRep)
+                        .datagrid('beginEdit', editRep);
+            }
+        }
+        function removeRep(target){
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#RepDataList').datagrid('deleteRow', getRowIndex(target));
+                    CalculatorCommission();
+                }
+            });
+        }
+        function acceptRep(target, justAccept){
+            editRep = getRowIndex(target);
+            if(justAccept){
+                if (endEditingRep()){
+                    $('#RepDataList').datagrid('acceptChanges');
+                }
+            }
+            else{
+                if (endEditingRep()){
+                    $('#RepDataList').datagrid('acceptChanges');
+                }
+            }
+            CalculatorCommission();
+            onLoadSuccess();
+        }
+        function rejectRep(){
+            $('#RepDataList').datagrid('rejectChanges');
+            editRep = undefined;
+        }
+        function actionsFormatterRep(value,row,index){
+            if (row.editing){
+                var s = '<input type="button" onclick="acceptRep(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectRep()" value="Cancel" style="width:40px"></input>';
+                return s+c;
+            } else {
+                var e = '<input type="button" onclick="EditRep(this)" value="Edit" style="width:40px"></input>';
+                var d = '&nbsp;<input type="button" onclick="removeRep(this)" value="Delete" style="width:40px"></input>';
+                return e+d;
+            }
+        }
+        function endEditingAcceptRep(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editRep == undefined){return true}
+            if ($('#RepDataList').datagrid('validateRow', editRep)){
+                $('#RepDataList').datagrid('endEdit', editRep);
+                editRep = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function appendAcceptRep(){
+            if (endEditingAcceptRep()){
+                $('#RepDataList').datagrid('appendRow',{});
+                editRep = $('#RepDataList').datagrid('getRows').length-1;
+                $('#RepDataList').datagrid('selectRow', editRep)
+                        .datagrid('beginEdit', editRep);
+            }
+        }
+        function removeitRep(){
+            if (editRep == undefined){return}
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#RepDataList').datagrid('cancelEdit', editRep)
+                        .datagrid('deleteRow', editRep);
+                    editRep = undefined;
+                }else{
+                    return;
+                }
+            });
+        }
+
+        //计算Commission
+        function CalculatorCommission() {
+            var rows = $('#RepDataList').datagrid('getRows');
+            var AllCommissionPercent = 0;
+            for(var i = 0; i < rows.length; i++){
+                AllCommissionPercent += parseFloat(rows[i].Commission);
+            }
+            if (AllCommissionPercent!=parseFloat(AllCommissionPercent)) {
+                AllCommissionPercent = 0;
+            }
+            $("#Commission").val(NumberToRound(AllCommissionPercent,2));
+        }
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                CustomerCode: {
+                    validators: {
+                        notEmpty: { message: 'Company Code不能为空' },
+                        stringLength: {
+                            min: 1,
+                            max:100,
+                            message: '长度在1-100之间'
+                        },
+                    }
+                },
+                CustomerName: {
+                    validators: {
+                        notEmpty: { message: 'Customer Name不能为空' },
+                        stringLength: {
+                            min: 1,
+                            max: 100,
+                            message: '长度在1-100之间'
+                        },
+                    }
+                },
+                Code: {
+                    validators: {
+                        notEmpty: { message: 'Customer Code不能为空' },
+
+                    }
+                },
+                StreetAddress: {
+                    validators: {
+                        notEmpty: { message: 'Street Address 不能为空' },
+                        stringLength: {
+                            min: 1,
+                            max: 100,
+                            message: '长度在1-100之间'
+                        },
+                    }
+                },
+                City: {
+                    validators: {
+                        notEmpty: { message: 'City or APO/AFO不能为空' },
+                        stringLength: {
+                            min: 1,
+                            max: 50,
+                            message: '长度在1-50之间'
+                        },
+                    }
+                },
+                ddlCountries: {
+                    validators: {
+                        notEmpty: { message: 'Country不能为空' }
+                    }
+                },
+                ddlProvinces: {
+                    validators: {
+                        notEmpty: { message: 'State/Province/Region不能为空' }
+                    }
+                },
+                MiscImportLoadAmount: {
+                    validators: {
+                        //notEmpty: { message: 'Misc%/Import Load不能为空' },
+                        regexp: {
+                            regexp: /^(([1-9]\d{0,9})|0)(\.\d{1,2})?$/,
+                            message: '请输入正确的数值！'
+                        }
+                    }
+                },
+
+                Commission: {
+                    validators: {
+                        //notEmpty: { message: 'Commission不能为空' },
+                        regexp: {
+                            regexp: /^(([1-9]\d{0,9})|0)(\.\d{1,2})?$/,
+                            message: '请输入正确的数值！'
+                        }
+                    }
+                },
+                Agent: {
+                    validators: {
+                        //notEmpty: { message: 'Agent不能为空' },
+                        regexp: {
+                            regexp: /^(([1-9]\d{0,9})|0)(\.\d{1,2})?$/,
+                            message: '请输入正确的数值！'
+                        }
+                    }
+                },
+                Allowance: {
+                    validators: {
+                        //notEmpty: { message: 'Allowance不能为空' },
+                        regexp: {
+                            regexp: /^(([1-9]\d{0,9})|0)(\.\d{1,2})?$/,
+                            message: '请输入正确的数值！'
+                        }
+                    }
+                },
+                MU:{
+                    validators: {
+                        //notEmpty: { message: ' MU不能为空' },
+                        regexp: {
+                            regexp: /^(([1-9]\d{0,9})|0)(\.\d{1,2})?$/,
+                            message: '请输入正确的数值！'
+                        }
+                    }
+                },
+                QuoteTemplateFileName:{
+                    validators: {
+                        notEmpty: { message: ' 请选择报价单模版' },
+
+                    }
+                },
+                SelectCustomer:{
+                    validators: {
+                        notEmpty: { message: ' 选择的客户不能为空' },
+
+                    }
+                }
+            }
+        });
+
+        function onLoadSuccess(){
+            jav.initGridCellTooltips(["action","IsDefault"]);
+        }
+    </script>
+}

@@ -1,0 +1,69 @@
+﻿@model ERP.Models.InspectionCustoms.VMInspectionCustomsSearch
+@using ERP.Models.CustomEnums;
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@{
+    ViewBag.Title = "待审核报关单据列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+
+        var showWatch = @(Model.PageElementPrivileges & (int)InspectionCustomsElementPrivileges.Watch);
+        var showCustoms = @(Model.PageElementPrivileges & (int)InspectionCustomsElementPrivileges.Customs);
+        var showEdit = @(Model.PageElementPrivileges & (int)InspectionCustomsElementPrivileges.Edit);
+        var showApproval = @(Model.PageElementPrivileges & (int)InspectionCustomsElementPrivileges.Approval);
+
+        var PendingMaintenance= @((int)InspectionCustomsStatusEnum.PendingMaintenance);
+        var PendingCheck= @((int)InspectionCustomsStatusEnum.PendingCheck);
+        var OutLine= @((int)InspectionCustomsStatusEnum.OutLine);
+        var NotPassCheck= @((int)InspectionCustomsStatusEnum.NotPassCheck);
+
+        function operationFormatter(val, row, index) {
+            var ops="";
+            var StatusID = row.StatusID;
+
+            if(showWatch>0 && StatusID>PendingMaintenance){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionCustoms/Edit/"))" + row.ID + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showCustoms>0 && StatusID==PendingMaintenance){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionCustoms/Add/"))" + row.ID + "?ShipmentOrderID="+row.ShipmentOrderID+"&Type=1' style='margin: 0 5px;display:none;'></a>";
+
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='SelectCheckType(this)' href='javascript:void(0)' style='margin: 0 5px;'>报关</a>";
+
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionCustoms/Add/"))" + row.ID + "?ShipmentOrderID="+row.ShipmentOrderID+"&Type=2' style='margin: 0 5px;display:none;'></a>";
+            }
+
+            if(showEdit>0&&(StatusID == OutLine || StatusID == NotPassCheck)){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionCustoms/Edit/"))" + row.ID + "?Type=Edit' style='margin: 0 5px;'>编辑</a>";
+            }
+
+            if(showApproval>0 && StatusID==PendingCheck && row.IsHasApprovalPermission){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionCustoms/Edit/"))" + row.ID + "?Type=Approval' style='margin: 0 5px;'>审核</a>";
+            }
+            return ops;
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","ID"]);
+        }
+        
+        function SelectCheckType(e) {
+            $.messager.confirm('提示', '按照分柜/整批报关？', function(r){
+                if (r) {
+                    $(e).prev().click();
+                }else {
+                    $(e).next().click();
+                }
+            });
+
+        }
+    </script>
+}

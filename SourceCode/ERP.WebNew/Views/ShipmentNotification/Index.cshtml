@@ -1,0 +1,54 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@model ERP.Models.ShipmentOrder.VMShipmentOrderSearch
+
+@{
+    ViewBag.Title = "待审核的出运通知";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function StatusFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+        return row.NotificationStatusName;
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)ShipmentNotificationElementPrivileges.View);
+        var showEdit = @(Model.PageElementPrivileges & (int)ShipmentNotificationElementPrivileges.Edit);
+        var showAdd = @(Model.PageElementPrivileges & (int)ShipmentNotificationElementPrivileges.Maintenance);
+        var showApproval = @(Model.PageElementPrivileges & (int)ShipmentNotificationElementPrivileges.Approval);
+        var StatusID = row.NotificationStatusID;
+        var PendingMaintenance= @((short)ShipmentNotificationStatusEnum.PendingMaintenance);
+        var OutLine= @((short)ShipmentNotificationStatusEnum.OutLine);
+        var NotPassCheck= @((short)ShipmentNotificationStatusEnum.NotPassCheck);
+        var PendingCheck= @((short)ShipmentNotificationStatusEnum.PendingCheck);
+
+        var ops = "";
+        if (showView > 0 && StatusID != PendingMaintenance) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentNotification/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+        if ((StatusID == PendingMaintenance) && showAdd > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentNotification/Edit/"))" + val + "' style='margin: 0 5px;'>维护</a>";
+        }
+        if ((StatusID == OutLine || StatusID == NotPassCheck) && showEdit > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentNotification/Edit/"))" + val + "' style='margin: 0 5px;'>编辑</a>";
+        }
+
+        var IsHasApprovalPermission=row.IsHasApprovalPermission;
+        if ((StatusID == PendingCheck) && showApproval > 0 && IsHasApprovalPermission) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentNotification/Edit/"))" + val + "' style='margin: 0 5px;'>审核</a>";
+        }
+
+        return ops;
+    }
+</script>

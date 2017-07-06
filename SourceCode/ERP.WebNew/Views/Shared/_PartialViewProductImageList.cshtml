@@ -1,0 +1,157 @@
+﻿@{
+    Layout = null;
+}
+@using ERP.Tools
+@model List<ERP.Models.Product.VMViewProductList>
+
+@{
+    int type = DTRequest.GetQueryInt("type", 1);
+
+    string biaoqian_1 = "/images/biaoqian_02_s1.jpg";
+    string biaoqian_2 = "/images/biaoqian_03_s1.jpg";
+    string ulClass = "pic_list";
+
+    int i = 0;
+    int num = 6;
+    int width = 486;
+    int height = 365;
+
+    if (type == 2)
+    {
+        width = 387;
+        height = 535;
+
+        biaoqian_1 = "/images/biaoqian_01_s1.jpg";
+        biaoqian_2 = "/images/biaoqian_04_s1.jpg";
+        ulClass = "pic_list1";
+        num = 4;
+    }
+    string style1 = "width:100%;";
+    if (width > height)
+    {
+        style1 = "height:100%;";
+    }
+    string strStyle = style1;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>查看产品目录</title>
+
+    <link href="@Url.Content("~/Content/bootstrap/css/bootstrap.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/style.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Quotation.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Scripts/jquery-1.11.3.min.js")"></script>
+    <link href="@Url.Content("~/Content/baguetteBox/baguetteBox.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Content/baguetteBox/baguetteBox.js")"></script>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+        }
+
+        .productImageList {
+            overflow: hidden;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .imageList {
+            text-align: center;
+            width:@(width)px;
+            height:@(height)px;
+            line-height:@(height - 5)px;
+        }
+    </style>
+    <script>
+        $(function () {
+            baguetteBox.run('.baguetteBox');
+            $("#baguetteBox-slider .double-bounce1").closest(".full-image").andSelf().remove();
+        });
+    </script>
+</head>
+<body>
+    <div class="label_box">
+
+        <div class="@ulClass">
+            <ul class='baguetteBox'>
+
+                @foreach (var item in Model)
+                {
+                    try
+                    {
+                        System.Drawing.Image image = System.Drawing.Image.FromFile(Utils.GetMapPath(item.Image));
+                        int imgWidth = image.Width;
+                        int imgHeight = image.Height;
+
+                        float imgScale = imgHeight * 1.00f / imgWidth; ;
+
+                        if (width >= imgWidth && height >= imgHeight)//div(100 200)  图片（50 100）
+                        {
+                            strStyle = style1 + "1";
+                        }
+                        else if (width >= imgWidth && height <= imgHeight)//div(100 200)  图片（50 300）
+                        {
+                            if (imgScale > 1)
+                            {
+                                //strStyle = "width:" + 100 * imgScale + "%;height:100%;3";
+                            }
+                            else
+                            {
+                                strStyle = "height:" + 100 * imgScale + "%;4";
+                            }
+                        }
+                        else if (width <= imgWidth && height >= imgHeight)//div(100 200)  图片（300 100）
+                        {
+                            //strStyle = "width:100%;5";
+                        }
+                        else if (width <= imgWidth && height <= imgHeight)//div(100 200)  图片（300 400）
+                        {
+                            if (imgScale > 1)
+                            {
+                                //strStyle = "height:" + imgScale * 100 + "%;6";
+                            }
+                            else
+                            {
+                                strStyle = "width:100%;7";
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        //ERP.Tools.Logs.LogHelper.WriteError(ex);
+                    }
+
+                    if (i % num == 0)
+                    {
+                        <li style="height: 237px; width: 1000px; border: 1px #fff; margin: 0; padding: 0;">
+                            <div class="title">a</div>
+                            <div class="title_sm">b<br></div>
+                            <div class="butten">
+                                <span onclick="href1()">
+                                    <img src="@biaoqian_1" style="width:66px;height:68px;cursor:pointer;">
+                                </span>
+                                <span onclick="href2()">
+                                    <img src="@biaoqian_2" style="width: 66px; height: 68px; cursor: pointer;">
+                                </span>
+                            </div>
+                        </li>
+                    }
+                    <li style="overflow:hidden;">
+                        <div class="imageList">
+                            <a href="@item.Image" data-caption="@item.No" title="@item.No">
+                                <img src="@item.Image" style="@(style1) text-align:center;">
+                            </a>
+                        </div>
+                    </li>
+                    ++i;
+                }
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

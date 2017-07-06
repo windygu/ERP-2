@@ -1,0 +1,213 @@
+﻿@{
+    Layout = null;
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using System.Drawing
+@using ERP.Tools
+@using ERP.BLL.Consts
+@using ERP.Models.CustomEnums
+@using ERP.Tools.EnumHelper
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <div>
+        @{
+
+            ERP.Models.Purchase.VMPurchaseProduct vm_product = new ERP.Models.Purchase.VMPurchaseProduct();
+
+            vm_product.Desc = "(RR)15.75IN GLITTER MIRRORWG HOST MIRRORWG HOST";//产品品名
+            vm_product.OuterBoxRate = 6;//外箱率
+            vm_product.InnerBoxRate = 12;//内核率
+            vm_product.WeightLBS = 5;//产品重量
+            vm_product.LengthIN = 12.99m;//产品长
+            vm_product.WidthIN = 8.86m;//产品宽
+            vm_product.HeightIN = 7.09m;//产品高
+            vm_product.SkuNumber = "123456";//产品SKU
+            vm_product.OuterPKUPC = "9999999999999";//产品外箱UPC
+            vm_product.InnerPKUPC = "8888888888888";//产品内核UPC
+            vm_product.UPC = "7777777777777";//产品UPC
+            vm_product.InnerGrossWeightLBS = 8.04m;//产品内核毛重
+            vm_product.InnerNetWeightLBS = 7.80m;//产品内核净重
+
+            vm_product.POID = "A1CDE3";//customer po
+            vm_product.Qty = 200;//下单数量
+            vm_product.No = "JK29272FR";//产品货号
+            vm_product.OuterWeightNet = 200;//外箱净重
+            vm_product.OuterWeightNetLBS = 220;//外箱毛重LBS
+            vm_product.OuterWeightGross = 300;//外箱毛重
+            vm_product.OuterWeightGrossLBS = 230;//外箱毛重LBS
+            vm_product.OuterVolume = 2.34m;//外箱材积
+            vm_product.SeasonPrefix = "Spring & Summer";//季节名称,父类名称
+            vm_product.DestinationPortName = "MEMPHIS,TN";//订单目的港
+            vm_product.CaseOrderQty = 331;//订单箱数
+            vm_product.OuterLengthIN = 8.45m;//外箱长
+            vm_product.OuterWidthIN = 6.23m;//外箱宽
+            vm_product.OuterHeightIN = 5.23m;//外箱高
+            vm_product.DepartmentName = "Gift Wrap";
+            vm_product.SeasonDepartmentNumber = "360";
+            vm_product.SeasonSuffix = "Lights & Outdoor";//季节名称,子类名称
+            vm_product.PDQPackRate = 3;//PDQ装箱率
+            vm_product.IsFragile2 = true;//易碎标标记
+            vm_product.CarbinetType = 3;//1=标准箱，2=非标准箱，3=小箱；从生成唛头时获取值
+            vm_product.ColorName = "Red";//产品的颜色
+
+            //预设的变量，如果需要有其他变量，可以在此预先定义
+
+            string templatePath = Utils.GetMapPath("/data/ShippingMark/S235/Christmas唛头模板.jpg");
+            Bitmap bmp = new Bitmap(templatePath);
+            Graphics g = Graphics.FromImage(bmp);
+            string img1 = "";
+            Font font = new Font("Arial", 20, FontStyle.Bold);//正唛字体
+            Font font_1 = new Font("Arial", 20, FontStyle.Bold);//正唛字体
+            SolidBrush sb = new SolidBrush(Color.Black);
+            string Desc_Start = vm_product.Desc;
+
+            int x = 16;//初始X坐标的值
+            int y = 25;//初始Y坐标的值
+            int i = 30;//Y坐标每次增加的值，行间距
+            int y2 = y + 25;//字符换行后，更新后的y2的坐标的值
+
+            int x0 = 16;//初始侧唛X坐标的值
+            int y0 = 25;//初始侧唛Y坐标的值
+            int i0 = 33;//侧唛Y坐标每次增加的值，行间距
+            int a = 130;//换行品名的品名对齐
+            int Desc_Lenth = 25;
+
+            #region 外箱正侧唛
+
+            if (!string.IsNullOrEmpty(vm_product.SeasonPrefix) && vm_product.SeasonPrefix == "Christmas")
+            //季节是圣诞节
+            {
+                templatePath = Utils.GetMapPath("/data/ShippingMark/S235/Christmas唛头模板.jpg");
+                font = new Font("Arial", 16, FontStyle.Bold);//正唛字体
+                font_1 = new Font("Arial", 22, FontStyle.Bold);//正唛字体
+                x = 25;
+                y = 220;
+                i = 22;
+                y2 = y + 20;
+                x0 = 450;
+                y0 = 220;
+                i0 = 30;
+                a = 130;
+                Desc_Lenth = 25;
+                if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > Desc_Lenth)
+                {
+                    Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, Desc_Lenth);
+                    i = 22;
+                }
+            }
+            else if (!string.IsNullOrEmpty(vm_product.SeasonPrefix) && vm_product.SeasonPrefix == "Easter")
+            //季节是复活节
+            {
+                templatePath = Utils.GetMapPath("/data/ShippingMark/S235/Easter唛头模板.jpg");
+                font = new Font("Arial", 9, FontStyle.Bold);//正唛字体
+                font_1 = new Font("Arial", 9, FontStyle.Bold);//正唛字体
+                x = 35;
+                y = 150;
+                i = 16;
+                y2 = y + 16;
+                x0 = 350;
+                y0 = 150;
+                i0 = 20;
+                a = 102;
+                Desc_Lenth = 25;
+                if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > Desc_Lenth)
+                {
+                    Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, Desc_Lenth);
+                    i = 16;
+                }
+            }
+            else if (!string.IsNullOrEmpty(vm_product.SeasonPrefix) && vm_product.SeasonPrefix == "Halloween")
+            //季节是鬼节
+            {
+                templatePath = Utils.GetMapPath("/data/ShippingMark/S235/Halloween唛头模板.jpg");
+                font = new Font("Arial", 5, FontStyle.Bold);//正唛字体
+                font_1 = new Font("Arial", 5, FontStyle.Bold);//正唛字体
+                x = 5;
+                y = 55;
+                i = 28;
+                y2 = y + 18;
+                x0 = 570;
+                y0 = 25;
+                i0 = 28;
+                a = 180;
+                Desc_Lenth = 30;
+                if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > Desc_Lenth)
+                {
+                    Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, Desc_Lenth);
+                    i = 25;
+                }
+            }
+            //else if (!string.IsNullOrEmpty(vm_product.SeasonPrefix) && vm_product.SeasonPrefix == "Spring & Summer")
+            //季节是春天花园
+            else
+            {
+                templatePath = Utils.GetMapPath("/data/ShippingMark/S235/Spring & Summer唛头模板.jpg");
+                font = new Font("Arial", 12, FontStyle.Bold);//正唛字体
+                font_1 = new Font("Arial", 12, FontStyle.Bold);//正唛字体
+                x = 30;
+                y = 127;
+                i = 20;
+                y2 = y + 14;
+                x0 = 442;
+                y0 = 129;
+                i0 = 20;
+                a = 102;
+                Desc_Lenth = 40;
+                if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > Desc_Lenth)
+                {
+                    Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, Desc_Lenth);
+                    i = 20;
+                }
+            }
+
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+
+            //更换背景图
+            g.DrawString("PO#  " + vm_product.POID, font, sb, x, y);//写po值
+            g.DrawString("UPC#  " + vm_product.UPC, font, sb, x, y + i);//写UPC的值
+            g.DrawString("Vender Name: Shanghai Jet Crafts Inc", font, sb, x, y + 2 * i);//写固定值
+            g.DrawString("Item#  " + vm_product.No, font, sb, x, y + 3 * i);//写JK_NO的值
+            if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > Desc_Lenth)
+            {
+                g.DrawString("Item Description: " + Desc_Start, font, sb, x, y + 4 * i);//写第一行item description的值
+                g.DrawString(vm_product.Desc.Substring(Desc_Start.Length, vm_product.Desc.Length - Desc_Start.Length), font, sb, x + a, y + 5 * i);//写第二行item description的值
+                y = y2;
+            }
+            else
+            {
+                g.DrawString("Item Description: " + Desc_Start, font, sb, x, y + 4 * i);//写item description的值
+            }
+
+            g.DrawString("QTY: " + vm_product.OuterBoxRate.ToString() + "  PCS", font, sb, x, y + 5 * i);//写外箱率的值
+            g.DrawString("Ctn No:               of   " + vm_product.CaseOrderQty, font, sb, x, y + 6 * i);//写订单箱数值
+            g.DrawString("MADE IN CHINA", font, sb, x, y + 7 * i);//写固定值
+            //写正唛内容
+
+            g.DrawString("Item#  " + vm_product.No, font_1, sb, x0, y0);//写JK_NO的值
+            g.DrawString("QTY: " + vm_product.OuterBoxRate.ToString() + "  PCS", font_1, sb, x0, y0 + i0);//写外箱率的值
+            g.DrawString("N.W.: " + vm_product.OuterWeightNet + " KGS", font_1, sb, x0, y0 + 2 * i0);//写外箱净重的值
+            g.DrawString("G.W.: " + vm_product.OuterWeightGross + " KGS", font_1, sb, x0, y0 + 3 * i0);//写外箱毛重的值
+            g.DrawString("CU\'FT: " + vm_product.OuterVolume + " \'", font_1, sb, x0, y0 + 4 * i0);//写外箱材积（cuft）的值
+                                                                                                   //写侧唛内容
+
+            g.Save();
+
+            img1 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S235);
+
+            #endregion 外箱正侧唛
+
+        }
+
+        外箱正侧唛<br />
+        <img src="@(img1)" />
+    </div>
+</body>
+</html>

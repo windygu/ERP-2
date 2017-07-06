@@ -1,0 +1,284 @@
+﻿@model ERP.Models.Shipment.VMShipmentAgency
+
+@{
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@using (Ajax.BeginForm("Edit", "ShipmentAgency", new { id = @Model.ShippingAgencyID }, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit", @class = "form-horizontal bv-form" }))
+{
+    <input type="hidden" data-bind="value:shippingAgencyID" />
+    <h3 class="popTitle">
+        基本信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label text-danger">船代公司名：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="ShippingAgencyName" name="ShippingAgencyName" data-bind="value:shippingAgencyName" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label text-danger">船代公司地址：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="AgencyAddress" name="AgencyAddress" data-bind="value:AgencyAddress" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label text-danger">仓库地址：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="WarehouseAddress" name="WarehouseAddress" data-bind="value:WarehouseAddress" />
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        费用信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label text-danger">Currency：</label>
+            <div class="col-sm-7 control-label">
+                <select @((bool)ViewData["IsView"] ? "disabled" : "") class="form-control" name="Currency" data-bind="options: currencyTypes,
+                       optionsCaption: '',
+                       value: currentShipmentAgentFees().Currency,
+                       valueAllowUnset: true"></select>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label">文件费：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FeeDocument" name="FeeDocument" data-bind="value:currentShipmentAgentFees().FeeDocument" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label">码头操作费：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FeeDockOperation" name="FeeDockOperation" data-bind="value:currentShipmentAgentFees().FeeDockOperation" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label">附加提还箱费：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FeeYangShanPicking" name="FeeYangShanPicking" data-bind="value:currentShipmentAgentFees().FeeYangShanPicking" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label">散货设备管理费：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FeeFacilityManagement" name="FeeFacilityManagement" data-bind="value:currentShipmentAgentFees().FeeFacilityManagement" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label">散货港口设备安保费：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FeePortSecurity" name="FeePortSecurity" data-bind="value:currentShipmentAgentFees().FeePortSecurity" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label">进口商安保归类：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FeeImporterSecurityClassify" name="FeeImporterSecurityClassify" data-bind="value:currentShipmentAgentFees().FeeImporterSecurityClassify" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label">散货入仓费：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FeeWarehousing" name="FeeWarehousing" data-bind="value:currentShipmentAgentFees().FeeWarehousing" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label">提单费：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FeePicking" name="FeePicking" data-bind="value:currentShipmentAgentFees().FeePicking" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-5 control-label">报关费：</label>
+            <div class="col-sm-7 control-label">
+                <input type="text" class="form-control" @((bool)ViewData["IsView"] ? "disabled" : "") id="FeeCustomDeclaration" name="FeeCustomDeclaration" data-bind="value:currentShipmentAgentFees().FeeCustomDeclaration" />
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group text-right tijiao">
+        @if (!(bool)ViewData["IsView"])
+        {
+            <button type="button" id="bntSave" class="btn btn-danger" data-bind="click: save.bind($data)">保存</button>
+        }
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong><span>字体颜色为红色是必填项。</span>
+    </div>
+}
+
+@section scripts{
+    <script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+    <script type="text/javascript">
+        $(function () {
+            $("#frmEdit").attr("disabled", "disabled");
+        });
+
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                ShippingAgencyName: {
+                    validators: {
+                        notEmpty: { message: '船代公司名不能为空' },
+                        stringLength: {
+                            min: 1,
+                            max: 50,
+                            message: '长度在1-50之间'
+                        },
+                    }
+                },
+                Currency: {
+                    validators: {
+                        notEmpty: { message: 'Currency不能为空' }
+                    }
+                },
+                FeeDocument: {
+                    validators: {
+                        //notEmpty: { message: '文件费不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                FeeDockOperation: {
+                    validators: {
+                        //notEmpty: { message: '码头操作费不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                FeeYangShanPicking: {
+                    validators: {
+                        //notEmpty: { message: '附加提还箱费不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                FeeFacilityManagement: {
+                    validators: {
+                        //notEmpty: { message: '散货设备管理费不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                FeePortSecurity: {
+                    validators: {
+                        //notEmpty: { message: '散货港口设备安保费不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                FeeImporterSecurityClassify: {
+                    validators: {
+                        //notEmpty: { message: '进口商安保归类不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                FeeWarehousing: {
+                    validators: {
+                        //notEmpty: { message: '散货入仓费不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                FeePicking: {
+                    validators: {
+                        //notEmpty: { message: '提单费不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                },
+                FeeCustomDeclaration: {
+                    validators: {
+                        //notEmpty: { message: '报关费不能为空' },
+                        regexp: jav.regx.numValid
+                    }
+                }
+            }
+        });
+
+        function CurrentShipmentAgentFees() {
+            this.Currency = ko.observable();
+            this.FeeCustomDeclaration = ko.observable();
+            this.FeeDockOperation = ko.observable();
+            this.FeeDocument = ko.observable();
+            this.FeeFacilityManagement = ko.observable();
+            this.FeeImporterSecurityClassify = ko.observable();
+            this.FeePicking = ko.observable();
+            this.FeePortSecurity = ko.observable();
+            this.FeeWarehousing = ko.observable();
+            this.FeeYangShanPicking = ko.observable();
+        }
+
+        function CustomerViewModel() {
+            var self = this;
+
+            self.currencyTypes = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["CurrencyType"])));
+            self.shippingAgencyID = ko.observable(@Model.ShippingAgencyID);
+            self.shippingAgencyName = ko.observable("@Model.ShippingAgencyName");
+            self.AgencyAddress = ko.observable("@Model.AgencyAddress");
+            self.WarehouseAddress = ko.observable("@Model.WarehouseAddress");
+
+            var currentShipmentAgentFees = new CurrentShipmentAgentFees();
+            currentShipmentAgentFees.Currency("@Model.CurrentShipmentAgentFees.Currency");
+            currentShipmentAgentFees.FeeCustomDeclaration(@Model.CurrentShipmentAgentFees.FeeCustomDeclaration);
+            currentShipmentAgentFees.FeeDockOperation(@Model.CurrentShipmentAgentFees.FeeDockOperation);
+            currentShipmentAgentFees.FeeDocument(@Model.CurrentShipmentAgentFees.FeeDocument);
+            currentShipmentAgentFees.FeeFacilityManagement(@Model.CurrentShipmentAgentFees.FeeFacilityManagement);
+            currentShipmentAgentFees.FeeImporterSecurityClassify(@Model.CurrentShipmentAgentFees.FeeImporterSecurityClassify);
+            currentShipmentAgentFees.FeePicking(@Model.CurrentShipmentAgentFees.FeePicking);
+            currentShipmentAgentFees.FeePortSecurity(@Model.CurrentShipmentAgentFees.FeePortSecurity);
+            currentShipmentAgentFees.FeeWarehousing(@Model.CurrentShipmentAgentFees.FeeWarehousing);
+            currentShipmentAgentFees.FeeYangShanPicking(@Model.CurrentShipmentAgentFees.FeeYangShanPicking);
+            self.currentShipmentAgentFees = ko.observable(currentShipmentAgentFees);
+
+            self.save = function (shipmentAgency) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (bootstrapValidator.isValid()) {
+                    $("#bntSave").removeAttr("disabled");
+
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@Url.Content("~/ShipmentAgency/Edit/" + Model.ShippingAgencyID)",
+                        data: ko.toJSON(shipmentAgency)
+                    }).done(function (data) {
+                        if (data.ok == 0) {
+                            $.messager.alert("出错了", "出错了，错误信息 = " + data.msg);
+                            $("#frmEdit input").eq(0).focus();
+                        }
+                        else {
+                            parentGridReload("#tblShipmentAgencies");
+                            OA.CloseMe(true);
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    });
+                }
+                else {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            };
+        };
+        ko.applyBindings(new CustomerViewModel());
+    </script>
+}

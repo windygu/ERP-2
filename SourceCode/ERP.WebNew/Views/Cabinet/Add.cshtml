@@ -1,0 +1,150 @@
+﻿@{
+    ViewBag.Title = "添加柜型信息";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+<form action='' method="post" enctype="multipart/form-data" id="frm">
+    <input type="text" name="ID" id="ID" placeholder="" style="visibility: hidden" />
+    <div class="search_Cs Factory1" style="border:none">
+        <ul id="box">
+            <li>
+                <label class="col-xs-2 text-danger">柜型名称</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Name" id="Name" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">长</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Length" id="Length" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">宽</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Width" id="Width" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">高</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Height" id="Height" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">尺寸</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Sizeone" id="Sizeone" placeholder="" required="required" style="width:100px" />
+                    <div style="margin-left:110px;margin-top:-20px">
+                        至
+                        <input type="text" class="form-control" name="Sizetwo" id="Sizetwo" style="width:100px;margin-top:-30px;margin-left:25px" />
+                    </div>
+                    <div style="float:right;margin-top:-20px">m³</div>
+                </div>
+            </li>
+
+
+            <li class="search">
+                <button type="button" id="bntSave" class="btn btn-danger" onclick="Save() ">保存</button>
+                <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong><span>字体颜色为红色是必填项。</span>
+    </div>
+</form>
+
+@section scripts
+{
+    <script src="@Url.Content("~/Scripts/h5uploader.js")" type="text/javascript" charset="utf-8"></script>
+
+    <script>
+
+    function Save() {
+         var num = /^\+?(:?(:?\d+\.\d+)|(:?\d+))$/;
+
+        var Name = $("#Name").val();
+        var Size = $("#Sizeone").val();
+        var Length = $("#Length").val();
+        var Width = $("#Width").val();
+        var Height = $("#Height").val();
+        if (Name=="") {
+            $.messager.alert("提示", "请输入名称！");
+            return;
+        }
+
+        if (Length == "") {
+            $.messager.alert("提示", "请输入长！");
+            return;
+        }
+        else {
+            if (!num.test(Length)) {
+                $.messager.alert("提示", "长请输入数字！");
+                return;
+            }
+        }
+
+        if (Width == "") {
+            $.messager.alert("提示", "请输入宽！");
+            return;
+        }
+        else {
+            if (!num.test(Width)) {
+                $.messager.alert("提示", "宽请输入数字！");
+                return;
+            }
+        }
+        if (Height == "") {
+            $.messager.alert("提示", "请输入高！");
+            return;
+        }
+        else {
+            if (!num.test(Height)) {
+                $.messager.alert("提示", "高请输入数字！");
+                return;
+            }
+        }
+
+        if (Size == "") {
+            $.messager.alert("提示", "请输入尺寸！");
+            return;
+        }
+        else {
+            if (!num.test(Size)) {
+                $.messager.alert("提示", "尺寸请输入数字！");
+                return;
+            }
+        }
+
+        if ($("#Sizetwo").val()!="") {
+            if (!num.test($("#Sizetwo").val())) {
+                $.messager.alert("提示", "尺寸请输入数字！");
+                return;
+            }
+            else {
+                
+                if ($("#Sizetwo").val() <= $("#Sizeone").val()) {                 
+                    $.messager.alert("提示", "请输入大于前一个尺寸的数字！");     
+                    return;
+                }
+            }
+        }
+
+        if (Name != "" && Size!="") {
+            $.post('@Url.Content("~/Cabinet/Add")', { Name: Name, Size: Size, Sizetwo: $("#Sizetwo").val(), Length: Length, Width: Width, Height: Height }, function (result) {
+                if (result == 1) {
+                    parentGridReload();
+                    OA.CloseMe(true);
+                }
+                else if (result == 0) {
+                    $.messager.alert("提示", "已存在此柜型！请重新输入！");
+                 
+                    //$("#baocun").removeAttr("disabled");
+                }
+                else {
+                    $.messager.alert("提示", "添加失败！请重新输入");
+                  
+                }
+            })
+        }
+
+    }
+    </script>
+
+}

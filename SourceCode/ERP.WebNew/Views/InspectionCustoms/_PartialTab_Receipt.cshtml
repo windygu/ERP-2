@@ -1,0 +1,54 @@
+﻿@model List<ERP.Models.InspectionCustoms.VMInspectionCustoms>
+@using ERP.Models.CustomEnums
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    var ThisModel = Model;
+}
+
+<!--报检凭条选项卡-->
+<div id="dvTab_UploadReceipts" title="报检凭条">
+    <h3 class="popTitle">报检凭条信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+    <div class="popContent">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var item2 = Model[i];
+
+            <div class="Factory">
+                <div style="margin-bottom:0px;" class="modal-title">
+                    <span class="txt_InvoiceNO_@(i) text-center" style="width: 98%;">
+                        @item2.InvoiceNO
+                    </span>
+                    <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+                </div>
+
+                <div class="history_box">
+                    <table id="fileListTable_@(i)" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                        <thead>
+                            <tr class="t_bg">
+                                <td width="50%">附件名称</td>
+                                <td width="20%">上传时间</td>
+                                <td width="30%">操作</td>
+                            </tr>
+                        </thead>
+                        @if (item2.list_UploadReceipts != null)
+                        {
+                            for (int j = 0; j < item2.list_UploadReceipts.Count; j++)
+                            {
+                                var thisFile = item2.list_UploadReceipts[j];
+                                <tr>
+                                    <td>@thisFile.DisplayFileName</td>
+                                    <td>@ERP.Tools.Utils.DateTimeToStr2(thisFile.DT_CREATEDATE)</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary" onclick="DownLoadFile('@thisFile.ServerFileName')">下载</button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </table>
+                </div>
+
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,407 @@
+﻿@model ERP.Models.Sample.DTOSample
+
+@using ERP.Models.CustomEnums;
+@using ERP.Models.Common;
+
+@{
+    ViewBag.Title = Model.PageTitle;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+
+}
+<link href="@Url.Content("~/Content/Quotation.css")" rel="stylesheet" />
+
+<script type="text/javascript">
+    //上传附件插件初始化代码
+    function InitialUploadify(ssid,index,inputFileId,tableFileListId) {
+        var postUrl="@Url.Content("~/FileUploader/UploadFiles?type=" + ERP.Models.CustomEnums.UploadFileType.SampleUpLoad)"+"&id="+ssid;
+
+        $(inputFileId).uploadify({
+            swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+            uploader: postUrl, //Post文件到指定的处理文件
+            postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+            auto: false,
+            buttonClass: 'JQButton', //浏览按钮的class
+            buttonText: '浏览', //浏览按钮的Text
+            cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+            //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+            fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+            height: 40, //浏览按钮高
+            width: 50, //浏览按钮宽
+            multi: true, //是否允许多文件上传
+            //uploadLimit: 10, //同时上传多小个文件
+            sizeLimit: 100000000, //限制上传大小10M
+            //queueSizeLimit: 10, //队列允许的文件总数
+            removeCompleted: true, //当上传成功后是否将该Item删除
+            onSelect: function (file) { }, //选择文件时触发事件
+            onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+            onUploadComplete: function (file) { }, //上传成功触发事件
+            onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+            onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+            onUploadStart: function (file) { }, //上传开始触发事件
+            onUploadSuccess: function (event, response, status) {
+                var count = $(tableFileListId+" tr:not(:first)").length;
+                var serverFileName = $.parseJSON(response).data.NewFilePath;
+                var dispalyFileName = $.parseJSON(response).data.OldFileName;
+                var fileListStr = '<tr><td  style="display:none;">';
+
+                fileListStr += '<input name="Manufactures[' + index + '].UploadFiles.UpLoadFileList[' + count + '].DisplayFileName" value="' + dispalyFileName + '" />';
+                fileListStr += '<input name="Manufactures[' + index + '].UploadFiles.UpLoadFileList[' + count + '].ServerFileName" value="' + serverFileName + '" />';
+                fileListStr += '<input name="Manufactures[' + index + '].UploadFiles.UpLoadFileList[' + count + '].DT_CREATEDATE" value="' + formateDate2(new Date()) + '" />';
+                fileListStr += '<input name="Manufactures[' + index + '].UploadFiles.UpLoadFileList[' + count + '].IsDelete"  class="IsDelete" />';
+
+                fileListStr += '</td>';
+
+                fileListStr += '<td>' + dispalyFileName + '</td>';
+
+                fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+
+                fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button>';
+                fileListStr += '<button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+
+                fileListStr += '</tr>';
+
+                $(tableFileListId).prepend(fileListStr);
+
+            }  //当单个文件上传成功后激发的事件
+        });
+    }
+
+    //上传
+    function UpLoadFile(htmlId) {
+        $(htmlId).uploadifyUpload('*');
+    }
+
+    //下载
+    function DownLoadFile(path) {
+        window.open(path);
+    }
+
+    //删除
+    function DeleteFile(e, path) {
+        $(e).closest("tr").find(".IsDelete").val(true);
+        $(e).closest("tr").hide();
+    }
+</script>
+
+@if (Model.PageTypeID == 1 || Model.PageTypeID == 5)
+{
+    <form id="frmEdit" class="form-horizontal">
+        <h3 class="popTitle">
+            选择数据<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div style="overflow: inherit;" class="row popContent">
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label text-danger">需求来源：</label>
+                <div class="col-sm-8 control-label">@Html.DropDownListFor(d => d.CreateWay, ViewData["CreateWay"] as SelectList, new { @class = "form-control" }) </div>
+            </div>
+
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label text-danger">客户：</label>
+                <div class="col-sm-8 control-label">@InlineHelpers.GetSelectionForCustomers(ViewBag.CustomerInfos, "selCustomerID", true, null)</div>
+            </div>
+
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label text-danger"></label>
+                <div class="col-sm-8 control-label"></div>
+            </div>
+
+            <div style="height:50px;vertical-align:middle;" class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label text-danger"></label>
+                <div class="col-sm-8 control-label"><button id="btnSelectDataResource" type="button" style="display:none;float:right;margin-top:10px" class="btn btn-info"></button></div>
+            </div>
+        </div>
+
+        <div id="inline">
+            @Html.Partial("_PartialSelectOrdersForSample")
+        </div>
+    </form>
+
+    @Html.Partial("_PartialSelectQuoteForSample")
+
+    @Html.Partial("_PartialSelectProduct")
+}
+
+<!--新建样品单操作时，需要初始化查询并选择产品管理->产品信息，报价管理->产品信息-->
+<div id="dvManufactureInfo"></div>
+
+@section scripts{
+    <script type="text/javascript">
+
+        var controllerURL = '@(Url.Content("~/Sample/GetManufactureInfo"))';
+        var ReadOnlyURL='@(Url.Content("~/Sample/GetReadonlyManufacture"))';
+        var GstrSSID = @Model.SSID;
+        var pageTypeID=@Model.PageTypeID;
+        var GstrSampleStatusID=@Model.SampleStatusID;
+        var HtmlDivManufactureInfo="#dvManufactureInfo";
+        var HtmlCustomerID="#selCustomerID";
+        var HtmlCreateWay="#CreateWay";
+        var HtmlBtnSelectDataResource="#btnSelectDataResource";
+        var GstrCreateWay="";
+        var ManufacturingDataList = "#tblManufacturingDataList";
+
+        $(function () {
+            //客户信息下拉框列表筛选初始化
+            $("select[name=selCustomerID]").selectpicker();
+
+            //需求来源的切换事件
+            $(HtmlCreateWay).on("change", function () {
+                GstrCreateWay = $(HtmlCreateWay).val();
+                //客户信息下拉框列表筛选初始化
+                $(HtmlCustomerID).prop('disabled',false);
+                $("#frmEdit").find("span.filter-option pull-left").html("");
+
+                if (GstrCreateWay == "") {
+                    $(HtmlBtnSelectDataResource).hide(); return;
+                }
+
+                var sBtnSelectDataResourceName="";//按钮名称
+
+                if (GstrCreateWay == 1) {
+                    var b = $(HtmlCustomerID).val();
+                    if (b == "") {
+                        $(HtmlBtnSelectDataResource).hide();
+
+                    }else{
+                        sBtnSelectDataResourceName="选择产品";
+                        $(HtmlBtnSelectDataResource).show();
+
+                    }
+
+                }else{
+                    $(HtmlBtnSelectDataResource).show();
+                    $(HtmlCustomerID).val("");
+                    $(HtmlCustomerID).prop('disabled',true);
+
+                }
+
+                if (GstrCreateWay == 2) {
+                    sBtnSelectDataResourceName="选择报价单";
+                }
+                if (GstrCreateWay == 3) {
+                    sBtnSelectDataResourceName="选择销售订单";
+                }
+                $(HtmlBtnSelectDataResource).html(sBtnSelectDataResourceName);
+
+                $(HtmlCustomerID).selectpicker('refresh');
+            });
+
+            //客户的切换事件
+            $(HtmlCustomerID).on("change",function(){
+                var b = $(HtmlCustomerID).val();
+                //数据源选择为“手工创建”且选择了客户，呈现查询数据按钮
+                if(GstrCreateWay=="1"&&b != ""){
+                    $(HtmlBtnSelectDataResource).html("选择产品");
+                    $(HtmlBtnSelectDataResource).show();
+
+                }
+
+            });
+
+            //绑定选择数据源点击事件，打开对应的数据源选择页面
+            $(HtmlBtnSelectDataResource).on("click", function () {
+                var a = $(HtmlCreateWay).val();
+
+                //弹出产品管理数据选择列表
+                if (GstrCreateWay == 1) {
+                    var b = $(HtmlCustomerID).val();
+                    if (b == "") {
+                        $.messager.alert('提示', '请选择客户', 'info'); return;
+
+                    }
+
+                    $('#myModal1').modal({
+                        keyboard: true
+                    });
+
+                }
+
+                //弹出报价单数据选择列表
+                if (GstrCreateWay == 2) {
+                    $('#myModal2').modal({
+                        keyboard: true
+                    });
+
+                }
+
+                //弹出销售订单数据选择列表
+                if (GstrCreateWay == 3) {
+                    $('#myModal3').modal({
+                        keyboard: true
+                    });
+
+                }
+            });
+
+            //手工创建，选中产品数据后，去后台请求数据，按产品所在工厂分组，生成打样生产需求数据及输入项
+            $("#btnSelect").click(function () {
+                var a = $(HtmlCreateWay).val();
+                var b = $(HtmlCustomerID).val();
+
+                var idArray = getSelections("#modalGrid", "ID");
+
+                if(idArray.length<=0){
+                    $.messager.alert('提示', '没有选中数据'); return;
+                }
+
+                $.post(controllerURL, { ID: idArray.toString(), OCID: b, CreateWay: GstrCreateWay, PageType: pageTypeID }, function (data) {
+                    $('#myModal1').modal('hide');
+                    $(HtmlDivManufactureInfo).html(data);//把请求的已分组产品数据放在页面DIV中
+                    InitPopover();
+
+                });
+
+            });
+
+            //查看新建样品单、安排生产时，请求并加载单个样品单数据
+            if(pageTypeID>=2){
+                $.post(ReadOnlyURL, { SSID: GstrSSID, PageType:pageTypeID }, function (data) {
+                    $(HtmlDivManufactureInfo).html(data);//把请求的已分组产品数据放在页面DIV中
+                    InitPopover();
+
+                });
+            }
+
+        });
+
+        //选择报价单：选中一个报价单后，
+        function SelectedQuot2(qtid){
+
+            $.post(controllerURL, { ID: qtid, OCID: 0, CreateWay: GstrCreateWay, PageType: pageTypeID }, function (data) {
+                $('#myModal2').modal('hide');
+                $(HtmlDivManufactureInfo).html(data);//把请求的已分组产品数据放在页面DIV中
+                InitPopover();
+
+            });
+        };
+
+        //选择销售订单：生成新样品单信息
+        function SelectedOrder(qtid){
+
+            $.post(controllerURL, { ID: qtid, OCID: 0, CreateWay: GstrCreateWay, PageType: pageTypeID }, function (data) {
+                $('#myModal3').modal('hide');
+                $(HtmlDivManufactureInfo).html(data);//把请求的已分组产品数据放在页面DIV中
+                InitPopover();
+
+            });
+        }
+
+        //通用备注的输入值应用到所有生产备注中
+        function StickAllRemark(textId){
+            var stickValue=$(textId).val();//需要应用的值
+            //if(stickValue==""){
+            //    $.messager.alert('提示','应用值不能为空',function(r){
+            //        return false;
+            //    });
+            //    return;
+            //}
+            var target = $(HtmlDivManufactureInfo).find("textarea.StickRemark_1");
+            for(var i=0;i<target.length;i++){
+                target[i].value=stickValue;
+            }
+        }
+
+        //不同按钮的验证
+        function SetDataStatus(valueStatus) {
+            GstrSampleStatusID = valueStatus;
+            $("#SampleStatusID").val(valueStatus);
+            var $container = $(HtmlDivManufactureInfo);
+            var $sampleProductNums=$("input.ClassSampleProductNum[name$='ProductNum']",$container);
+            if($.grep($sampleProductNums, function(e){return e.value == ""})[0]){
+                $.messager.alert('提示', '产品数量必填', 'info', function(r){
+                    return false;
+                });
+            }
+
+            var $claimFinishDates = $("input.Wdate[name$='ClaimFinishDate']", $container);
+            if($.grep($claimFinishDates, function(e){return e.value == ""})[0]){
+                $.messager.alert('提示', '要求完成日期必填', 'info', function(r){
+                    return false;
+                });
+            }
+            else{
+                if(GstrSampleStatusID != 1){
+                    var $planFinishDate = $("input.Wdate[name$='PlanFinishDate']", $container);
+                    if($.grep($planFinishDate, function(e){return e.value == ""})[0]){
+                        $.messager.alert('提示', '计划完成日期必填', 'info', function(r){
+                            return false;
+                        });
+                    }
+                    else{
+                        $.each($claimFinishDates, function(i,o){
+                            var planDate = $.grep($planFinishDate, function(e){return $(e).attr("data-index") == $(o).attr("data-index")})[0];
+                            if($(planDate).val() > $(o).val()){
+                                $.messager.confirm("提示", '计划完成日期晚于要求完成日期，是否继续提交',function(r){
+                                    if(r){
+                                        submitForm();
+                                    }
+                                })
+                            }
+                            else{
+                                submitForm();
+                            }
+                        });
+                    }
+                }
+                else{
+                    submitForm();
+                }
+            }
+        }
+
+        var checkSubmit = false;//防止重复提交
+        function submitForm(){
+
+            if (checkSubmit) {
+                $.messager.alert("提示", "请勿重复提交！");
+                return false;
+            }
+            checkSubmit = true;
+            loading();
+
+            var $form = $('form#frm');
+            $.post($form.attr('action'), $form.serialize(),
+                function (data) {
+                    checkSubmit = false;
+                    completeLoading();
+
+                    if (data == 0) {
+                        $.messager.alert('提示', '提交出错', 'info'); return;
+                    } else if (data == 1) {
+                        OA.CloseMe(true);
+                        parent.$(ManufacturingDataList).datagrid("reload");//刷新寄样信息列表数据
+
+                    } else {
+                        $.messager.alert('提示', '没有更新任何数据', 'info'); return;
+                    }
+                }, "text");
+        }
+
+        //展开 收缩
+        $(HtmlDivManufactureInfo).on("click", ".AttSpreadShrink", function () {
+            var $this = $(this).find(".table_toggle");
+            if ($this.hasClass("fa-chevron-up")) {
+                $this.data("up", false).removeClass("fa-chevron-up").addClass("fa-chevron-down");
+            } else {
+                $this.data("up", true).removeClass("fa-chevron-down").addClass("fa-chevron-up");
+            }
+            $this.parent().next().stop(true, true).fadeToggle();
+        });
+
+        //绑定寄件的输入数据格式验证
+        function CheckInputNum(e) {
+            var locationId = $(e)[0].currentTarget.id;//产品单价输入框id
+            var objLocationRow = $("#" + locationId).parents("tr").children();
+            var dProductPrice = objLocationRow[6].firstChild.value;//产品单价
+
+            if (jav.IsFigure(dProductPrice) || dProductPrice == "0") {
+                dProductPrice = parseFloat(dProductPrice);
+
+            } else {
+                objLocationRow[6].firstChild.value=1;//产品单价
+                $.messager.alert('提示', '必须输入数字', 'info');
+                return false;
+            }
+
+        }
+    </script>
+}

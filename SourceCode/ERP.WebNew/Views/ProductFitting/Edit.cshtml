@@ -1,0 +1,703 @@
+﻿@model ERP.Models.ProductFitting.VMProductFittingInfo
+
+@using ERP.Models.CustomEnums
+@{
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@section styles
+{
+
+    <style type="text/css">
+        .box_1k {
+            margin-top: 0px;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+    </style>
+
+    <style>
+        .conversion {
+            padding-top: 5px;
+            color: red;
+            font-weight: normal;
+        }
+
+        .price-td {
+            font-weight: normal;
+            color: red;
+        }
+
+        .upload_progress {
+            display: none;
+            padding: 5px;
+            border-radius: 10px;
+            color: #fff;
+            background-color: rgba(0,0,0,.6);
+            position: absolute;
+            left: 80px;
+            top: 90px;
+        }
+        
+        .popContent {
+            overflow: inherit;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            border-top: 0;
+        }
+
+        .col-lg-1, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-md-1, .col-md-10,
+        .col-md-11, .col-md-12, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-sm-1, .col-sm-10, .col-sm-11, .col-sm-12,
+        .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-xs-1, .col-xs-10, .col-xs-11, .col-xs-12, .col-xs-2, .col-xs-3,
+        .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9 {
+            padding-left: 0;
+        }
+
+        .form-horizontal .form-group {
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .form-horizontal .has-feedback .form-control-feedback {
+            top: -2px;
+        }
+    </style>
+}
+
+@using (Ajax.BeginForm("Edit2", "Product", new { }, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit", @class = "form-horizontal bv-form" }))
+{
+    @Html.HiddenFor(p => p.ID)
+
+    <h3 class="popTitle">
+        基本信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label text-danger">货号</td>
+                <td class="col-sm-4">
+                    <div class="form-group">
+                        @if (Model.PageType != PageTypeEnum.Details)
+                        {
+                            @Html.TextBoxFor(d => d.No, new { @class = "form-control" })
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(d => d.No, new { @class = "form-control", disabled = "disabled" })
+                        }
+                    </div>
+                </td>
+                <td class="control-label text-danger">工厂</td>
+                <td>
+                    <div class="form-group">
+
+                        @if (Model.PageType != PageTypeEnum.Details)
+                        {
+                            @InlineHelpers.GetSelectionForFactories(ViewBag.FactoryInfos, "FactoryID", true, Model.FactoryID)
+                        }
+                        else
+                        {
+                            @InlineHelpers.GetSelectionForFactories(ViewBag.FactoryInfos, "FactoryID", false, Model.FactoryID)
+
+                        }
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        产品信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td></td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td class="control-label text-danger">品名</td>
+                <td>
+                    <div class="form-group">
+                        <span class="col-sm-6">
+
+                            @if (Model.PageType != PageTypeEnum.Details)
+                            {
+                                @Html.TextBoxFor(d => d.Name, new { @class = "form-control translation" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(d => d.Name, new { @class = "form-control translation", disabled = "disabled" })
+                            }
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">长(CM)</td>
+                <td>
+                    <div class="form-group">
+                        <span class="col-sm-6">
+
+                            @if (Model.PageType != PageTypeEnum.Details)
+                            {
+                                @Html.TextBoxFor(d => d.Length, new { @class = "form-control translation" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(d => d.Length, new { @class = "form-control translation", disabled = "disabled" })
+                            }
+                        </span>
+                        <span class="col-sm-6">
+                            <label id="LengthIN" class="conversion">@(Model.LengthIN ?? 0)</label>(in)
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">宽(CM)</td>
+                <td>
+                    <div class="form-group">
+                        <span class="col-sm-6">
+                            @if (Model.PageType != PageTypeEnum.Details)
+                            {
+                                @Html.TextBoxFor(d => d.Width, new { @class = "form-control translation" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(d => d.Width, new { @class = "form-control translation", disabled = "disabled" })
+                            }
+                        </span>
+                        <span class="col-sm-6">
+                            <label class="conversion" id="WidthIN">@(Model.WidthIN ?? 0)</label>(in)
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="control-label text-danger">高(CM)</td>
+                <td>
+                    <div class="form-group">
+                        <span class="col-sm-6">
+                            @if (Model.PageType != PageTypeEnum.Details)
+                            {
+                                @Html.TextBoxFor(d => d.Height, new { @class = "form-control translation" })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(d => d.Height, new { @class = "form-control translation", disabled = "disabled" })
+                            }
+                        </span>
+                        <span class="col-sm-6">
+                            <label class="conversion" id="HeightIN">@(Model.HeightIN ?? 0)</label>(in)
+                        </span>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td>&nbsp;</td>
+                <td colspan="2" rowspan="8">
+                    <a href="javascript:void(0)" @(Model.PageType != PageTypeEnum.Details?"id=img":"") class="help-block">
+                        <div class="ProductImageDiv" style="width: 250px; height: 250px; overflow: auto; border: 1px solid #ccc; line-height: 248px; margin:0;">
+                            <img id="ProductImage" src="@(string.IsNullOrEmpty(Model.Image) ? Url.Content("~/images/default/upload.jpg") : Model.Image)" class="form-control-static" style="width: 100%;" />
+                        </div>
+                        <br />
+                        (产品图片,jpg格式)
+                    </a>
+                    @Html.HiddenFor(d => d.Image, new { @class = "form-control" })
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        价格信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label text-danger">工厂价格</td>
+                <td class="col-sm-4">
+                    <div class="form-group">
+                        @if (Model.PageType != PageTypeEnum.Details)
+                        {
+                            @Html.TextBoxFor(d => d.PriceFactory, new { @class = "form-control translation" })
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(d => d.PriceFactory, new { @class = "form-control translation", disabled = "disabled" })
+                        }
+                    </div>
+                </td>
+                <td class="col-sm-2 control-label text-danger">币种</td>
+                <td class="col-sm-4">
+                    <div class="form-group">
+                        @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.Currencies, "CurrencyType", false, (int?)Model.CurrencyType)
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <h3 class="popTitle">
+        备注信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <table class="table">
+            <tr>
+                <td class="col-sm-2 control-label">备注</td>
+                <td class="col-sm-10">
+                    <div class="form-group">
+                        @if (Model.PageType != PageTypeEnum.Details)
+                        {
+                            @Html.TextAreaFor(d => d.Comment, new { @class = "form-control", row = "2" })
+                        }
+                        else
+                        {
+                            @Html.TextAreaFor(d => d.Comment, new { @class = "form-control", row = "2", disabled = "disabled" })
+                        }
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="popBtns">
+
+        @if (Model.PageType != PageTypeEnum.Details)
+        {
+            <button type="button" class="btn btn-danger" data-bind="click: $root.save.bind($data)">保存</button>
+        }
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong>
+        <span>字体颜色为红色是必填项。</span>
+        <span>产品的币种取工厂的结算币种。</span>
+    </div>
+}
+
+<!-- 上传图片弹出框 -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="myModalLabel">上传图片</h3>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+
+                    <form id="uploadForm" action="@Url.Content("~/FileUploader/ProductImg")" method="post">
+                        <div class="row">
+                            <input type="file" width="500" name="fileSelect" id="fileSelect" value="" />
+                        </div>
+                        <div class="row">
+                            预览：
+                            <span id="uploadProgress" class="upload_progress">NaN%</span>
+                            <div class="imgPreviewDiv">
+                                <img id="imgPreview" src="@(string.IsNullOrEmpty(Model.Image) ? Url.Content("~/images/default/upload.jpg") : Model.Image)" />
+                            </div>
+                        </div>
+
+                        <div class="row" style="text-align: right; margin-top: 15px;">
+                            <input type="button" id="fileSubmit" class="btn btn-success" value="确认上传图片" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+
+    <script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+    <script src="@Url.Content("~/Scripts/h5uploader.js")" type="text/javascript" charset="utf-8"></script>
+
+    <script type="text/javascript">
+        function selectProductClassification() {
+            var C_ID = $("#C_ID").val();
+            $("#ClassifyID").val(C_ID);
+            $('#myModal2').modal('hide');
+        }
+        var isCaching = false;
+
+        $(function () {
+
+            // 表单验证
+            $('#frmEdit')
+                .find('#CustomerID')
+                .selectpicker()
+                .end()
+                .find('#FactoryID')
+                .selectpicker()
+                .change(function (e) {
+                    $('#bootstrapSelectForm').bootstrapValidator('revalidateField', 'FactoryID');
+
+                    $("#CurrencyType").val("");
+                    $.post('@Url.Content("~/Product/GetFactoryCurrencyType?FactoryID=")' + $('#FactoryID').val(), {},
+                       function (result) {
+                           $("#CurrencyType").val(result);
+                       }, "json");
+
+                }).end()
+                .bootstrapValidator({
+                    message: '信息不能为空值',
+                    excluded: ':disabled',
+                    container: 'popover',
+                    feedbackIcons: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-ProductIngredienteat fa-spin'
+                    },
+                    onError: function (e) {
+                        e.preventDefault();
+                        return false;
+                    },
+                    fields: {
+                        //基本信息
+                        No: {
+                            validators: {
+                                notEmpty: { message: '货号不能为空' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 128,
+                                    message: '长度在1-128之间'
+                                },
+                            }
+                        },
+                        FactoryID: {
+                            validators: {
+                                notEmpty: { message: '工厂不能为空值' },
+                            }
+                        },
+                        Name: {
+                            validators: {
+                                notEmpty: { message: '品名不能为空' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 128,
+                                    message: '长度在1-128之间'
+                                },
+                            }
+                        },
+
+                        //产品信息
+                        Length: {
+                            validators: {
+                                notEmpty: { message: '长不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        Width: {
+                            validators: {
+                                notEmpty: { message: '宽不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        Height: {
+                            validators: {
+                                notEmpty: { message: '高不能为空值' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        Weight: {
+                            validators: {
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        //价格信息
+                        PriceFactory: {
+                            validators: {
+                                notEmpty: { message: '工厂价格不能为空' },
+                                stringLength: {
+                                    min: 1,
+                                    max: 18,
+                                    message: '长度在1-18之间'
+                                },
+                                regexp: {
+                                    regexp: /^(([0-9]+\.[0-9]*[1-9][0-9]*)|([0-9]*[1-9][0-9]*\.[0-9]+)|([0-9]*[1-9][0-9]*))$/,
+                                    message: '请输入大于0的数字！'
+                                }
+                            }
+                        },
+                        CurrencyType: {
+                            validators: {
+                                notEmpty: { message: '币种不能为空' }
+                            }
+                        },
+                    }
+                });
+
+            BindCalculatorData();
+
+            //绑定需要计算的内容
+            function BindCalculatorData() {
+                $("#LengthIN").text(product.getInch($("#Length").val()));
+                $("#HeightIN").text(product.getInch($("#Height").val()));
+                $("#WidthIN").text(product.getInch($("#Width").val()));
+            }
+
+            ///JS运算
+            $(".translation").on("keyup", function (e) {
+                var current = $(this);
+                var id = current.attr('id');
+                //产品长
+                if (id == "Length") {
+                    $("#LengthIN").text(product.getInch(current.val()));
+                }
+                    //产品高
+                else if (id == "Height") {
+                    $("#HeightIN").text(product.getInch(current.val()));
+                }
+
+                    //产品宽
+                else if (id == "Width") {
+                    $("#WidthIN").text(product.getInch(current.val()));
+                }
+
+            });
+
+            // 选择图片
+            $('#img').click(function () {
+                $('#myModal').modal();
+                return false;
+            });
+
+            // 上传文件
+            var params = {
+                fileInput: document.getElementById("fileSelect"),
+                upButton: document.getElementById("fileSubmit"),
+                url: $("#uploadForm").attr("action"),
+                filter: function (file) {
+                    var f = null;
+                    if (file.type.indexOf("image") == 0) {
+                        if (file.size >= 3600000) {	// 3M
+                            $.messager.alert("提示", '您这张"' + file.name + '"图片大小过大,请不要超过3M');
+                        } else {
+                            f = file;
+                        }
+                    } else {
+                        $.messager.alert("提示", '文件"' + file.name + '"不是图片。');
+                    }
+                    return f;
+                },
+                onSelect: function (file) {
+                    if (file) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            $("#imgPreview").attr('src', e.target.result);
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                    else {
+                        $("#imgPreview").attr('src', '');
+                    }
+                    $("#uploadProgress").hide();
+                },
+                onProgress: function (file, loaded, total) {
+                    var eleProgress = $("#uploadProgress"), percent = (loaded / total * 100).toFixed(2) + '%';
+                    eleProgress.show().html(percent);
+                },
+                onSuccess: function (file, response) {
+                    var result = JSON.parse(response);
+                    if (result.ok) {
+                        $("#ProductImage").attr('src', result.data.imgPath);
+                        $('#Image').val(result.data.imgPath);
+                        $('#myModal').modal('hide');
+                    }
+                },
+                onFailure: function (file) {
+                    $("#uploadProgress").html('失败');
+                    $.messager.alert("提示", '上传失败');
+                },
+            };
+            h5uploader = $.extend(h5uploader, params);
+            h5uploader.init();
+
+        });
+
+        var product = {
+            getInch: function (cm) {
+                if (!OA.isNumeric(cm)) {
+                    return "0.00";
+                }
+
+                return (parseFloat(cm) / 2.54).toFixed(2);
+            },
+        };
+
+        function onLoadSuccess() {
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck", "DT_MODIFYDATE", "ID"]);
+        }
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        function MyModel() {
+
+            this.ID = ko.observable(),
+            this.ProductID = ko.observable(),
+            this.No = ko.observable(),
+            this.Name = ko.observable(),
+            this.FactoryID = ko.observable(),
+            this.Image = ko.observable(),
+
+            this.Length = ko.observable(),
+            this.Width = ko.observable(),
+            this.Height = ko.observable(),
+
+            this.PriceFactory = ko.observable(),
+            this.CurrencyType = ko.observable(),
+
+            this.Comment = ko.observable()
+
+        }
+
+        function MyModelViewModel() {
+            var self = this;
+
+            self.MyModel = ko.observable();
+            self.MyModel(new MyModel());
+
+            var checkSubmit = false;//防止重复提交
+
+            self.save = function () {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (bootstrapValidator.isValid()) {
+                    $("#bntSave").removeAttr("disabled");
+
+                    if ($("#CurrencyType").val() == "") {
+                        $.messager.alert("提示", "产品的币种不能为空！产品的币种取工厂的结算币种");
+                        return;
+                    }
+
+                    self.MyModel().ID($("#ID").val());
+                    self.MyModel().ProductID($("#ProductID").val());
+                    self.MyModel().No($("#No").val());
+                    self.MyModel().Name($("#Name").val());
+                    self.MyModel().FactoryID($("#FactoryID").val());
+                    self.MyModel().Image($("#Image").val());
+
+                    self.MyModel().Length($("#Length").val());
+                    self.MyModel().Width($("#Width").val());
+                    self.MyModel().Height($("#Height").val());
+
+                    self.MyModel().PriceFactory($("#PriceFactory").val());
+                    self.MyModel().CurrencyType($("#CurrencyType").val());
+
+                    self.MyModel().Comment($("#Comment").val());
+
+                    if (checkSubmit) {
+                        $.messager.alert("提示", "请勿重复提交！");
+                        return;
+                    }
+                    checkSubmit = true;
+                    loading();
+
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@Url.Content("~/ProductFitting/Edit/"+Model.ID)",
+                        data: ko.toJSON(self.MyModel())
+                    }).done(function (data) {
+                        checkSubmit = false;
+                        completeLoading();
+
+                        if (data == 0) {
+                            $.messager.alert("出错了", "出错了！");
+                        }
+                        else if (data == 4) {
+                            $.messager.alert("出错了", "货号重复了！");
+                        }
+                        else {
+                            parent.$('#tblProducts').datagrid('reload');
+                            OA.CloseMe(true);
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    });
+                }
+                else {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            };
+        };
+        ko.applyBindings(new MyModelViewModel());
+    </script>
+}

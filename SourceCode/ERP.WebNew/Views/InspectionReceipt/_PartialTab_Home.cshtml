@@ -1,0 +1,149 @@
+﻿@model List<ERP.Models.InspectionReceipt.DTOInspectionReceipt>
+@using ERP.Models.CustomEnums
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    var ThisModel = Model;
+}
+
+<div title="报检首页">
+
+    @for (int i = 0; i < Model.Count; i++)
+            {
+                var item2 = Model[i];
+        <div class="Factory">
+            <div style="margin-bottom:0px;" class="modal-title">
+                @item2.InvNo
+                <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </div>
+
+            <div class="history_box">
+
+                <h3 class="popTitle">基本信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+                <div class="popContent">
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">TO:</label>
+                        <div class="col-sm-8 control-label">@item2.FactoryName</div>
+                    </div>
+
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">ATTN:</label>
+                        <div class="col-sm-8 control-label">@item2.FactoryContact</div>
+                    </div>
+
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">关于</label>
+                        <div class="col-sm-10 control-label">@item2.PurchaseNumber 的报检资料如下:</div>
+                    </div>
+
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">合同号:</label>
+                        <div class="col-sm-3 control-label">
+                            @if (ViewBag.PageTypeID == PageTypeEnum.Edit)
+                            {
+                                <select class="form-control txt_SCNO" data-classname="txt_SCNO_@(i)" name="ThisModel[@i].SCNO">
+                                    @{
+                                        List<string> list = new List<string>();
+                                        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                                        string[] arrSCNO = null;
+                                        if (!string.IsNullOrEmpty(item2.SCNOList))
+                                        {
+                                            arrSCNO = item2.SCNOList.Split(',');
+                                        }
+                                        foreach (var itemSCNO in arrSCNO)
+                                        {
+                                            if (itemSCNO == item2.SCNO)
+                                            {
+                                                <option value='@(itemSCNO)' selected='selected'>@(itemSCNO)</option>
+                                            }
+                                            else
+                                            {
+                                                <option value='@(itemSCNO)'>@(itemSCNO)</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                                        }
+                                        else
+                                        {
+
+                                            @item2.SCNO
+                                        }
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">报关品名:</label>
+                        <div class="col-sm-10 control-label">@item2.HsName</div>
+                    </div>
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">HS编码:</label>
+                        <div class="col-sm-10 control-label">@item2.HSCodeName</div>
+                    </div>
+
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">数量:</label>
+                        <div class="col-sm-10 control-label">@item2.ProductsQuauity</div>
+                    </div>
+
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">箱数:</label>
+                        <div class="col-sm-10 control-label">@item2.ProductsBoxNum</div>
+                    </div>
+
+                    <div class="form-group col-sm-12 has-feedback table_Receipt_@(i)">
+                        <label class="col-sm-2 control-label">总金额($):</label>
+                        <div class="col-sm-10 control-label txt_ProductAmount2">
+                            @item2.ProductAmount
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group col-sm-6 has-feedback">
+                    <label class="col-sm-4 control-label text-danger">最迟凭条出据日期:</label>
+                    <div class="col-sm-8 control-label">
+                        @if (ViewBag.PageTypeID == PageTypeEnum.Edit)
+                        {
+                            @Html.TextBoxFor(p => ThisModel[i].ClaimFaxDate, new { @class = "form-control Wdate ClaimFaxDate", onfocus = "WdatePicker({minDate:'%y-%M-%d'})" })
+
+                        }
+                        else
+                        {
+                            @Html.TextBoxFor(p => ThisModel[i].ClaimFaxDate, new { disabled = "disabled", @class = "form-control Wdate ClaimFaxDate" })
+                        }
+                    </div>
+                </div>
+
+                <div class="col-sm-6 control-label">
+                    <label class="col-sm-4 control-label">报检名称:</label>
+                    <div class="col-sm-8 control-label">@item2.INTypeName</div>
+                </div>
+
+                <div class="form-group col-sm-12 has-feedback">
+                    <label class="col-sm-2 control-label" style="width: 16.2%;">备注:</label>
+                    <div class="col-sm-10 control-label">
+                        @if (ViewBag.PageTypeID == PageTypeEnum.Edit)
+                        {
+                            @Html.TextAreaFor(p => ThisModel[i].INRemark, new { @class = "form-control" })
+
+                        }
+                        else
+                        {
+                            @Html.TextAreaFor(p => ThisModel[i].INRemark, new { disabled = "disabled", @class = "form-control" })
+                        }
+                    </div>
+                </div>
+
+                <div class="form-group col-sm-6 has-feedback">
+                    <label class="col-sm-4 control-label">制单人:</label>
+                    <div class="col-sm-8 control-label">@item2.CreateUserName</div>
+                </div>
+
+                <div class="form-group col-sm-6 has-feedback">
+                    <label class="col-sm-4 control-label">日期:</label>
+                    <div class="col-sm-8 control-label">@item2.CreateDateForamtter</div>
+                </div>
+            </div>
+        </div>
+                                        }
+</div>

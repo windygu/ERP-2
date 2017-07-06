@@ -1,0 +1,161 @@
+﻿@using ERP.Models.CustomEnums
+@model ERP.Models.ThreeTimesQC.VMThreeTimesQC
+
+@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+<style>
+    .form-control-feedback {
+        right: 25px;
+    }
+</style>
+
+@using (Ajax.BeginForm("Edit", "ShipmentSample", null, new AjaxOptions() { HttpMethod = "Post", OnBegin = "OnBegin", OnSuccess = "OnSuccess" }, new { id = "frmEdit" }))
+{
+    @Html.HiddenFor(p => p.ID)
+
+    <div id="inline">
+        @Html.Partial("_PartialPurchaseContract", Model.PurchaseContract)
+
+        <h3 class="popTitle">
+            收回登记
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent" style="overflow: inherit;">
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label text-danger">出货样保管人：</label>
+                <div class="col-sm-8 control-label">
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @InlineHelpers.GetSelection(ViewBag.ListUser, "RecoveryUserID", false, Model.RecoveryUserID, null)
+                    }
+                    else
+                    {
+                        @InlineHelpers.GetSelection(ViewBag.ListUser, "RecoveryUserID", true, Model.RecoveryUserID, null)
+                    }
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label text-danger">收回日期：</label>
+                <div class="col-sm-8 control-label">
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.TextBoxFor(d => d.RecoveryDateFormatter, new { @class = "Wdate form-control", disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.TextBoxFor(d => d.RecoveryDateFormatter, new { @class = "Wdate form-control" })
+                    }
+                </div>
+            </div>
+            <div class="form-group col-sm-6 has-feedback" style="margin-top: 10px;">
+                <label class="col-sm-4 control-label text-danger">出货样存放地址：</label>
+                <div class="col-sm-8 control-label">
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.TextBoxFor(d => d.RecoveryAddress, new { @class = "form-control", disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.TextBoxFor(d => d.RecoveryAddress, new { @class = "form-control" })
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="popBtns">
+            @switch (Model.PageType)
+            {
+                case PageTypeEnum.Edit:
+                    <button type="submit" class="btn btn-danger" name="RecoveryStatusID" value="@((int)ThirdPartyVerificationStatusEnum.HadUpload)">收回登记</button>
+                    <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                    break;
+                case PageTypeEnum.Details:
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">关闭</button>
+                    break;
+                default:
+                    break;
+            }
+        </div>
+    </div>
+}
+@section scripts{
+    <script>
+        $(function () {
+            $(".Factory_ProductList .Factory").each(function (index) {
+                $(this).find(".dg" + index).datagrid();
+            });
+            jav.initGridCellTooltips();
+            InitPopover();
+
+            $("select[name=RecoveryUserID]").selectpicker();
+
+            $("#frmEdit input[name=RecoveryDateFormatter]").blur(function () {
+                var RecoveryDateFormatter = $("#frmEdit input[name=RecoveryDateFormatter]").val();
+                var ValidDate = formateDate3(RecoveryDateFormatter, 0, 6, 0);
+                $("#frmEdit input[name=ValidDate]").attr("value", ValidDate);
+                $('#frmEdit').bootstrapValidator('revalidateField', 'RecoveryDateFormatter');
+            });
+
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+                fields: {
+                    RecoveryDateFormatter: {
+                        validators: {
+                            notEmpty: { message: '收回日期不能为空' },
+                        }
+                    },
+                    RecoveryAddress: {
+                        validators: {
+                            notEmpty: { message: '出货样存放地址不能为空' },
+                        }
+                    },
+                }
+            });
+        });
+
+        var checkSubmit = false;//防止重复提交
+        function OnBegin() {
+
+            //var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+            //bootstrapValidator.validate();
+            //if (!bootstrapValidator.isValid()) {
+            //    return false;
+            //}
+
+            if ($("#RecoveryUserID").val() == "") {
+                $.messager.alert("提示", "请选择出货样保管人！");
+                return false;
+            }
+
+            if (checkSubmit) {
+                //$.messager.alert("提示", "请勿重复提交！");
+                return false;
+            }
+            checkSubmit = true;
+            loading();
+            return true;
+        }
+
+        function OnSuccess(result) {
+            checkSubmit = false;
+            completeLoading();
+            if (!result.IsSuccess) {
+                $.messager.alert("提示", result.Msg);
+                return;
+            }
+            $.messager.alert("成功", "保存成功！", "info", function () {
+                parentGridReload();
+                OA.CloseMe(true);
+            });
+        }
+    </script>
+}

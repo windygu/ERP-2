@@ -1,0 +1,107 @@
+﻿@model ERP.Models.Packs.VMFilterPacks
+@using ERP.Models.CustomEnums;
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@{
+    ViewBag.Title = "已审核的标签资料";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var tableName = "#MyGrid";
+        var ControllerURL="href='@(Url.Content("~/Packs/"))";
+        var postControllerURL="@(Url.Content("~/Packs/"))";
+
+        var showHadNotification = @(Model.PageElementPrivileges & (int)PacksElementsPrivileges.HadNotification);
+        var showHadConfirm = @(Model.PageElementPrivileges & (int)PacksElementsPrivileges.HadConfirm);
+        var showHadFinish = @(Model.PageElementPrivileges & (int)PacksElementsPrivileges.HadFinish);
+
+        var showView = @(Model.PageElementPrivileges & (int)PacksElementsPrivileges.View);
+        var showUpload = @(Model.PageElementPrivileges & (int)PacksElementsPrivileges.Upload);
+        var showDownload = @(Model.PageElementPrivileges & (int)PacksElementsPrivileges.Download);
+
+        var PassedCheck = @((int)PurchasePacksStatusEnum.PassedCheck);
+        var HadNotification = @((int)PurchasePacksStatusEnum.HadNotification);
+        var HadConfirm = @((int)PurchasePacksStatusEnum.HadConfirm);
+        var HadFinish = @((int)PurchasePacksStatusEnum.HadFinish);
+
+        var HadUploaded = @((int)PurchasePacksStatusEnum.HadUploaded);
+
+        function operationFormatter(val, row, index) {
+
+            var PacksStatusID = row.PacksStatusID;
+
+            var isShowBtn=false;
+            var btnText="";
+            switch (PacksStatusID) {
+                case PassedCheck:
+                    isShowBtn = (showHadNotification > 0);
+                    btnText="标签已通知";
+                    break;
+                case HadNotification:
+                    isShowBtn = (showHadConfirm > 0);
+                    btnText="标签已确认";
+                    break;
+                case HadConfirm:
+                    isShowBtn = (showHadFinish > 0);
+                    btnText="大货印刷完成";
+                    break;
+                case HadFinish:
+                case HadUploaded:
+                    isShowBtn = (showUpload > 0);
+                    btnText="上传";
+                    break;
+
+                default:
+
+            }
+
+            var ops = "";
+            if (showView > 0) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Packs/Edit/"))?ContractID=" + val + "&Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if (btnText=="上传") {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' "+ControllerURL+"Upload?ContractID=" + val + "' style='margin: 0 5px;'>上传</a>";
+
+                if (showDownload > 0 && PacksStatusID==HadUploaded) {
+                    ops += "<a class='btn btn-default btn-xs w_auto' onclick='DownDataFiles("+val+")' style='margin: 0 5px;'>下载</a>";
+
+                }
+
+            }else if (isShowBtn) {
+                ops += "<a class='btn btn-default btn-xs w_auto' href='#' onclick='Confirm(" + val + ",\"" + btnText + "\")' style='margin:0 5px;'>" + btnText + "</a>";
+            }
+            return ops;
+        }
+
+        function DownDataFiles(icontractID) {
+            loading();
+            $.post(postControllerURL+"PacksDownload", { "ContractID": icontractID }, function (data) {
+                completeLoading();
+                window.open(data);
+            });
+        }
+
+        //列表数据加载成功时，使单元格鼠标移动呈现title
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ID","PurchaseContractID"]);
+        }
+
+        function Confirm(id,btnText) {
+            $.messager.confirm('提示',btnText + '吗?',function(r){
+                if (r){
+                    $.post('@Url.Content("~/Packs/ChangeStatus")', { id: id })
+                    .done(function () {
+                        $(tableName).datagrid('reload');
+                    })
+                }
+            });
+        }
+    </script>
+}

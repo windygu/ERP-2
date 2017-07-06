@@ -1,0 +1,261 @@
+﻿<!--报价单 选择产品 Start-->
+<link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+<style type="text/css">
+    .search_Condition ul li {
+        width: 33.33333333333%;
+    }
+</style>
+<div class="modal fade" id="myModal1" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title">选择产品</h3>
+            </div>
+            <div class="modal-body">
+                <div class="search_Condition box_1k">
+                    <ul>
+                        <li>
+                            <label class="col-xs-2">工厂：</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="FactoryName" />
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-2" style="padding:0;">产品类型：</label>
+                            <div class="col-sm-7">
+                                <select id="select_ProductType" class="form-control">
+                                    <option value="1">大清单产品</option>
+                                    <option value="2">客户选样产品</option>
+                                    <option value="3">混装产品</option>
+                                </select>
+                            </div>
+                        </li>
+                        <li>
+                            <label class="col-xs-2">客户：</label>
+                            <div class="col-sm-10">
+                                @InlineHelpers.GetSelectionForCustomers(ViewBag.CustomerInfos, "_PartialSelectProduct_CustomerID", true, 0)
+                            </div>
+                        </li>
+                        <li class="width100p">
+                            <label class="col-sm-1" style="width:11.4%">货号：</label>
+                            <div class="col-sm-11" style="width:88.6%">
+                                <textarea name="No" class="form-control" placeholder="可输入分号(;)、逗号(,)、空格以及换行符号隔开多个货号"></textarea>
+                            </div>
+                        </li>
+                        <li class="search">
+                            <button type="button" class="btn btn-info" onclick="loadGrid()">查询</button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div id="dvSubmitData" class="popConfirm" style="display:none;">
+                    <button id="btnSelect" type="button" class="btn btn-danger">提交产品</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+
+                <table id="modalGrid" class="easyui-datagrid" data-options="singleSelect:@((ViewBag.ProductSingleSelection != null && (bool)ViewBag.ProductSingleSelection) ? "true":"false"),pagelist: [10,20,50,100], pagesize:10,remotesort:true,multisort:true,pagination:true,method:'get',onHeaderContextMenu:onHeaderContextMenu" style="display:none;">
+                    <thead data-options="frozen:true">
+                        <tr>
+                            <th data-options="field:'ck',checkbox:true"></th>
+                            <!--基本信息-->
+                            <th data-options="field:'No',width:100,sortable:true,align:'center',formatter:productNoFormatter">货号</th>
+                            <th data-options="field:'NoFactory',width:100,sortable:true,align:'center'">工厂货号</th>
+                            <th data-options="field:'Name',width:100,sortable:true,align:'center'">品名</th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr>
+                            <th data-options="field:'FactoryName',width:80,sortable:true">工厂</th>
+                            <th data-options="field:'Desc',width:130,sortable:true">Product Description</th>
+                            <!--产品信息-->
+                            <th data-options="field:'CustomerNo',width:110,sortable:true">客户</th>
+                            <th data-options="field:'IsProductFittingFormatter',width:60,align:'center'">配件产品</th>
+                            <th data-options="field:'UnitName',width:40,sortable:true">单位</th>
+                            <th data-options="field:'StyleName',width:40,sortable:true">款式</th>
+                            <th data-options="field:'Length',width:50,sortable:true">长/CM</th>
+                            <th data-options="field:'LengthIN',width:50,sortable:true">长/in</th>
+                            <th data-options="field:'Width',width:50,sortable:true">宽/CM</th>
+                            <th data-options="field:'WidthIN',width:60,sortable:true">宽/in</th>
+                            <th data-options="field:'Height',width:60,sortable:true">高/CM</th>
+                            <th data-options="field:'HeightIN',width:60,sortable:true">高/in</th>
+                            <th data-options="field:'Weight',width:90,sortable:true">产品重量KGS</th>
+                            <th data-options="field:'WeightLBS',width:90,sortable:true">产品重量LBS</th>
+                            <!--PDQ信息-->
+                            <th data-options="field:'PDQPackRate',width:70,sortable:true">PDQ装率</th>
+                            <th data-options="field:'PDQLength',width:70,sortable:true">PDQ长/CM</th>
+                            <th data-options="field:'PDQLengthIN',width:70,sortable:true">PDQ长/in</th>
+                            <th data-options="field:'PDQWidth',width:70,sortable:true">PDQ宽/CM</th>
+                            <th data-options="field:'PDQWidthIN',width:70,sortable:true">PDQ宽/in</th>
+                            <th data-options="field:'PDQHeight',width:70,sortable:true">PDQ高/CM</th>
+                            <th data-options="field:'PDQHeightIN',width:70,sortable:true">PDQ高/in</th>
+                            <!--内盒信息-->
+                            <th data-options="field:'InnerBoxRate',sortable:true,width:70">内盒率</th>
+                            <th data-options="field:'InnerLength',sortable:true,width:70">内盒长/CM</th>
+                            <th data-options="field:'InnerLengthIN',sortable:true,width:70">内盒长/in</th>
+                            <th data-options="field:'InnerWidth',sortable:true,width:70">内盒宽/CM</th>
+                            <th data-options="field:'InnerWidthIN',sortable:true,width:70">内盒宽/in</th>
+                            <th data-options="field:'InnerHeight',sortable:true,width:70">内盒高/CM</th>
+                            <th data-options="field:'InnerHeightIN',sortable:true,width:70">内盒高/in</th>
+                            <th data-options="field:'InnerVolume',sortable:true,width:70">内盒材积Cuft</th>
+                            <th data-options="field:'InnerWeight',sortable:true,width:90">内盒重量KGS</th>
+                            <th data-options="field:'InnerWeightLBS',sortable:true,width:90">内盒重量LBS</th>
+                            <!--外箱信息-->
+                            <th data-options="field:'OuterBoxRate',sortable:true,width:70">外箱率</th>
+                            <th data-options="field:'OuterLength',sortable:true,width:70">外箱长/CM</th>
+                            <th data-options="field:'OuterLengthIN',sortable:true,width:70">外箱长/in</th>
+                            <th data-options="field:'OuterWidth',sortable:true,width:70">外箱宽/CM</th>
+                            <th data-options="field:'OuterWidthIN',sortable:true,width:70">外箱宽/in</th>
+                            <th data-options="field:'OuterHeight',sortable:true,width:70">外箱高/CM</th>
+                            <th data-options="field:'OuterHeightIN',sortable:true,width:70">外箱高/in</th>
+                            <th data-options="field:'OuterVolume',sortable:true,width:70">外箱材积Cuft</th>
+                            <!--价格信息-->
+                            <th data-options="field:'PriceFactory',sortable:true,width:70">工厂价格</th>
+                            <th data-options="field:'CurrencyName',sortable:true,width:70">币种</th>
+                            <!--外箱信息-->
+                            <th data-options="field:'OuterWeightGross',sortable:true,width:90">外箱毛重KGS</th>
+                            <th data-options="field:'OuterWeightGrossLBS',sortable:true,width:70">外箱毛重LBS</th>
+                            <th data-options="field:'OuterWeightNet',sortable:true,width:90">外箱净重KGS</th>
+                            <th data-options="field:'OuterWeightNetLBS',sortable:true,width:70">外箱净重LBS</th>
+                            <!--产品信息-->
+                            <th data-options="field:'PortName',sortable:true,width:70">出运港</th>
+                            <th data-options="field:'PackingMannerZhName',sortable:true,width:110">包装方式</th>
+                            <th data-options="field:'IngredientZh',sortable:true,width:90">产品成分构成</th>
+                            <th data-options="field:'MOQZh',sortable:true,width:70">起订量</th>
+                            <!--备注信息-->
+                            <th data-options="field:'Comment',width:90">备注</th>
+                            <!--报价有效期-->
+                            <th data-options="field:'PriceInputDateFormat',width:90,sortable:true">价格输入日期</th>
+                            <th data-options="field:'ValidDateFormat',width:90,sortable:true">有效期</th>
+                            <th data-options="field:'DT_MODIFYDATE',width:150,sortable:true,formatter:formateDate">修改日期</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<!--报价单 选择产品 End-->
+<script src="~/Scripts/jquery.easyui.datagrid-groupview.js?v=20151224110930"></script>
+
+<script>
+    var ProductsTablehtmlId = "#modalGrid";
+    //加载表格内容
+    var includeQuoteProducts = false;
+    var IsProductMixed = false;
+    var defaultView = $.fn.datagrid.defaults.view;
+
+    @*$().ready(function(){
+        $('#CustomerID').on("change", function(){
+            var forcedCustomer = @(ViewBag.ForcedCustomer != null && (bool)ViewBag.ForcedCustomer ? "true" : "false");
+            if(forcedCustomer){
+
+                $("#myModal1 #_PartialSelectProduct_CustomerID").val($('#CustomerID').val());
+                $("#_PartialSelectProduct_CustomerID").prop("disabled","disabled");
+            }
+        });
+    });*@
+
+    function loadGrid() {
+        var customerID = $("#myModal1 #_PartialSelectProduct_CustomerID").val();
+        if(includeQuoteProducts && (!customerID || customerID == "" || customerID == "0")){
+            $.messager.alert("提示", "包含客户选样产品时，您必须选择一个客户");
+            return;
+        }
+        var options = {
+            url: '@Url.Content("~/Product/SelectProduct")',
+            queryParams: {
+                No: $("#myModal1 textarea[name=No]").val(),
+                CustomerID: customerID,
+                FactoryName: $("#myModal1 input[name=FactoryName]").val(),
+                IncludeQuoteProducts: includeQuoteProducts,
+                IsProductMixed:IsProductMixed,
+            },
+            onLoadSuccess: function () {
+                $(".popConfirm").fadeIn();
+                InitPopover();
+                //jav.initGridCellTooltips(["ck", "DT_CREATEDATE", "ID"]);
+            },
+            onBeforeCheck:function(index, row){
+                var rows = $(ProductsTablehtmlId).datagrid('getSelections');
+                var exists = $.grep(rows, function(e){ return e.No == row.No && e.ID != row.ID })[0];
+                if(exists){
+                    $.messager.alert("提示", "相同的货号只允许选择一次，您已经选择了【"+ row.No +"】");
+                    return false;
+                }
+                else{
+                    return true;
+                }
+            },
+            onCheckAll:function(rows){
+                var rows = $(ProductsTablehtmlId).datagrid('getSelections');
+                var arrNo = [];
+                $.each(rows,function(i,o){
+                    var NO = o.No;
+                    if(arrayContains(arrNo, NO)){
+                        $.messager.alert("提示", "相同的货号只允许选择一次，您不能重复选择【"+ NO +"】");
+                        $(ProductsTablehtmlId).datagrid('uncheckRow', i);
+                    }
+                    else{
+                        arrNo.push(NO);
+                    }
+                });
+            },
+            singleSelect:@((ViewBag.ProductSingleSelection != null && (bool)ViewBag.ProductSingleSelection) ? "true":"false")
+            }
+
+        if(includeQuoteProducts){
+            options.view = groupview;
+            options.groupField = 'RootNo';
+            options.groupFormatter = function (value,rows){
+                return value + ' - ' + rows.length + '个相关产品';
+            };
+        }
+        else{
+            options.view = defaultView;
+        }
+        $(ProductsTablehtmlId).datagrid(options);
+    }
+
+    function productNoFormatter(val, row, index) {
+        return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ID , row.No + (row.ParentProductID != null ? " （<span class='bg-green'>选</span>）" : ""));
+    }
+
+    function onHeaderContextMenu(e, field){
+        e.preventDefault();
+        jav.initGridColumnVisibilityMenus("modalGrid", @(ERP.WebNew.Service.CurrentUserServices.Me.UserID), @((int)ERP.Models.CustomEnums.DatagridCustomColumnVisibilityModules.ProductManagement_ProductSelection), e.pageX, e.pageY, @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ColumnsVisibleForSelection))));
+    }
+
+    $("#select_ProductType").change(function() {
+
+        includeQuoteProducts = false;
+        if ($(this).val()==2) {
+            includeQuoteProducts = true;
+        }
+
+        IsProductMixed = false;
+        if ($(this).val()==3) {
+            IsProductMixed = true;
+        }
+
+        var forcedCustomer = @(ViewBag.ForcedCustomer != null && (bool)ViewBag.ForcedCustomer ? "true" : "false");
+        if(forcedCustomer){
+            if(checked){
+                $("#myModal1 #_PartialSelectProduct_CustomerID").val($('#CustomerID').val());
+                $("#_PartialSelectProduct_CustomerID").prop("disabled","disabled");
+            }
+            else{
+                $("#_PartialSelectProduct_CustomerID").removeAttr("disabled");
+            }
+        }
+        else{
+            //if(checked){
+            //    $("#myModal1 #_PartialSelectProduct_CustomerID").val("0");
+            //    $("#_PartialSelectProduct_CustomerID").prop("disabled","disabled");
+            //}
+            //else{
+            //    $("#_PartialSelectProduct_CustomerID").removeAttr("disabled");
+            //}
+        }
+    });
+</script>

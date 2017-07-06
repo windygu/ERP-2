@@ -1,0 +1,1363 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@model ERP.Models.Quote.VMQuoteEdit
+
+@using ERP.Models.CustomEnums
+
+@section styles{
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+    <style type="text/css">
+        .glyphicon {
+            right: 20px;
+        }
+
+        .box_1k {
+            margin-top: 0;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+    </style>
+
+}
+
+<div id="frmEdit" class="content-wrapper">
+
+    <div class="content-wrapper">
+        <form method="post" class="form-horizontal">
+            @Html.HiddenFor(d => d.ID)
+            @Html.Partial("_PartialQuoteInfo")
+
+            <div class="hide">
+                <!--混装产品-->
+                <table id="MyPopGrid_ProductMixed" class="table table-bordered"></table>
+            </div>
+
+            <input id="temp_SelectCustomer" type="hidden" />
+            <h3 class="popTitle">
+                产品信息
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="row popContent  select_table chanpin">
+                <div class="btn-group" style="margin-bottom: 10px">
+                    @if (Model.PageType != PageTypeEnum.Details)
+                    {
+                        <button id="btnSelectProduct" type="button" class="btn btn-info" style="margin-right: 5px;">选择产品</button>
+                        <button id="btnDelete" type="button" onclick="deleteSelected()" class="btn btn-danger">删除选中产品</button>
+                    }
+                    @if (Model.PageType != PageTypeEnum.Add)
+                    {
+                        <a class="btn btn-default" href="@Url.Content("~/Quote/Template/"+Model.ID)" target="_blank" style="margin-left:5px;">查看报价单产品</a>
+                    }
+                </div>
+                <div class="table-responsive">
+                    <table id="MyPopGrid" class="easyui-datagrid" style="width:100%;overflow:auto;">
+                        <thead data-options="frozen:true">
+                            <tr>
+                                <th data-options="field:'ID',checkbox:true"></th>
+                                <th data-options="field:'No',width:100,align:'left',formatter:productNoFormatter">货号</th>
+                                <th data-options="field:'CustomerNo',width:100,align:'left'">客户</th>
+                            </tr>
+                        </thead>
+                        <thead>
+                            <tr>
+                                <th data-options="field:'FactoryName',width:100,align:'left'">工厂</th>
+                                <th data-options="field:'FactoryID_ForQuote',width:120,height:30,align:'center',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:list_Factory,
+                                    editable:false,
+                                    multiple:false,
+                                    multiline:false,
+                                }
+                            },formatter:formatFactory">选择工厂</th>
+                                <th data-options="field:'Desc',width:100,align:'left'">Product Description</th>
+                                <th data-options="field:'UnitName',width:100,align:'left'">单位</th>
+                                <th data-options="field:'StyleName',width:100,align:'left'">款式</th>
+                                <th data-options="field:'LengthIN',width:100,align:'center'">Product L(in)</th>
+                                <th data-options="field:'WidthIN',width:100,align:'center'">Product W(in)</th>
+                                <th data-options="field:'HeightIN',width:100,align:'center'">Product H(in)</th>
+                                <th data-options="field:'Weight',width:100,align:'center'">Product Weight(LBS)</th>
+                                <th data-options="field:'PDQPackRate',width:100,align:'center'">PDQ装率</th>
+                                <th data-options="field:'PDQLengthIN',width:100,align:'center'">PDQ L(in)</th>
+                                <th data-options="field:'PDQWidthIN',width:100,align:'center'">PDQ W(in)</th>
+                                <th data-options="field:'PDQHeightIN',width:100,align:'center'">PDQ H(in)</th>
+                                <th data-options="field:'InnerBoxRate',width:100,align:'center'">内盒率</th>
+                                <th data-options="field:'INR',width:100,align:'center',editor:{type:'numberbox',options:{precision:0}}">INNER INNER PACK</th>
+                                <th data-options="field:'InnerLengthIN',width:100,align:'center'">Inner L(in)</th>
+                                <th data-options="field:'InnerWidthIN',width:100,align:'center'">Inner W(in)</th>
+                                <th data-options="field:'InnerHeightIN',width:100,align:'center'">Inner H(in)</th>
+                                <th data-options="field:'InnerVolume',width:100,align:'center'">内盒材积(Cuft)</th>
+                                <th data-options="field:'InnerWeight',width:100,align:'center'">Inner Weight(LBS)</th>
+                                <th data-options="field:'OuterBoxRate',width:100,align:'center'">外箱率</th>
+                                <th data-options="field:'OuterLengthIN',width:100,align:'center'">Case L(in)</th>
+                                <th data-options="field:'OuterWidthIN',width:100,align:'center'">Case W(in)</th>
+                                <th data-options="field:'OuterHeightIN',width:100,align:'center'">Case H(in)</th>
+                                <th data-options="field:'OuterVolume',width:100,align:'center'">外箱材积(Cuft)</th>
+                                <th data-options="field:'CurrencyName',width:100,align:'left'">币种</th>
+                                <th data-options="field:'PriceFactory',width:100,align:'center'">工厂价格</th>
+                                <th data-options="field:'OuterWeightGrossLBS',width:100,align:'center'">Case Gross Weight(LBS)</th>
+                                <th data-options="field:'OuterWeightNetLBS',width:100,align:'center'"> Case Net Weight(LBS)</th>
+                                <th data-options="field:'FOBFTY',width:100,align:'center'">FOB FTY($)</th>
+                                <th data-options="field:'FOBNET',width:100,align:'center'">FOB NET</th>
+                                <th data-options="field:'FinalFOB',width:100,align:'center'">Final FOB</th>
+
+                                <th data-options="field:'Rate',width:100,align:'center',editor:{type:'validatebox',options:{required:true}}">Rate</th>
+
+                                <th data-options="field:'TermsID',width:100,align:'center',editor:{
+                                    type:'combobox',
+                                    options:{
+                                        valueField:'Value',
+                                        textField:'Text',
+                                        data:listTerms,
+                                        required:true,
+                                        }
+                                    },
+                                    formatter:formatTerms">
+                                    Terms
+                                </th>
+
+                                <th data-options="field:'Cost',width:100,align:'center',editor:{type:'validatebox',options:{required:true}}">Cost</th>
+
+                                <th data-options="field:'PortID',width:150,editor:'text',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:Porty,
+                                    required:true,
+                                }
+                            },formatter:formatPorty">
+                                    港口
+                                </th>
+
+                                <th data-options="field:'PalletPc',width:100,align:'center'">Pallet $/pc</th>
+                                <th data-options="field:'HTS_Name',width:100,align:'center'">HTS#</th>
+                                <th data-options="field:'DutyPercentFormatter',width:100,align:'center'">Duty%</th>
+                                <th data-options="field:'Duty',width:100,align:'center'">Duty Amount</th>
+                                <th data-options="field:'FreightRate',width:100,align:'center'">Freight Rate</th>
+                                <th data-options="field:'Freight',width:100,align:'center'">Freight Amount($)</th>
+                                <th data-options="field:'Commission',width:100,align:'center',editor:{type:'validatebox',options:{required:true}}">Commission%</th>
+                                <th data-options="field:'CommissionAmount',width:100,align:'center'">Commission Amount</th>
+                                <th data-options="field:'MiscImportLoadFormatter',width:100,align:'center'">Misc% /Import Load%</th>
+                                <th data-options="field:'MiscImportLoadAmount',width:100,align:'center'">Misc / Import Load Amount</th>
+                                <th data-options="field:'Agent',width:100,align:'center'">Agent%</th>
+                                <th data-options="field:'AgentAmount',width:100,align:'center'">Agent Amount</th>
+                                <th data-options="field:'ELC',width:100,align:'center'">ELC</th>
+                                <th data-options="field:'Retail',width:100,align:'center',editor:{type:'validatebox',options:{required:true}}">Retail</th>
+                                <th data-options="field:'MU',width:100,align:'center',editor:{type:'validatebox',options:{required:true}}">Est. MU%</th>
+                                <th data-options="field:'Allowance',width:100,align:'center'">Allowance</th>
+                                <th data-options="field:'UPC',width:100,align:'left'">UPC#</th>
+                                <th data-options="field:'PackingMannerEnName',width:100,align:'left'">Packaging Type</th>
+                                <th data-options="field:'IngredientEn',width:100,align:'left'">Material Composition</th>
+                                <th data-options="field:'MOQZh',width:100,align:'center'">MOQ</th>
+                                <th data-options="field:'TypeOfWood',width:100,align:'center',editor:{type:'validatebox'}">type of wood</th>
+                                <th data-options="field:'Comment',width:100,align:'left'">Remarks</th>
+
+                                <th data-options="field:'Image',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'ProductID',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'CurrencySign',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'PriceInputDate',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'ValidDate',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'QuoteTemplateFileName',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'ELCFill',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'DutyPercent',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'MiscImportLoad',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'IsProductMixed',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'ParentProductMixedID',width:80,align:'center',hidden:true"></th>
+
+                                <th data-options="field:'ExchangeRate',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'CurrencyExchangeUSD',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'CurrencyExchangeRMB',width:80,align:'center',hidden:true"></th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: quot().listProducts">
+                            <tr>
+                                <td data-bind="text: ID"></td>
+                                <td data-bind="text: No"></td>
+
+                                <td data-bind="text: CustomerNo"></td>
+                                <td data-bind="text: FactoryName"></td>
+                                <td data-bind="text: FactoryID_ForQuote"></td>
+
+                                <!--产品信息-->
+                                <td data-bind="text: Desc"></td>
+                                <td data-bind="text: UnitName"></td>
+                                <td data-bind="text: StyleName"></td>
+                                <td data-bind="text: LengthIN"></td>
+                                <td data-bind="text: WidthIN"></td>
+                                <td data-bind="text: HeightIN"></td>
+                                <td data-bind="text: Weight"></td>
+
+                                <!--PDQ信息-->
+                                <td data-bind="text: PDQPackRate"></td>
+                                <td data-bind="text: PDQLengthIN"></td>
+                                <td data-bind="text: PDQWidthIN"></td>
+                                <td data-bind="text: PDQHeightIN"></td>
+
+                                <!--内盒信息-->
+                                <td data-bind="text: InnerBoxRate"></td>
+                                <td data-bind="text: INR"></td>
+                                <td data-bind="text: InnerLengthIN"></td>
+                                <td data-bind="text: InnerWidthIN"></td>
+                                <td data-bind="text: InnerHeightIN"></td>
+                                <td data-bind="text: formatPrice(InnerVolume,4)"></td>
+                                <td data-bind="text: InnerWeight"></td>
+
+                                <!--外箱信息-->
+                                <td data-bind="text: OuterBoxRate"></td>
+                                <td data-bind="text: OuterLengthIN"></td>
+                                <td data-bind="text: OuterWidthIN"></td>
+                                <td data-bind="text: OuterHeightIN"></td>
+                                <td data-bind="text: formatPrice(OuterVolume,GetOuterVolume_RoundNumber(QuoteTemplateFileName))"></td>
+
+                                <!--价格信息-->
+                                <td data-bind="text: CurrencyName"></td>
+                                <td data-bind="text: PriceFactory"></td>
+
+                                <!--外箱信息-->
+                                <td data-bind="text: OuterWeightGrossLBS"></td>
+                                <td data-bind="text: OuterWeightNetLBS"></td>
+
+                                <!--价格信息-->
+                                <td data-bind="text: formatPrice(FOBFTY,GetFobFty_RoundNumber(QuoteTemplateFileName))"></td>
+                                <td data-bind="text: FOBNET"></td>
+                                <td data-bind="text: FinalFOB"></td>
+
+                                <td data-bind="text: formatPrice(Rate,GetRate_RoundNumber(QuoteTemplateFileName))"></td>
+                                <td data-bind="text: TermsID"></td>
+                                <td data-bind="text: formatPrice(Cost,GetCost_RoundNumber(QuoteTemplateFileName))"></td>
+                                <td data-bind="text: PortID"></td>
+
+                                <!--托盘信息-->
+                                <td data-bind="text: PalletPc"></td>
+
+                                <!--关税及运费-->
+                                <td data-bind="text: HTS_Name"></td>
+                                <td data-bind="text: DutyPercentFormatter"></td>
+                                <td data-bind="text: formatPrice(Duty,GetDutyAmount_RoundNumber(QuoteTemplateFileName))"></td>
+                                <td data-bind="text: FreightRate"></td>
+                                <td data-bind="text: formatPrice(Freight,GetFreightAmount_RoundNumber(QuoteTemplateFileName))"></td>
+
+                                <!--价格信息-->
+                                <td data-bind="text: Commission"></td>
+                                @*<td style="padding-right: 15px;">
+                                        <input type="text" class="form-control" data-bind="value: Commission" data-name="Commission" style="float:left;" />
+                                        <span style="margin-left: 3px;line-height: 30px;">%</span>
+                                    </td>*@
+                                <td data-bind="text: CommissionAmount"></td>
+                                <td data-bind="text: MiscImportLoadFormatter"></td>
+                                <td data-bind="text: formatPrice(MiscImportLoadAmount,GetMiscAmount_RoundNumber(QuoteTemplateFileName))"></td>
+                                <td data-bind="text: Agent"></td>
+                                <td data-bind="text: AgentAmount"></td>
+                                <td data-bind="text: formatPrice(ELC,GetELC_RoundNumber(QuoteTemplateFileName))"></td>
+                                <td data-bind="text: formatPrice(Retail,2)"></td>
+                                <td data-bind="text: MU"></td>
+                                <td data-bind="text: Allowance"></td>
+
+                                <!--产品信息-->
+                                <td data-bind="text: UPC"></td>
+                                <td data-bind="text: PackingMannerEnName"></td>
+                                <td data-bind="text: IngredientEn"></td>
+                                <td data-bind="text: MOQZh"></td>
+
+                                <td data-bind="text: TypeOfWood"></td>
+                                <!--备注信息-->
+                                <td data-bind="text: Comment"></td>
+
+                                <td data-bind="text: Image"></td>
+                                <td data-bind="text: ProductID"></td>
+                                <td data-bind="text: CurrencySign"></td>
+                                <td data-bind="text: PriceInputDate"></td>
+                                <td data-bind="text: ValidDate"></td>
+                                <td data-bind="text: QuoteTemplateFileName"></td>
+                                <td data-bind="text: ELCFill"></td>
+                                <td data-bind="text: DutyPercent"></td>
+                                <td data-bind="text: MiscImportLoad"></td>
+                                <td data-bind="text: IsProductMixed"></td>
+                                <td data-bind="text: ParentProductMixedID"></td>
+
+                                <td data-bind="text: ExchangeRate"></td>
+                                <td data-bind="text: CurrencyExchangeUSD"></td>
+                                <td data-bind="text: CurrencyExchangeRMB"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div data-bind="with: quot">
+                <div data-bind="visible: StatusID() == @((int)QuoteStatusEnum.PendingCheck)">
+                    <h3 class="popTitle">
+                        审核意见
+                        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+                    </h3>
+                    <div class="popContent">
+                        <div class="form-group col-sm-12 has-feedback">
+                            <label class="control-label col-sm-2">审核意见：</label>
+                            <div class="col-sm-10 control-label" style="text-align: left;">
+                                <textarea id="CheckSuggest" class="form-control" rows="2" data-bind="value: CheckSuggest" @(Model.PageType == PageTypeEnum.Details ? "disabled" : "")></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="popBtns">
+
+                @if (Model.PageType != PageTypeEnum.Details)
+                {
+                    <div class="form-group" data-bind="with: quot">
+                        <div class="col-sm-12">
+                            <div class="text-right" data-bind="visible: StatusID() == @((int)QuoteStatusEnum.OutLine) || StatusID() == @((int)QuoteStatusEnum.NotPassCheck)">
+                                <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)QuoteStatusEnum.OutLine))">保存为草稿</button>
+                                <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data,  @((int)QuoteStatusEnum.PendingCheck))">保存并提交审核</button>
+                                <button type="button" onclick="OA.CloseMe()" class="btn btn-default">取消</button>
+                            </div>
+                            <div class="text-right" data-bind="visible: StatusID() == @((int)QuoteStatusEnum.PendingCheck)">
+                                <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)QuoteStatusEnum.PassedCheck))">审核通过</button>
+                                <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)QuoteStatusEnum.NotPassCheck))">驳回重审</button>
+                                <button type="button" onclick="OA.CloseMe()" class="btn btn-default">取消</button>
+                            </div>
+                            <div class="text-right" data-bind="visible: StatusID() == @((int)QuoteStatusEnum.ReQutes)|| StatusID() == @((int)QuoteStatusEnum.HadSend)">
+                                <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)QuoteStatusEnum.ReQutes))">重新报价</button>
+                                <button type="button" onclick="OA.CloseMe()" class="btn btn-default">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+                }
+            </div>
+
+            @if (Model.PageType != PageTypeEnum.Add && Model.PageType != PageTypeEnum.Copy)
+            {
+                <h3 class="popTitle">
+                    历史记录
+                    <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+                </h3>
+                <div class="popContent" style="display:none;">
+                    <div class="history_box">
+                        <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                            <tbody>
+                                <tr class="t_bg">
+                                    <td width="20%">日期</td>
+                                    <td width="20%">操作者</td>
+                                    <td width="30%">状态</td>
+                                    <td width="30%">意见/备注</td>
+                                </tr>
+                                @if (Model.listHistory != null)
+                                {
+                                    foreach (var item_history in Model.listHistory.OrderByDescending(d => d.DT_CREATEDATE))
+                                    {
+                                        <tr>
+                                            <td>@ERP.Tools.Utils.DateTimeToStr2(item_history.DT_CREATEDATE)</td>
+                                            <td>@item_history.ST_CREATEUSER</td>
+                                            <td>@item_history.Comment</td>
+                                            <td>@item_history.CheckSuggest</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+
+            <input id="btnSaveDraft" type="button" data-bind="click: $root.SaveDraft.bind($data)" style="display:none;" />
+        </form>
+    </div>
+</div>
+
+@Html.Partial("_PartialSelectProduct")
+
+@section scripts{
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.easyui.datagrid-groupview.js")"></script>
+    <script>
+
+        $(function() {
+            $("#MyPopGrid").datagrid({
+                checkOnSelect:true,
+                onBeforeEdit:onBeforeEdit,
+                onAfterEdit:onAfterEdit,
+                onCancelEdit:onCancelEdit,
+                onClickCell: @(Model.PageType == PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+                showFooter: true,
+                onBeginEdit:onBeginEdit,
+                onLoadSuccess:onLoadSuccess,
+            });
+
+            $("#MyPopGrid_ProductMixed").datagrid({
+                checkOnSelect:true,
+                columns:GetClumns(),
+                data:@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.listProducts_Mixed))),
+            });
+
+            var hasCachedQuote = @(new ERP.BLL.ERP.Quote.QuoteService().GetOneCachedQuote(ERP.WebNew.Service.CurrentUserServices.Me.UserID, Model.ID) == null ? "false" : "true");
+            var isEditPage = @(Model.PageType==PageTypeEnum.Edit?"true":"false");
+            var isAddPage = @(Model.PageType==PageTypeEnum.Add?"true":"false");
+            if(@((string.IsNullOrEmpty(Request.QueryString["openCached"]) || Request.QueryString["openCached"] == "false") ? "true" : "false") && hasCachedQuote&&(isEditPage||isAddPage)){
+                $.messager.confirm("提示", "发现您有未保存的报价单，是否加载？", function(r){
+                    if(r){
+                        window.location.href = "@(Url.Content("~/Quote/Edit/" + Model.ID + "?openCached=true"))";
+                    }
+                });
+            }
+        });
+
+
+
+
+        var listTerms = [
+            { Value:'1',Text:'FOB CN'},
+            { Value:'3',Text:'FOB US'},
+            { Value:'4',Text:'POE'},
+            { Value:'5',Text:'DDP'}
+        ];
+
+        function formatTerms(value,row,index){
+            for(var i=0; i<listTerms.length; i++){
+                if (listTerms[i].Value == value)
+                    return listTerms[i].Text;
+            }
+            return value;
+        }
+
+        var Porty = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewData["Porty"])));
+
+        function formatPorty(value,row,index){
+            for(var i=0; i<Porty.length; i++){
+                if (Porty[i].Value == value)
+                    return Porty[i].Text;
+            }
+            return value;
+        }
+
+        $('#btnSelect').click(function () {
+            var idArray = getSelections("#modalGrid", "ProductID");
+            if (idArray.length <= 0) {
+                $.messager.alert("提示", "请选择产品！");
+                return;
+            }
+            var NoArray = getSelections("#modalGrid", "No");
+
+            GetCustomerInfo($('#CustomerID').val());
+
+            var quotProductArray = [];
+
+            var rows = $("#MyPopGrid").datagrid('getRows');
+            for (var j = 0; j < idArray.length; j++) {
+                for (var i = 0; i < rows.length; i++) {
+                    var thisProductID = rows[i].ProductID;
+                    var thisProductNo = rows[i].No;
+                    if (idArray.contains(thisProductID) || NoArray[i] == thisProductNo) {
+                        if (!quotProductArray.contains(thisProductNo)) {
+                            quotProductArray.push(thisProductNo);
+                        }
+                        idArray = idArray.remove(thisProductID);
+                    }
+                }
+            }
+            if (quotProductArray.length > 0) {
+                $.messager.alert("提示", "产品货号：[" + quotProductArray.join(',') + "]在报价单中已存在！");
+            }
+            $.get("@Url.Content("~/Product/GetProductInfoByQuote")", {
+                idList: idArray.join(','),
+                CustomerID: $('#CustomerID').val(),
+                CurrencyExchangeRMB: $("#CurrencyExchangeRMB").val(),
+                CurrencyExchangeUSD: $("#CurrencyExchangeUSD").val(),
+                ExchangeRate: $("#ExchangeRate").val(),
+                TermsID: $("#TermsID").val(),
+                PortID: $("#PortID").val(),
+            }).done(function (data) {
+
+                for (var i = 0; i < data.length; i++) {
+                    data[i].ID = -data[i].ProductID;
+                    CalculateRow(data[i],rows.length+i,"Rate");
+                    $('#MyPopGrid').datagrid('appendRow', data[i]);
+                }
+
+                $.messager.show({ title: "提示", msg: "产品添加成功！", timeout: 2000, showType: 'slide' });
+        
+                UpdateExpander();
+
+                for (var i = 0; i < data.length; i++) {
+                    Add_ProductMixed(data[i]);    
+                }
+
+            });
+
+        });
+
+        function deleteSelected() {
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    var idArray = [];
+                    var rows = $("#MyPopGrid").datagrid('getSelections');
+                    for (var i = 0; i < rows.length; i++) {
+                        var rowIndex=$('#MyPopGrid').datagrid('getRowIndex',rows[i]);
+                        if (rowIndex >= 0) {
+                            $('#MyPopGrid').datagrid('deleteRow', rowIndex);
+                            Delete_ProductMixed(rows[i].ID);
+                        }
+                    }
+
+                    var index2=0;
+                    $('#MyPopGrid').prev().find(".datagrid-body table tbody tr:odd").each(function(index,e){
+                        if ($(e).find("table.datagrid-f").attr("id")!=undefined) {
+                            if ($(e).find("table.datagrid-f").attr("id").indexOf("ddv-")>=0) {
+                                $(e).find("table.datagrid-f").removeAttr("id").attr("id","ddv-"+index2);
+                                index2++;
+                            }
+                        }
+
+                        if ($(e).find("table").attr("id")!=undefined) {
+                            if ($(e).find("table").attr("id").indexOf("ddv-")>=0) {
+                                $(e).find("table").removeAttr("id").attr("id","ddv-"+index2);
+                                index2++;
+                            }
+                        }
+
+                    });
+
+                    editIndex = undefined;
+
+                    UpdateExpander();
+
+
+                }
+            });
+        }
+
+        function GetCustomerInfo(CustomerID) {
+            if (CustomerID<=0) {
+                return;
+            }
+            $.get("@Url.Content("~/Quote/GetCustomer")", {
+                CustomerID: CustomerID,
+            }).done(function (data) {
+                BindHiddenPortID(data);
+                $("#temp_SelectCustomer").val(data[0].SelectCustomer);
+                
+                var $thisDatagrid = $('#MyPopGrid');
+                ShowOrHideColumn($thisDatagrid);
+            });
+        }
+
+        //绑定隐藏的港口FreightRate
+        function BindHiddenPortID(data) {
+            $("#hiddenPortID option").each(function () {
+                $(this).attr("freightRate", 0);//首先全部清零
+            });
+
+            for (var i = 0; i < data[0].VMFreight.length; i++) {
+                var thisFreight = data[0].VMFreight[i];
+                var type = thisFreight.Type;
+                var freightRate = thisFreight.FreightRate;
+                var portID = thisFreight.PortID;
+
+                if (type == "0") {//全部港口
+                    $("#hiddenPortID option").each(function () {
+                        $(this).attr("freightRate", freightRate);
+                    });
+                }
+                else if (type == "1") {//单一港口
+                    $("#hiddenPortID option[value=" + portID + "]").attr("freightRate", freightRate);
+                }
+            }
+        }
+        function onLoadSuccess(){
+        }
+
+        function Quot(item) {
+            this.ID = ko.observable(item.ID);
+            this.ValidDateFormat = ko.observable(item.ValidDateFormat);
+            this.CustomerCode = ko.observable(item.CustomerCode);
+            this.CustomerID = ko.observable(item.CustomerID);
+            this.IsImmediatelySend = ko.observable(item.IsImmediatelySend);
+
+            this.CommissionPercent = ko.observable(item.CommissionPercent);
+            this.AllowancePercent = ko.observable(item.AllowancePercent);
+            this.PalletPc = ko.observable(item.PalletPc);
+            this.MiscImportLoadPercent = ko.observable(item.MiscImportLoadPercent);
+
+            this.QuotNumber = ko.observable(item.QuotNumber);
+            this.QuotDate = ko.observable(item.QuotDate);
+            this.AuthorName = ko.observable(item.AuthorName);
+            this.QuotTimes = ko.observable(item.QuotTimes);
+            this.StatusID = ko.observable(item.StatusID);
+            this.NewStatusID =  ko.observable();
+            this.StatusName = ko.observable(item.StatusName);
+
+            this.IsCopy = ko.observable("@(Model.PageType==PageTypeEnum.Copy)");
+
+
+            this.ExchangeRate = ko.observable(item.ExchangeRate);
+            this.CurrencyExchangeUSD = ko.observable(item.CurrencyExchangeUSD);
+            this.CurrencyExchangeRMB = ko.observable(item.CurrencyExchangeRMB);
+            this.TermsID = ko.observable(item.TermsID);
+            this.PortID = ko.observable(item.PortID);
+
+            this.CheckSuggest = ko.observable();
+            this.listProducts = ko.observableArray();
+            this.listProducts_Mixed = ko.observableArray();
+        }
+
+        function QuotEditViewModel() {
+            var self = this;
+
+            self.quot = ko.observable();
+            self.quot(new Quot(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model)))));
+
+            self.quot().listProducts(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.listProducts))));
+
+            self.quot().listProducts_Mixed(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.listProducts_Mixed))));
+
+            $("#CustomerID").val(self.quot().CustomerID());
+
+            GetCustomerInfo(self.quot().CustomerID());
+
+            var checkSubmit = false;//防止重复提交
+            //提交
+            self.submit = function (StatusID) {
+
+                var rows = $('#MyPopGrid_ProductMixed').datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.quot().listProducts_Mixed(rows);
+                }
+
+
+                if (editIndex != undefined) {
+                    $.messager.confirm("提示", "发现您有正在编辑状态的产品，是否保存？", function(r){
+                        if(r){
+                            endEditingInfo();
+                        }
+                    });
+                    return false;
+                }
+
+                if ($('#ValidDateFormat').val()=="") {
+                    $.messager.alert("提示", "请选择报价单有效期！");
+                    return;
+                }
+
+                var PendingCheck= @((int)QuoteStatusEnum.PendingCheck);
+                var NotPassCheck= @((int)QuoteStatusEnum.NotPassCheck);
+                var ReQutes= @((int)QuoteStatusEnum.ReQutes);
+                if (StatusID == NotPassCheck && $.trim($("#CheckSuggest").val()) == "") {
+                    $.messager.alert("提示", "请输入审核意见！", "info", function () {
+                        $("#CheckSuggest").focus();
+                    });
+                    return false;
+                }
+
+                var isValid = true;
+                var isRate = true;
+                var isTermsID = true;
+                var isCost = true;
+
+                var rows = $('#MyPopGrid').datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.quot().listProducts(rows);
+
+                    for (var i = 0; i < rows.length; i++) {
+                        var Rate=rows[i].Rate;
+                        var TermsID=rows[i].TermsID;
+                        var Cost=rows[i].Cost;
+
+                        if (parseFloat(Rate) != Rate || parseFloat(Rate) <= 0) {
+                            isValid = false; isRate = false;
+                            break;
+                        }
+                        if (TermsID=="") {
+                            isValid = false; isTermsID = false;
+                            break;
+                        }
+                        if (parseFloat(Cost) != Cost || parseFloat(Cost) <= 0) {
+                            isValid = false; isCost = false;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    $.messager.alert("提示", "请选择产品！");
+                    return false;
+                }
+                if (!isValid) {
+                    if (!isRate) {
+                        $.messager.alert("提示", "Rate必须是大于0的数字！");
+                    } else if (!isTermsID) {
+                        $.messager.alert("提示", "请选择Terms！");
+                    } else if (!isCost) {
+                        $.messager.alert("提示", "Cost必须是大于0的数字！");
+                    }
+                    return;
+                }
+
+                self.quot().NewStatusID(StatusID);
+                self.quot().ValidDateFormat($('#ValidDateFormat').val());
+                self.quot().IsImmediatelySend($('#IsImmediatelySend').is(':checked'));
+
+                self.quot().ExchangeRate($("#ExchangeRate").val());
+                self.quot().CurrencyExchangeUSD($("#CurrencyExchangeUSD").val());
+                self.quot().CurrencyExchangeRMB($("#CurrencyExchangeRMB").val());
+                self.quot().TermsID($("#TermsID").val());
+                self.quot().PortID($("#PortID").val());
+
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/Quote/Edit")',
+                    data: ko.toJSON(self.quot)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    if (!data.Success) {
+                        completeLoading();
+                        $.messager.alert("提示", data.Info);
+                        return;
+                    } else {
+                        var msg = "";
+                        if (StatusID == PendingCheck || StatusID == ReQutes) {
+                            msg = "请到报价单审核页面查看";
+                        }
+                        $.messager.alert("成功", "保存成功！" + msg, "info", function () {
+                            parentGridReload();
+                            OA.CloseMe(true);
+                        });
+                    }
+                });
+            }
+
+            self.SaveDraft = function () {
+
+                var rows = $('#MyPopGrid_ProductMixed').datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.quot().listProducts_Mixed(rows);
+                }
+
+                self.quot().CustomerID($('#CustomerID').val());
+                self.quot().ValidDateFormat($('#ValidDateFormat').val());
+                self.quot().IsImmediatelySend($('#IsImmediatelySend').is(':checked'));
+
+                self.quot().ExchangeRate($("#ExchangeRate").val());
+                self.quot().CurrencyExchangeUSD($("#CurrencyExchangeUSD").val());
+                self.quot().CurrencyExchangeRMB($("#CurrencyExchangeRMB").val());
+                self.quot().TermsID($("#TermsID").val());
+                self.quot().PortID($("#PortID").val());
+
+                var rows = $('#MyPopGrid').datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    self.quot().listProducts(rows);
+                }
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/Quote/SaveDraft")',
+                    data: ko.toJSON(self.quot)
+                }).done(function (data) {
+                    if(data){
+                        $.messager.show({title:"自动保存", msg:"自动保存成功！", timeout:2000, showType:'slide' });
+                    }
+                });
+            }
+        }
+
+        var quotEditViewModel = new QuotEditViewModel();
+        ko.applyBindings(quotEditViewModel);
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndex = undefined;
+        var editField = "";
+
+        function onBeforeEdit(index, row) {
+            row.editing = true;
+            updateActionsInfo(index);
+
+            UpdateExpander();
+        }
+
+        function onAfterEdit(index, row) {
+            CalculateRow(row,index,editField);
+
+            row.editing = false;
+            updateActionsInfo(index);
+
+            UpdateExpander();
+        }
+        function onCancelEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function endEditingInfo() {
+            //var isView = ((bool)ViewData["IsView"] ? 1 : 0);
+            //if(isView === 1){
+            //    return false;
+            //}
+            if (editIndex == undefined) { return true }
+            if ($('#MyPopGrid').datagrid('validateRow', editIndex)) {
+                $('#MyPopGrid').datagrid('endEdit', editIndex);
+                editIndex = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function editInfo(target) {
+            acceptInfo(target);
+            $('#MyPopGrid').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendInfo() {
+            if (endEditingInfo()) {
+                $('#MyPopGrid').datagrid('appendRow', { ID: -1 });
+                editIndex = $('#MyPopGrid').datagrid('getRows').length - 1;
+                $('#MyPopGrid').datagrid('selectRow', editIndex)
+                        .datagrid('beginEdit', editIndex);
+            }
+        }
+        function removeInfo(target) {
+            rejectInfo();
+            $.messager.confirm('Confirm', '确定要删除吗?', function (r) {
+                if (r) {
+                    $('#MyPopGrid').datagrid('deleteRow', getRowIndex(target));
+                }
+            });
+        }
+        function acceptInfo(target) {
+            editIndex = getRowIndex(target);
+
+            if (endEditingInfo()) {
+                $('#MyPopGrid').datagrid('acceptChanges');
+            }
+        }
+        function rejectInfo() {
+            $('#MyPopGrid').datagrid('rejectChanges');
+            editIndex = undefined;
+        }
+        function updateActionsInfo(index) {
+            $('#MyPopGrid').datagrid('refreshRow', index);
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+
+        }
+
+        function productNoFormatter(val, row, index) {
+            if (row.ProductID < 0) {
+                return "";
+            }
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+        }
+
+        function onClickCell(index, field) {
+            editField=field;
+            if (editIndex != index){
+                var tempIndex = editIndex;
+                
+                if (endEditingInfo()){
+                    if (tempIndex != undefined) {
+                        var row = $('#MyPopGrid').datagrid("getRows")[tempIndex];
+                        if (row.IsProductMixed=="true" || row.IsProductMixed==true) {
+                            if ($("#ddv-" + tempIndex).html()=="") {
+                                $("#ddv-" + tempIndex).datagrid();
+                            }
+                            UpdateSubDatagrid(tempIndex,row);
+                        }
+                    }
+
+                    $('#MyPopGrid').datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $('#MyPopGrid').datagrid('getEditor', { index: index, field: field });
+                    if (ed) {
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndex = index;
+                } else {
+                    setTimeout(function () {
+                        $('#MyPopGrid').datagrid('selectRow', editIndex);
+                    }, 0);
+                }
+            }
+            RemovePopover();
+        }
+        function emptyFunc() {
+
+        }
+
+        function onBeginEdit(index, row) {
+            $(".datagrid-editable-input,.validatebox-text").on("keypress", function (e) {
+                if (e.keyCode == 13) {
+                    acceptInfo(row);
+                    UpdateSubDatagrid(index,row);
+
+                    UpdateExpander();
+                }
+            });
+
+            $(".datagrid-editable-input").on("change", function (e) {
+                var field = $(this).parents("td[field]").attr("field");
+                var thisVal = $(this).val();
+                if (field == "Rate") {
+                    row.Rate = thisVal;
+                }else if (field =="Cost") {
+                    row.Cost=thisVal;
+                }
+                editField=field;
+
+                CalculateRow(row,index,editField);
+                //acceptInfo(row);
+            });
+
+            //$("td[field=TermsID]").on("change", function (e) {
+            //    debugger;
+            //    var field = $(this).parents("td[field]").attr("field");
+            //    var thisVal = $(this).val();
+            //    if (field == "Rate") {
+            //        row.Rate = thisVal;
+            //    }else if (field =="Cost") {
+            //        row.Cost=thisVal;
+            //    }
+            //    editField=field;
+
+            //    CalculateRow(row,index,editField);
+            //    //acceptInfo(row);
+            //});
+
+            $(".datagrid-editable-input").on("focus", function (e) {
+                editField = $(this).parents("td[field]").attr("field");
+            });
+        }
+
+
+        //获取FobFty四舍五入的位数
+        function GetFobFty_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S13" || QuoteTemplateFileName == "S188") {
+                number = 3;
+            }
+            else if (QuoteTemplateFileName == "DG" || QuoteTemplateFileName == "S220" || QuoteTemplateFileName == "F20"|| QuoteTemplateFileName == "DT") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //获取DutyAmount四舍五入的位数
+        function GetDutyAmount_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S13" || QuoteTemplateFileName == "S188") {
+                number = 3;
+            }
+            else if (QuoteTemplateFileName == "DG" || QuoteTemplateFileName == "S220" || QuoteTemplateFileName == "F20" || QuoteTemplateFileName == "Form1"|| QuoteTemplateFileName == "DT") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //获取Freight Amount四舍五入的位数
+        function GetFreightAmount_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S13" || QuoteTemplateFileName == "S188") {
+                number = 3;
+            }
+            else if (QuoteTemplateFileName == "DG" || QuoteTemplateFileName == "S220" || QuoteTemplateFileName == "F20" || QuoteTemplateFileName == "DT") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //获取Misc Amount四舍五入的位数
+        function GetMiscAmount_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S188") {
+                number = 3;
+            }
+            if (QuoteTemplateFileName == "DG") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //获取Cost四舍五入的位数
+        function GetCost_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S13" || QuoteTemplateFileName == "S188") {
+                number = 3;
+            }
+            else if (QuoteTemplateFileName == "DG" || QuoteTemplateFileName == "S220" || QuoteTemplateFileName == "F20"|| QuoteTemplateFileName == "DT") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //获取ELC四舍五入的位数
+        function GetELC_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S13" || QuoteTemplateFileName == "S188") {
+                number = 3;
+            }
+            else if (QuoteTemplateFileName == "DG" || QuoteTemplateFileName == "S220" || QuoteTemplateFileName == "F20"|| QuoteTemplateFileName == "DT") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //获取Rate四舍五入的位数
+        function GetRate_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S188") {
+                number = 3;
+            }
+            return number;
+        }
+
+        //获取OuterVolume四舍五入的位数
+        function GetOuterVolume_RoundNumber(QuoteTemplateFileName) {
+            var number = 2;
+            if (QuoteTemplateFileName == "S188") {
+                number = 4;
+            }
+            return number;
+        }
+
+        //格式化为货币位数
+        function formatPrice(price, v) {
+            if (price == null) {
+                return "";
+            }
+            return price == 0 ? "" : parseFloat(price).toFixed(v);
+        }
+
+        var list_Factory = @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.FactoryList)));
+
+        function formatFactory(value,row,index){
+            if (value != null && value != "") {
+                for(var i=0; i < list_Factory.length; i++){
+                    if (list_Factory[i].Value == value)
+                        return list_Factory[i].Text;
+                }
+            }
+            return "";
+        }
+
+        function UpdateSubDatagrid(index,row){
+            if (row.IsProductMixed=="false" || row.IsProductMixed==false) {
+                return;
+            }
+            CalculateRow_Mixed($("#MyPopGrid_ProductMixed"),row,false);
+
+            var $thisDatagrid = $("#ddv-" + index);
+            CalculateRow_Mixed($thisDatagrid,row,true);
+
+
+            InitPopover();
+        }
+        
+        function Add_ProductMixed(row){
+            if (row.IsProductMixed=="false" || row.IsProductMixed==false) {
+                return;
+            }
+            $.get("@Url.Content("/ProductMixed/GetProducts_Mixed/")"+ row.ProductID).done(function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    $('#MyPopGrid_ProductMixed').datagrid('appendRow', data[i]);
+                    data[i].ParentProductMixedID = row.ID;
+                    CalculateRow_Mixed($("#MyPopGrid_ProductMixed"),row,false);
+                }
+            });
+        }
+
+        function Delete_ProductMixed(id){
+            var rows = $("#MyPopGrid_ProductMixed").datagrid('getRows');
+            var deleteList=[];
+            for (var i = 0; i < rows.length; i++) {
+                if (rows[i].ParentProductMixedID == id) {
+                    var rowIndex=$('#MyPopGrid_ProductMixed').datagrid('getRowIndex',rows[i]);
+                    deleteList.push(rowIndex);
+                }
+            }
+
+            for (var i = deleteList.length-1; i >=0 ; i--) {
+                $('#MyPopGrid_ProductMixed').datagrid('deleteRow', deleteList[i]);
+    
+            }
+        }
+
+        function CalculateRow_Mixed($thisDatagrid,row,isAllUpdate){
+            var rows = $thisDatagrid.datagrid("getRows");
+            if (rows && rows.length > 0) {
+                for (var i = 0; i < rows.length; i++) {
+                    if (!isAllUpdate && rows[i].ParentProductMixedID != row.ID) {
+                        continue;
+                    }
+                    rows[i].FactoryID_ForQuote = row.FactoryID_ForQuote;
+                    rows[i].INR = row.INR;
+                    rows[i].Rate=row.Rate;
+                    rows[i].TermsID=row.TermsID;
+                    rows[i].Cost=row.Cost;
+                    rows[i].PortID=row.PortID;
+                    rows[i].Commission=row.Commission;
+                    rows[i].TypeOfWood=row.TypeOfWood;
+                    rows[i].ParentProductID=row.ID;
+
+                    rows[i].Agent=row.Agent;
+
+                    rows[i].MiscImportLoad=row.MiscImportLoad;
+                    rows[i].MiscImportLoadFormatter=row.MiscImportLoadFormatter;
+
+                    rows[i].QuoteTemplateFileName=row.QuoteTemplateFileName;
+
+                    CalculateRow(rows[i],i,"Rate");
+
+                    rows[i].Retail=row.Retail;
+                    rows[i].MU=row.MU;
+
+                    $thisDatagrid.datagrid('acceptChanges');
+                    $thisDatagrid.datagrid('refreshRow', i);
+                }
+            }
+        }
+
+        function BindSubDatagrid(){
+            $('#MyPopGrid').datagrid({
+                view: detailview,
+                detailFormatter:function(index,row){
+                    if ($("#ddv-" + index).html()!= undefined) {
+                        return;
+                    }
+                    return '<div style="padding:2px"><table id="ddv-' + index + '"></table></div>';
+                },
+                onExpandRow: function(index,row){
+                    if ($("#ddv-" + index).html()!= "") {
+                        return;
+                    }
+
+                    var url='/Quote/GetProducts_Mixed/'+row.ID;
+                    if (row.ID <0) {
+                        url= '/ProductMixed/GetProducts_Mixed/'+row.ProductID;
+                    }
+
+                    $('#ddv-'+index).datagrid({
+                        url:url,
+                        method:'get',
+                        fitColumns:false,
+                        singleSelect:true,
+                        rownumbers:false,
+                        loadMsg:'',
+                        height:'auto',
+                        frozenColumns:[[
+                        ]],
+                        columns:GetClumns(),
+                        onResize:function(){
+                            $('#MyPopGrid').datagrid('fixDetailRowHeight',index);
+                        },
+                        onLoadSuccess:function(){
+                            setTimeout(function(){
+                                $('#MyPopGrid').datagrid('resize');
+                                $('#MyPopGrid').datagrid('fixDetailRowHeight',index);
+                                UpdateSubDatagrid(index,row);
+                            },0);
+                        }
+                    });
+                    $('#MyPopGrid').datagrid('fixDetailRowHeight',index);
+                    
+                    var $thisDatagrid = $("#ddv-" + index);
+                    ShowOrHideColumn($thisDatagrid);
+
+                },
+                onCollapseRow:function(){
+                }
+            });
+
+            UpdateExpander();
+
+            $("select[name=CustomerID]").selectpicker();
+            InitPopover();
+
+            var isCaching = false;
+            $("html").on("blur", "input.form-control,select.form-control", function () {
+                if(!isCaching){
+                    isCaching = true;
+                }
+            });
+
+            // 每隔一分钟自动保存
+            setInterval(function(){
+                if(isCaching){
+                    $("#btnSaveDraft").click();
+                }
+            }, 60000);
+        }
+        
+        function ShowOrHideColumn($thisDatagrid){
+            var SelectCustomer = $("#temp_SelectCustomer").val();
+            if (SelectCustomer=="S13") {
+                $thisDatagrid.datagrid('showColumn','INR');
+                $thisDatagrid.datagrid('showColumn','TypeOfWood');
+            }else {
+                $thisDatagrid.datagrid('hideColumn','INR');
+                $thisDatagrid.datagrid('hideColumn','TypeOfWood');
+            }
+        }
+
+        function GetClumns(){
+            return [[
+                                 { field:'No',width:100,align:'left',title: '货号',formatter:productNoFormatter},
+                                 { field:'CustomerNo',width:100,align:'left',title: '客户'},
+                                 { field:'Qty',width:100,align:'center',title: '数量'},
+                                 { field:'FactoryName',width:100,align:'left',title: '工厂'},
+                                 { field:'FactoryID_ForQuote',width:120,height:30,align:'center',editor:{
+                                     type:'combobox',
+                                     options:{
+                                         valueField:'Value',
+                                         textField:'Text',
+                                         data:list_Factory,
+                                         editable:false,
+                                         multiple:false,
+                                         multiline:false,
+                                     }},formatter:formatFactory,title: '选择工厂'
+                                 },
+                                 { field:'Desc',width:100,align:'left',title: 'Product Description'},
+                                 { field:'UnitName',width:100,align:'left',title: '单位'},
+                                 { field:'StyleName',width:100,align:'left',title: '款式'},
+                                 { field:'LengthIN',width:100,align:'center',title: 'Product L(in)'},
+                                 { field:'WidthIN',width:100,align:'center',title: 'Product W(in)'},
+                                 { field:'HeightIN',width:100,align:'center',title: 'Product H(in)'},
+                                 { field:'Weight',width:100,align:'center',title: 'Product Weight(LBS)'},
+                                 { field:'PDQPackRate',width:100,align:'center',title: 'PDQ装率'},
+                                 { field:'PDQLengthIN',width:100,align:'center',title: 'PDQ L(in)'},
+                                 { field:'PDQWidthIN',width:100,align:'center',title: 'PDQ W(in)'},
+                                 { field:'PDQHeightIN',width:100,align:'center',title: 'PDQ H(in)'},
+                                 { field:'InnerBoxRate',width:100,align:'center',title: '内盒率'},
+                                 { field:'INR',width:100,align:'center',editor:{type:'numberbox',options:{precision:0}},title: 'INNER INNER PACK'},
+                                 { field:'InnerLengthIN',width:100,align:'center',title: 'Inner L(in)'},
+                                 { field:'InnerWidthIN',width:100,align:'center',title: 'Inner W(in)'},
+                                 { field:'InnerHeightIN',width:100,align:'center',title: 'Inner H(in)'},
+                                 { field:'InnerVolume',width:100,align:'center',title: '内盒材积(Cuft)'},
+                                 { field:'InnerWeight',width:100,align:'center',title: 'Inner Weight(LBS)'},
+                                 { field:'OuterBoxRate',width:100,align:'center',title: '外箱率'},
+                                 { field:'OuterLengthIN',width:100,align:'center',title: 'Case L(in)'},
+                                 { field:'OuterWidthIN',width:100,align:'center',title: 'Case W(in)'},
+                                 { field:'OuterHeightIN',width:100,align:'center',title: 'Case H(in)'},
+                                 { field:'OuterVolume',width:100,align:'center',title: '外箱材积(Cuft)'},
+                                 { field:'CurrencyName',width:100,align:'left',title: '币种'},
+                                 { field:'PriceFactory',width:100,align:'center',title: '工厂价格'},
+                                 { field:'OuterWeightGrossLBS',width:100,align:'center',title: 'Case Gross Weight(LBS)'},
+                                 { field:'OuterWeightNetLBS',width:100,align:'center',title: ' Case Net Weight(LBS)'},
+                                 { field:'FOBFTY',width:100,align:'center',title: 'FOB FTY($)'},
+                                 { field:'FOBNET',width:100,align:'center',title: 'FOB NET'},
+                                 { field:'FinalFOB',width:100,align:'center',title: 'Final FOB'},
+                                 { field:'Rate',width:100,align:'center',editor:{type:'validatebox',options:{required:true}},title: 'Rate'},
+                                 { field:'TermsID',width:100,align:'center',editor:{
+                                     type:'combobox',
+                                     options:{
+                                         valueField:'Value',
+                                         textField:'Text',
+                                         data:listTerms,
+                                         required:true,
+                                     }
+                                 },formatter:formatTerms,title: 'Terms'
+                                 },
+                                 { field:'Cost',width:100,align:'center',editor:{type:'validatebox',options:{required:true}},title: 'Cost'},
+                                 { field:'PortID',width:150,editor:'text',editor:{
+                                     type:'combobox',
+                                     options:{
+                                         valueField:'Value',
+                                         textField:'Text',
+                                         data:Porty,
+                                         required:true,
+                                     }
+                                 },formatter:formatPorty,title: '港口'
+                                 },
+                                 { field:'PalletPc',width:100,align:'center',title: 'Pallet $/pc'},
+                                 { field:'HTS_Name',width:100,align:'center',title: 'HTS#'},
+                                 { field:'DutyPercentFormatter',width:100,align:'center',title: 'Duty%'},
+                                 { field:'Duty',width:100,align:'center',title: 'Duty Amount'},
+                                 { field:'FreightRate',width:100,align:'center',title: 'Freight Rate'},
+                                 { field:'Freight',width:100,align:'center',title: 'Freight Amount($)'},
+                                 { field:'Commission',width:100,align:'center',editor:{type:'validatebox',options:{required:true}},title: 'Commission%'},
+                                 { field:'CommissionAmount',width:100,align:'center',title: 'Commission Amount'},
+                                 { field:'MiscImportLoadFormatter',width:100,align:'center',title: 'Misc% /Import Load%'},
+                                 { field:'MiscImportLoadAmount',width:100,align:'center',title: 'Misc / Import Load Amount'},
+                                 { field:'Agent',width:100,align:'center',title: 'Agent%'},
+                                 { field:'AgentAmount',width:100,align:'center',title: 'Agent Amount'},
+                                 { field:'ELC',width:100,align:'center',title: 'ELC'},
+                                 { field:'Retail',width:100,align:'center',editor:{type:'validatebox',options:{required:true}},title: 'Retail'},
+                                 { field:'MU',width:100,align:'center',editor:{type:'validatebox',options:{required:true}},title: 'Est. MU%'},
+                                 { field:'Allowance',width:100,align:'center',title: 'Allowance'},
+                                 { field:'UPC',width:100,align:'left',title: 'UPC#'},
+                                 { field:'PackingMannerEnName',width:100,align:'left',title: 'Packaging Type'},
+                                 { field:'IngredientEn',width:100,align:'left',title: 'Material Composition'},
+                                 { field:'MOQZh',width:100,align:'center',title: 'MOQ'},
+                                 { field:'TypeOfWood',width:100,align:'center',editor:{type:'validatebox'},title: 'type of wood'},
+                                 { field:'Comment',width:100,align:'left',title: 'Remarks'},
+                                 { field:'Image',width:80,align:'center',hidden:true},
+                                 { field:'ProductID',width:80,align:'center',hidden:true},
+                                 { field:'CurrencySign',width:80,align:'center',hidden:true},
+                                 { field:'PriceInputDate',width:80,align:'center',hidden:true},
+                                 { field:'ValidDate',width:80,align:'center',hidden:true},
+                                 { field:'QuoteTemplateFileName',width:80,align:'center',hidden:true},
+                                 { field:'ELCFill',width:80,align:'center',hidden:true},
+                                 { field:'DutyPercent',width:80,align:'center',hidden:true},
+                                 { field:'MiscImportLoad',width:80,align:'center',hidden:true},
+                                 { field:'ParentProductMixedID',width:80,align:'center',hidden:true},
+
+                                 { field:'ExchangeRate',width:80,align:'center',hidden:true},
+                                 { field:'CurrencyExchangeUSD',width:80,align:'center',hidden:true},
+                                 { field:'CurrencyExchangeRMB',width:80,align:'center',hidden:true},
+            ]];
+        }
+
+        $(function () {
+            BindSubDatagrid();
+            UpdateExpander();
+        });
+
+    </script>
+    <script src="@Url.Content("~/Scripts/quoteCalculator.js?v="+ERP.Tools.CommonCode.GetTimeStamp())"></script>
+}

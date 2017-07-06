@@ -1,0 +1,47 @@
+﻿@model ERP.Models.OutSourcing.VMFilterOC
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using ERP.Models.CustomEnums;
+
+@{
+    ViewBag.Title = "已审核代购合同列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script>
+        var tableName = "#MyGrid";
+
+        function operationFormatter(val, row, index) {
+            var idArray = getSelections(tableName, "ID");
+            var showView = @(Model.PageElementPrivileges & (int)OutSourcingElementPrivileges.OutWatch);
+            var showUpload = @(Model.PageElementPrivileges & (int)OutSourcingElementPrivileges.OutUpload);//上传合同
+            var showDelivery = @(Model.PageElementPrivileges & (int)OutSourcingElementPrivileges.OutDelivery);//发送合同
+
+            var url = "href='@(Url.Content("~/Outsourcing/Edit"))?id=" + val + "&pageType=2'";
+
+            var ops = "";
+            if (showView>0) {
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + " style='margin: 0 5px;'>查看</a>";
+
+            }
+
+            if (showDelivery>0) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)'  href='@(Url.Content("~/Outsourcing/SendContract/"))" + val + "' style='margin: 0 5px;'>发送合同</a>";
+            }
+            if (showUpload>0) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)'  href='@(Url.Content("~/Outsourcing/Upload/"))" + val + "' style='margin: 0 5px;'>上传回签合同</a>";
+            }
+            return ops;
+        }
+
+        //列表数据加载成功时，使单元格鼠标移动呈现title
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ID"]);
+        }
+    </script>
+}

@@ -1,0 +1,100 @@
+﻿@model ERP.Models.InspectionClearance.VMInspectionClearance
+@using ERP.Models.CustomEnums
+
+@{
+    var ThisModel = Model;
+}
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">TO:</label>
+    <div class="col-sm-8 control-label">@ThisModel.CustomerName</div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">Inv. No：</label>
+    <div class="col-sm-8 control-label">
+        @ThisModel.InvoiceNO
+    </div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label"></label>
+    <div class="col-sm-8 control-label">@ThisModel.CustomerStreet</div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">BIG LOTS PO NO:</label>
+    <div class="col-sm-8 control-label">@ThisModel.POID</div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label"></label>
+    <div class="col-sm-8 control-label">@ThisModel.CustomerReg</div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">EHI PO NO:</label>
+    <div class="col-sm-8 control-label">@ThisModel.EHIPO</div>
+</div>
+
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label"></label>
+    <div class="col-sm-8 control-label">
+        &nbsp;
+    </div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">DATE:</label>
+    <div class="col-sm-8 control-label">@ThisModel.CreateDateForamtter</div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">Loading port:</label>
+    <div class="col-sm-8 control-label">
+        @ThisModel.PortName ,CHINA
+    </div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">&nbsp;</label>
+    <div class="col-sm-8 control-label">
+        &nbsp;
+    </div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">Destination:</label>
+    <div class="col-sm-8 control-label">
+        @ThisModel.DestinationPortName
+    </div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">&nbsp;</label>
+    <div class="col-sm-8 control-label">
+        &nbsp;
+    </div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">Terms of sale:</label>
+    <div class="col-sm-8 control-label">
+        @ThisModel.TradeTypeName @ThisModel.PortName
+    </div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">&nbsp;</label>
+    <div class="col-sm-8 control-label">
+        &nbsp;
+    </div>
+</div>
+
+<div class="form-group col-sm-6 has-feedback">
+    <label class="col-sm-4 control-label">Terms of payment:</label>
+    <div class="col-sm-8 control-label">
+        @ThisModel.PaymentType
+    </div>
+</div>

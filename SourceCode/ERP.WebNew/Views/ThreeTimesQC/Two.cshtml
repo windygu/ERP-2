@@ -1,0 +1,49 @@
+﻿@{
+    ViewBag.Title = "待审核的中期QC";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using ERP.Models.CustomEnums
+@model ERP.Models.ThreeTimesQC.VMPurchaseSearch
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var StatusID = row.StatusID;
+        var PendingMaintenance= @((short)ThreeTimesQCStatusEnum.PendingMaintenance);
+        var OutLine= @((short)ThreeTimesQCStatusEnum.OutLine);
+        var PendingCheck= @((short)ThreeTimesQCStatusEnum.PendingCheck);
+        var NotPassCheck= @((short)ThreeTimesQCStatusEnum.NotPassCheck);
+
+
+        var showView = @(Model.PageElementPrivileges & (int)ThreeTimesQCElementPricileges.View);
+        var showEdit = @(Model.PageElementPrivileges & (int)ThreeTimesQCElementPricileges.Edit);
+        var showApproval = @(Model.PageElementPrivileges & (int)ThreeTimesQCElementPricileges.Approval);
+        var showReplySuggest = @(Model.PageElementPrivileges & (int)ThreeTimesQCElementPricileges.ReplySuggest);
+        var showSendContract = @(Model.PageElementPrivileges & (int)ThreeTimesQCElementPricileges.SendContract);
+
+        var ops = "";
+        if (showView>0) {
+            ops+="<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ThreeTimesQC/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+        if ((StatusID == PendingMaintenance || StatusID == OutLine || StatusID == NotPassCheck) && showEdit>0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ThreeTimesQC/Edit/"))" + val + "' style='margin: 0 5px;'>编辑</a>";
+        }
+        if ((StatusID == PendingCheck) && showApproval>0 && row.IsHasApprovalPermission) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ThreeTimesQC/Edit/"))" + val + "?Type=Check' style='margin: 0 5px;'>审核</a>";
+        }
+        if (showReplySuggest>0) {
+            ops+="<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ThreeTimesQC/Edit/"))" + val + "?Type=ReplySuggest' style='margin: 0 5px;'>回复意见</a>";
+        }
+        if (showSendContract>0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ThreeTimesQC/SendContract/"))" + val + "' style='margin: 0 5px;'>发送合同</a>";
+        }
+        return ops;
+    }
+</script>

@@ -1,0 +1,57 @@
+﻿@{
+    ViewBag.Title = "第三方抽检";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model ERP.Models.Inspection.VMInspectionSearch
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using ERP.Models.CustomEnums
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var tableName = "#MyGrid";
+
+        function operationFormatter(val, row, index) {
+            var rows = $(tableName).datagrid('getRows');
+            var row = rows[index];
+
+            var showInputNotice = @(Model.PageElementPrivileges & (int)InspectionSamplingElementPrivileges.InputNotice);
+            var showEdit = @(Model.PageElementPrivileges & (int)InspectionSamplingElementPrivileges.Edit);
+            var showInputResult = @(Model.PageElementPrivileges & (int)InspectionSamplingElementPrivileges.InputResult);
+            var showSendNotice = @(Model.PageElementPrivileges & (int)InspectionSamplingElementPrivileges.SendNotice);
+            var showView = @(Model.PageElementPrivileges & (int)InspectionSamplingElementPrivileges.View);
+            var showInputFees = @(Model.PageElementPrivileges & (int)InspectionSamplingElementPrivileges.InputFees);
+
+            var StatusID = row.StatusID;
+            var PendingInput= @((short)InspectionStatusEnum.PendingInput);
+            var PendingSent= @((short)InspectionStatusEnum.PendingSent);
+            var AlreadySent= @((short)InspectionStatusEnum.AlreadySent);
+            var NotPass= @((short)InspectionStatusEnum.NotPass);
+            var Passed= @((short)InspectionStatusEnum.Passed);
+
+            var ops = "";
+            if (showView>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputSamplingResult/"))" + row.ID + "?Type=Detail&Status="+row.StatusName+"'>查看</a>";
+            }
+
+            if ((StatusID== PendingInput ) && showInputNotice>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputSamplingNotice/"))" + row.ID + "'>录入抽检通知</a>";
+            }
+            if ((StatusID== PendingSent ) && showEdit>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputSamplingNotice/"))" + row.ID + "'>编辑</a>";
+            }
+
+            if ((StatusID== AlreadySent ||StatusID==NotPass) && showInputResult>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputSamplingResult/"))" + row.ID + "'>录入抽检结果</a>";
+            }
+
+            if ((StatusID== AlreadySent||StatusID==Passed ) && showInputFees>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputSamplingFees/"))" + row.ID + "'>录入抽检费用</a>";
+            }
+            return ops;
+
+        }    //删除产品
+    </script>
+}

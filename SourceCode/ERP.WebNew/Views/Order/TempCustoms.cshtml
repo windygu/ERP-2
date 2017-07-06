@@ -1,0 +1,148 @@
+﻿@{
+    Layout = null;
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using System.Drawing
+@using ERP.Tools
+@using ERP.BLL.Consts
+@using ERP.Models.CustomEnums
+@using ERP.Tools.EnumHelper
+@using ERP.Models.InspectionCustoms
+    <!DOCTYPE html>
+
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width" />
+        <title></title>
+    </head>
+    <body>
+        <div>
+            @{
+
+                ERP.Models.Purchase.VMPurchaseProduct vm_product = new ERP.Models.Purchase.VMPurchaseProduct();
+
+
+                string templatePath = Utils.GetMapPath("/data/Documents/报关单模板.jpg");//报关单模板
+                Bitmap bmp = new Bitmap(templatePath);
+                Graphics g = Graphics.FromImage(bmp);
+                Font font = new Font("Times New Roman", 12, FontStyle.Regular);//字体
+                SolidBrush sb = new SolidBrush(Color.Black);
+
+                if (!File.Exists(templatePath))
+                {
+                    throw new Exception("报关单模板文件不存在！" + templatePath);
+                }
+                string LoadingPort = "NingBo";//出运港，报关资料中的数据
+                string ShippingMethod = "By Air";//运输方式，报关资料中的数据
+                string PaymentMethod = "T/T";//结汇方式，报关资料中的数据
+                string DistinationPort = "Dallas";//目的港，报关资料中的数据
+                string SourceAreaWithin = "TaiZhou";//境内货源地，报关资料中的数据
+                string TradeType = "FOB";//取报关资料中的terms of sales的数据
+                int TotalCaseQty = 230;//本报关单所涉及到的产品的箱数之和
+                decimal TotalCaseGrossWeight = 234.43m;//本报关单所涉及到的产品的外箱毛重之和，单位kgs
+                decimal TotalCaseNetWeight = 212.78m;//本报关单所涉及到的产品的外箱净重之和，单位kgs
+
+                List<VMOrderProducts> list_Product = new List<VMOrderProducts>();
+                list_Product.Add(new VMOrderProducts()
+                {
+                    HsCode = "9405.60.0000",//hs code编码
+                    HsEngName = "LED Decoration",//hs code英文名
+                    Qty=10,//此hs code的产品数量
+                    ProductPrice = 2.00m,//此HS CODE的产品在报关中设置的单价
+                    Amount = 3948.90m,//单价*数量=总金额
+                    HsName = "LED装饰品",//hs code的中文名
+                    SumOuterWeightGross = 382.43m,//此hs code对应的产品，每个产品的总毛重，再求和
+                });
+
+                list_Product.Add(new VMOrderProducts()
+                {
+                    HsCode = "9405.60.0000",//hs code编码
+                    HsEngName = "LED Decoration",//hs code英文名
+                    Qty = 10,//此hs code的产品数量
+                    ProductPrice = 2.00m,//此HS CODE的产品在报关中设置的单价
+                    Amount = 3948.90m,//单价*数量=总金额
+                    HsName = "LED装饰品",//hs code的中文名
+                    SumOuterWeightGross = 382.43m,//此hs code对应的产品，每个产品的总毛重，再求和
+                });
+
+                list_Product.Add(new VMOrderProducts()
+                {
+                    HsCode = "9405.60.0000",//hs code编码
+                    HsEngName = "LED Decoration",//hs code英文名
+                    Qty = 10,//此hs code的产品数量
+                    ProductPrice = 2.00m,//此HS CODE的产品在报关中设置的单价
+                    Amount = 3948.90m,//单价*数量=总金额
+                    HsName = "LED装饰品",//hs code的中文名
+                    SumOuterWeightGross = 382.43m,//此hs code对应的产品，每个产品的总毛重，再求和
+                });
+
+                list_Product.Add(new VMOrderProducts()
+                {
+                    HsCode = "9405.60.0000",//hs code编码
+                    HsEngName = "LED Decoration",//hs code英文名
+                    Qty = 10,//此hs code的产品数量
+                    ProductPrice = 2.00m,//此HS CODE的产品在报关中设置的单价
+                    Amount = 3948.90m,//单价*数量=总金额
+                    HsName = "LED装饰品",//hs code的中文名
+                    SumOuterWeightGross = 382.43m,//此hs code对应的产品，每个产品的总毛重，再求和
+                });
+
+                list_Product.Add(new VMOrderProducts()
+                {
+                    HsCode = "9405.60.0000",//hs code编码
+                    HsEngName = "LED Decoration",//hs code英文名
+                    Qty = 10,//此hs code的产品数量
+                    ProductPrice = 2.00m,//此HS CODE的产品在报关中设置的单价
+                    Amount = 3948.90m,//单价*数量=总金额
+                    HsName = "LED装饰品",//hs code的中文名
+                    SumOuterWeightGross = 382.43m,//此hs code对应的产品，每个产品的总毛重，再求和
+                });
+
+                g.DrawString(LoadingPort, font, sb, 91, 171);
+                g.DrawString(ShippingMethod, font, sb, 332, 202);
+                g.DrawString("G/T", font, sb, 332, 235);
+                g.DrawString(PaymentMethod, font, sb, 655, 235);
+                g.DrawString("USA", font, sb, 326, 267);
+                g.DrawString(DistinationPort, font, sb, 486, 267);
+                g.DrawString(SourceAreaWithin, font, sb, 646, 267);
+                g.DrawString(TradeType, font, sb, 243, 300);
+                g.DrawString(TotalCaseQty.ToString(), font, sb, 243, 333);
+                g.DrawString("CARTON", font, sb, 369, 333);
+                g.DrawString(TotalCaseGrossWeight.ToString(), font, sb, 494, 333);
+                g.DrawString(TotalCaseNetWeight.ToString(), font, sb, 637, 333);
+
+                int i = 0;
+                int a = 48;
+                foreach (var item in list_Product)
+                {
+                    g.DrawString(item.HsCode, font, sb, 31, 466 + i * a);
+                    g.DrawString(item.HsEngName, font, sb, 147, 466 + i * a);
+                    g.DrawString(item.Qty.ToString() + "PCS" , font, sb, 330, 466 + i * a);
+                    g.DrawString("USA", font, sb, 434, 466 + i * a);
+                    g.DrawString(item.ProductPrice.ToString() + "/PC", font, sb, 524, 466 + i * a);
+                    g.DrawString(item.Amount.ToString(), font, sb, 604, 466 + i * a);
+                    g.DrawString("USD", font, sb, 691, 466 + i * a);
+                    
+                    g.DrawString("(" + item.HsName + ")", font, sb, 147, 484 + i * a);
+                    g.DrawString(item.SumOuterWeightGross.ToString() + "kgs", font, sb, 330, 484 + i * a);
+                    i++;
+                }
+
+                g.DrawString("SHANGHAI Jet CRAFTS, INC.", font, sb, 90, 945);
+                g.DrawLine(new Pen (sb),26,960,760,960);
+                g.DrawString("BUILDING 22, SHANGHAI HEADQUARTERS BAY, NO. 2500, XIUPU ROAD,", font, sb, 90, 966);
+                g.DrawString("PUDONG, SHANGHAI, CHINA", font, sb, 90, 981);
+                g.DrawString("税务登记号：310115748082157", font, sb, 90, 996);                
+                
+                g.Save();
+
+                string img1 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S05);
+
+            }
+
+            报关单<br />
+            <img src="@(img1)" />
+
+        </div>
+    </body>
+</html>

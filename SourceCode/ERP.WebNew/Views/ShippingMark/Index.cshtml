@@ -1,0 +1,54 @@
+﻿@{
+    ViewBag.Title = "待审核的唛头资料";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using ERP.Models.CustomEnums
+@model ERP.Models.Purchase.VMPurchaseSearch
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function operationFormatter_AllAmount(val,row,index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        return row.CurrentSign+ row.AllAmount;
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.View);
+        var showMaintenance = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.Maintenance);
+        var showEdit = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.Edit);
+        var showApproval = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.Approval);
+
+        var ops = "";
+
+        if (showView > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShippingMark/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+
+        var ShippingMark_StatusID = row.ShippingMark_StatusID;
+        var IsHasApprovalPermission=row.IsHasApprovalPermission;
+        var PendingMaintenance = @((int)ShippingMarkStatusEnum.PendingMaintenance);
+        var OutLine = @((int)ShippingMarkStatusEnum.OutLine);
+        var PendingCheck = @((int)ShippingMarkStatusEnum.PendingCheck);
+        var NotPassCheck = @((int)ShippingMarkStatusEnum.NotPassCheck);
+
+        if (ShippingMark_StatusID == PendingMaintenance && showMaintenance) {//维护
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShippingMark/Edit/"))" + val + "' style='margin: 0 5px;'>维护</a>";
+        }
+        else if ((ShippingMark_StatusID == OutLine || ShippingMark_StatusID == NotPassCheck) && showEdit) {//草稿或审核不通过
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShippingMark/Edit/"))" + val + "' style='margin: 0 5px;'>编辑</a>";
+        }
+        else if (ShippingMark_StatusID == PendingCheck && showApproval && IsHasApprovalPermission) {//待审核
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShippingMark/Edit/"))" + val + "' style='margin: 0 5px;'>审核</a>";
+        }
+        return ops;
+    }
+</script>

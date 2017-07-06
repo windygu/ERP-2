@@ -1,0 +1,545 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@model List<ERP.Models.InspectionCustoms.VMInspectionCustoms>
+@using ERP.Models.CustomEnums
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    var ThisModel = Model;
+}
+
+@section styles{
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+}
+<script src="~/Scripts/angular.min-1.5.8.js"></script>
+<script src="~/Scripts/Documents.js?v=20170420"></script>
+
+<script type="text/javascript">
+
+    //上传附件插件初始化代码
+    function InitialUploadify(id, index, inputFileId, tableFileListId, objName, uploadFilesClass) {
+
+        var postUrl = "@Url.Content("~/FileUploader/UploadFiles?type=")" + uploadFilesClass + "&id=" + id;
+
+        $(inputFileId).uploadify({
+            swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+            uploader: postUrl, //Post文件到指定的处理文件
+            postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+            auto: false,
+            buttonClass: 'JQButton', //浏览按钮的class
+            buttonText: '浏览', //浏览按钮的Text
+            cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+            //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+            fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+            height: 40, //浏览按钮高
+            width: 50, //浏览按钮宽
+            multi: true, //是否允许多文件上传
+            //uploadLimit: 10, //同时上传多小个文件
+            sizeLimit: 100000000, //限制上传大小10M
+            //queueSizeLimit: 10, //队列允许的文件总数
+            removeCompleted: true, //当上传成功后是否将该Item删除
+            onSelect: function (file) { }, //选择文件时触发事件
+            onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+            onUploadComplete: function (file) { }, //上传成功触发事件
+            onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+            onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+            onUploadStart: function (file) { }, //上传开始触发事件
+            onUploadSuccess: function (event, response, status) {
+                var count = $(tableFileListId + " tr:not(:first)").length;
+                var serverFileName = $.parseJSON(response).data.NewFilePath;
+                var displayFileName = $.parseJSON(response).data.OldFileName;
+                var fileListStr = '<tr>';
+                fileListStr += '<td class="hide">';
+                fileListStr += '<input type="hidden" value="' + displayFileName + '" class="DisplayFileName" />';
+                fileListStr += '<input type="hidden" value="' + serverFileName + '" class="ServerFileName" />';
+                fileListStr += '<input type="hidden" value="' + formateDate2(new Date()) + '" class="DT_CREATEDATE" />';
+                fileListStr += '<input type="hidden" value=false class="IsDelete" />';
+                fileListStr += '</td>';
+                fileListStr += '<td>' + displayFileName + '</td>';
+                fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                fileListStr += '<td>';
+                fileListStr += '<button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button>';
+                fileListStr += '<button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button>';
+                fileListStr += '</td>';
+                fileListStr += '</tr>';
+                $(tableFileListId).prepend(fileListStr);
+            }  //当单个文件上传成功后激发的事件
+        });
+    }
+
+    //上传
+    function UpLoadFile(htmlId) {
+        $(htmlId).uploadifyUpload('*');
+    }
+
+    //下载
+    function DownLoadFile(path) {
+        window.open(path);
+    }
+
+    //删除
+    function DeleteFile(e, path) {
+        //$(e).closest("tr").find(".IsDelete").val(true);
+        $(e).closest("tr").find(".IsDelete").attr("value", true);
+        $(e).closest("tr").hide();
+    }
+</script>
+
+
+<form id="frmEdit" ng-app="myApp" ng-controller="formCtrl" ng-model="formModel">
+    <input id="Model_Count" type="hidden" value="@Model.Count" />
+    <input id="CustomerCode" type="hidden" value="@Model.First().CustomerCode" />
+
+    @for (int i = 0; i < Model.Count; i++)
+    {
+        var item2 = Model[i];
+        @Html.HiddenFor(d => ThisModel[i].ShipmentOrderID)
+        @Html.HiddenFor(d => ThisModel[i].InvoiceNO)
+        @Html.HiddenFor(d => ThisModel[i].InspectionCustomsID)
+        @Html.HiddenFor(d => ThisModel[i].InspectionCustomsDetailID)
+        @Html.HiddenFor(d => ThisModel[i].PortID)
+        @Html.HiddenFor(d => ThisModel[i].DestinationPortID)
+    }
+
+    <div id="Tabs" class="easyui-tabs">
+        @Html.Partial("_PartialTab_Invoice", Model)
+        @Html.Partial("_PartialTab_PackingList", Model)
+        @Html.Partial("_PartialTab_Order", Model)
+        @Html.Partial("_PartialTab_Customs", Model)
+        @Html.Partial("_PartialTab_Receipt", Model)
+        @Html.Partial("_PartialTab_DeclareElements", Model)
+        @Html.Partial("_PartialTab_Proxy", Model)
+    </div>
+
+    @if (ViewBag.PageTypeID == PageTypeEnum.Approval)
+    {
+        <h3 class="popTitle">
+            审核意见
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            @Html.TextAreaFor(p => FirstModel.AuditIdea, new { @class = "form-control AuditIdea" })
+        </div>
+    }
+
+    <!--操作按钮-->
+    <div id="dvButton" class="form-group text-right tijiao">
+        @switch ((int)ViewBag.PageTypeID)
+        {
+            case (int)PageTypeEnum.Add:
+            case (int)PageTypeEnum.Edit:
+                <button type="submit" class="btn btn-primary" ng-click="submit(@((int)InspectionReceiptStatusEnum.OutLine))">保存为草稿</button>
+                <button type="submit" class="btn btn-danger" ng-click="submit(@((int)InspectionReceiptStatusEnum.PendingCheck))">保存并提交审核</button>
+                break;
+
+            case (int)PageTypeEnum.Approval:
+                <button type="submit" class="btn btn-primary" ng-click="submit(@((int)InspectionReceiptStatusEnum.PassedCheck))">审核通过</button>
+                <button type="submit" class="btn btn-danger" ng-click="submit(@((int)InspectionReceiptStatusEnum.NotPassCheck))">驳回重审</button>
+                break;
+
+            default:
+                break;
+        }
+
+        @if (ViewBag.PageTypeID == PageTypeEnum.Approval || ViewBag.PageTypeID == PageTypeEnum.Details)
+        {
+            <button type="button" onclick="DownLoad(@(ViewBag.ID))" id="btnMakerExcel" class="btn btn-default">查看PDF文件</button>
+        }
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+    </div>
+
+    @if (ViewBag.PageTypeID != PageTypeEnum.Add)
+    {
+        <h3 class="popTitle">
+            历史记录
+            <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+        </h3>
+        <div style="display:none;" class="popContent">
+            <div class="history_box">
+                <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr class="TH">
+                            <th width="20%">日期</th>
+                            <th width="20%">操作者</th>
+                            <th width="20%">状态</th>
+                            <th width="30%">意见/备注</th>
+                        </tr>
+                    </thead>
+
+                    @if (FirstModel.InspectionCustomsHis != null)
+                {
+                    foreach (var item in FirstModel.InspectionCustomsHis.OrderByDescending(d => d.AuditCreateDate))
+                    {
+                            <tr>
+                                <td>@item.AuditCreateDate</td>
+                                <td>@item.AuditUserName</td>
+                                <td>@item.InspectionCustomsStatus</td>
+                                <td>@item.AuditIdea</td>
+                            </tr>
+                        }
+                    }
+                </table>
+            </div>
+        </div>
+    }
+</form>
+
+<script>
+    $(function () {
+
+        $(".txt_Letter").change(function () {
+            var $InvoiceNO = $(this).closest(".Factory").find(".txt_InvoiceNO");
+            var Letter = $(this).val();
+
+            var value = $InvoiceNO.val() + Letter;
+            SetSpanValue($InvoiceNO, value);
+        });
+
+        $(".txt_SCNo").change(function () {
+            var $Letter = $(this).closest(".Factory").find(".txt_Letter_ForSCNo");
+
+            var value = $(this).val() + $Letter.val();
+            SetSpanValue($(this), value);
+        });
+
+        $(".txt_Letter_ForSCNo").change(function () {
+            var $InvoiceNO = $(this).closest(".Factory").find(".txt_SCNo");
+            var Letter = $(this).val();
+
+            var value = $InvoiceNO.val() + Letter;
+            SetSpanValue($InvoiceNO, value);
+        });
+
+        $(".TradeType").on("change", function (e) {
+            var value = $(this).val();
+            $(".TradeType[name='" + $(this).attr("name") + "']").each(function () {
+                $(this).val(value);
+            });
+        });
+    });
+
+    function SetSpanValue($this,value) {
+        var classname = $this.data("classname");
+        $("." + classname).each(function () {
+            $(this).html(value);
+        });
+    }
+    
+    //ShippingMark预览
+    $(".btnPreview").click(function () {
+        var InspectionCustomsDetailID = $(this).data("info");
+        loading();
+
+        $.ajax({
+            type: 'post',
+            url: '@Url.Content("~/InspectionCustoms/CreateShippingMark")',
+            data: {
+                InspectionCustomsDetailID: InspectionCustomsDetailID,
+            }
+        }).done(function (data) {
+            completeLoading();
+            if (!data.IsSuccess) {
+                $.messager.alert("提示", "失败了！" + data.Msg);
+                return;
+            }
+
+            if (data.Msg == "") {
+                $.messager.alert("提示", "唛头生成失败了！");
+                return;
+            }
+            window.open(data.Msg);
+
+        });
+
+    });
+
+
+    function DownLoad(id) {
+        loading();
+        $.post("@(Url.Content("~/InspectionCustoms/DownLoad/"))" + id, { }, function (data) {
+            completeLoading();
+            if (data.length>0) {
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i]!="") {
+                        window.open(data[i]);
+                    }
+                }
+            }else {
+                $.messager.alert("出错了", "暂时还没有该客人的模板！");
+            }
+        });
+    }
+
+        $(function () {
+            var Model_Count = parseInt($("#Model_Count").val());
+            for (var i = 0; i < Model_Count; i++) {
+                BindDatagrid("#MyPopGrid_Invoice_" + i);
+                BindDatagrid("#MyPopGrid_PackingList_" + i);
+                BindDatagrid("#MyPopGrid_Order_" + i);
+                BindDatagrid("#MyPopGrid_Customs_" + i);
+            }
+        });
+
+
+        function BindDatagrid(TableID) {
+            $(TableID).datagrid({
+                checkOnSelect:true,
+                onBeforeEdit:onBeforeEdit,
+                onAfterEdit:onAfterEdit,
+                onCancelEdit:onCancelEdit,
+                onLoadSuccess:onLoadSuccess,
+                onClickCell: @(ViewBag.PageTypeID == PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+                showFooter: true,
+                onBeginEdit:onBeginEdit,
+            });
+        }
+
+    
+        function BindOtherDatagrid(index) {
+
+            var editDatagridIndex = editGrid.substr(editGrid.length - 1, 1);
+            var editDatagridType = editGrid.substring(1, editGrid.length-2);
+            if (editDatagridType == "MyPopGrid_PackingList") {
+                var thisDatagridID = "#MyPopGrid_PackingList_" + editDatagridIndex;
+
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_Invoice_" + editDatagridIndex, index);
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_Order_" + editDatagridIndex, index);
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_Customs_" + editDatagridIndex, index);
+            }
+            else if (editDatagridType == "MyPopGrid_Invoice") {
+                var thisDatagridID = "#MyPopGrid_Invoice_" + editDatagridIndex;
+
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_PackingList_" + editDatagridIndex, index);
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_Order_" + editDatagridIndex, index);
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_Customs_" + editDatagridIndex, index);
+            }
+            else if (editDatagridType == "MyPopGrid_Order") {
+                var thisDatagridID = "#MyPopGrid_Order_" + editDatagridIndex;
+
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_PackingList_" + editDatagridIndex, index);
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_Invoice_" + editDatagridIndex, index);
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_Customs_" + editDatagridIndex, index);
+            }
+            else if (editDatagridType == "MyPopGrid_Customs") {
+                var thisDatagridID = "#MyPopGrid_PackingList_" + editDatagridIndex;
+
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_Invoice_" + editDatagridIndex, index);
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_Order_" + editDatagridIndex, index);
+                UpdateOtherDatagrid(thisDatagridID, "#MyPopGrid_PackingList_" + editDatagridIndex, index);
+            }
+        }
+
+        //同步更新其他的表格里面的数据
+        function UpdateOtherDatagrid(thisDatagridID, thisDatagrid_OtherID,index) {
+            var rows = $(thisDatagridID).datagrid("getRows");
+            var thisRow = rows[index];
+            if (thisRow.ProductPrice != undefined) {
+                if (thisRow.ProductPrice == null || thisRow.ProductPrice == "") {
+                    thisRow.ProductPrice = 0;
+                }
+                thisRow.Amount = NumberToRound( thisRow.ProductPrice * thisRow.Qty,4);
+                $(thisDatagridID).datagrid('acceptChanges').datagrid('refreshRow', index);
+            }
+
+
+            var rows_Other = $(thisDatagrid_OtherID).datagrid("getRows");
+            var thisRow_Other = rows_Other[index];
+            thisRow_Other.HsName = thisRow.HsName;
+            thisRow_Other.HsEngName = thisRow.HsEngName;
+            
+            if (thisDatagridID.indexOf("#MyPopGrid_PackingList_") == -1 && thisRow_Other.ProductPrice != undefined) {
+                if (thisRow.ProductPrice == undefined) {
+                    thisRow.ProductPrice = 0;
+                }
+                thisRow_Other.ProductPrice = thisRow.ProductPrice;
+                thisRow_Other.Amount =  NumberToRound( thisRow_Other.ProductPrice * thisRow_Other.Qty,4);
+            }
+
+            $(thisDatagrid_OtherID).datagrid('acceptChanges').datagrid('refreshRow', index);
+        }
+    
+        var checkSubmit = false;//防止重复提交
+
+        var app = angular.module("myApp", []);
+        app.controller("formCtrl", function ($scope, $http) {
+            $scope.submit = function (StatusID) {
+    
+                var AuditIdea = $(".AuditIdea").val();
+                var NotPassApproval = @((int)InspectionCustomsStatusEnum.NotPassCheck);
+                if (StatusID == NotPassApproval && AuditIdea == "") {
+                    $.messager.alert("提示", "请输入审核意见！", "info", function () {
+                        $(".AuditIdea").focus();
+                    });
+                    return;
+                }
+
+                var listModel = [];
+
+                var isEmpty_ProductPrice = false;
+                var isEmpty_PortID = false;
+                var isEmpty_DestinationPortID = false;
+                var isEmpty_TransportType = false;
+                var isEmpty_ExchangeType = false;
+                var isEmpty_SourceAreaWithin = false;
+                var isEmpty_TransactionType = false;
+                var isEmpty_UpLoadFile_DeclareElements = false;
+                var isEmpty_UpLoadFile_CustomsCommission = false;
+
+                var Model_Count = parseInt($("#Model_Count").val());
+                for (var i = 0; i < Model_Count; i++) {
+                    var thisArray = GetUpLoadFile("#fileListTable_DeclareElements_" + i);
+                    var list_DeclareElements = thisArray[0];                    
+                    if (!thisArray[1]) {
+                        isEmpty_UpLoadFile_DeclareElements = true;
+                    }
+
+                    thisArray = GetUpLoadFile("#fileListTable_Proxy_" + i);
+                    var list_CustomsCommission = thisArray[0];
+                    if (!thisArray[1]) {
+                        isEmpty_UpLoadFile_CustomsCommission = true;
+                    }
+
+                    var list_OrdersProducts = $("#MyPopGrid_Invoice_" + i).datagrid("getRows");
+                    if (list_OrdersProducts != null && list_OrdersProducts.length > 0) {
+                        for (var j = 0; j < list_OrdersProducts.length; j++) {
+                            if (list_OrdersProducts[j].ProductPrice <= 0) {
+                                isEmpty_ProductPrice = true;
+                            }
+                        }
+                    }
+
+                    var PortID = GetInputValue_ByName(i, "PortID");
+                    if (PortID == "") {
+                        isEmpty_PortID = true;
+                    }
+
+                    var DestinationPortID= GetInputValue_ByName(i, "DestinationPortID");
+                    if (DestinationPortID == "") {
+                        isEmpty_DestinationPortID = true;
+                    }
+
+                    var TransportType = GetInputValue_ByName(i, "TransportType", "select");
+                    if (TransportType == "") {
+                        isEmpty_TransportType = true;
+                    }
+
+                    var ExchangeType = GetInputValue_ByName(i, "ExchangeType", "select");
+                    if (TransportType == "") {
+                        isEmpty_ExchangeType = true;
+                    }
+
+                    var SourceAreaWithin = GetInputValue_ByName(i, "SourceAreaWithin");
+                    if (TransportType == "") {
+                        isEmpty_SourceAreaWithin = true;
+                    }
+
+                    var TransactionType= GetInputValue_ByName(i, "TransactionType");
+                    if (TransactionType == "") {
+                        isEmpty_TransactionType = true;
+                    }
+                    
+                    listModel.push({
+                        ShipmentOrderID: GetInputValue_ByName(i,"ShipmentOrderID"),
+                        InvoiceNO: GetInputValue_ByName(i, "InvoiceNO"),
+                        InspectionCustomsID: GetInputValue_ByName(i, "InspectionCustomsID"),
+                        InspectionCustomsDetailID: GetInputValue_ByName(i, "InspectionCustomsDetailID"),
+                        PortID: PortID,
+                        DestinationPortID:DestinationPortID,
+                        InspectionCustomsStatusID: StatusID,
+
+                        AuditIdea: AuditIdea,
+
+                        Letter: GetInputValue_ByName(i, "Letter", "select"),
+                        list_OrdersProducts:list_OrdersProducts,
+
+                        TradeType: GetInputValue_ByName(i, "TradeType", "select"),
+                        SCNo: GetInputValue_ByName(i, "SCNo", "select"),
+                        Letter_ForSCNo: GetInputValue_ByName(i, "Letter_ForSCNo", "select"),
+                        SaleContractContent:GetInputValue_ByName(i,"SaleContractContent","textarea"),
+
+                        TransportType:TransportType ,
+                        ExchangeType: ExchangeType,
+                        SourceAreaWithin: SourceAreaWithin,
+                        TransactionType: TransactionType,
+
+                        list_DeclareElements:list_DeclareElements,
+                        list_CustomsCommission:list_CustomsCommission,
+
+                    });
+                }
+                
+                var iMessage = "";
+                if (isEmpty_ProductPrice) {
+                    var customerCode = $("#CustomerCode").val();
+                    if (customerCode != "" && !jav.list_ContainZeroPrice_Customer.contains(customerCode.trim())) {
+                        iMessage += " 产品单价必须要大于0。";
+                    }
+                }
+                if (isEmpty_PortID) {
+                    iMessage += " Loading port不能为空。";
+                }
+                if (isEmpty_DestinationPortID) {
+                    iMessage += " 目的港不能为空。";
+                }
+                if (isEmpty_TransportType) {
+                    iMessage += " 运输方式不能为空。";
+                }
+                if (isEmpty_ExchangeType) {
+                    iMessage += " 结汇方式不能为空。";
+                }
+                if (isEmpty_SourceAreaWithin) {
+                    iMessage += " 境内货源地不能为空。";
+                }
+                if (isEmpty_TransactionType) {
+                    iMessage += " 成交方式不能为空。";
+                }
+                if (isEmpty_UpLoadFile_DeclareElements) {
+                    iMessage += " 请上传申报要素。";
+                }
+                if (isEmpty_UpLoadFile_CustomsCommission) {
+                    iMessage += " 请上传委托书。";
+                }
+                if (iMessage != "") {
+                    $.messager.alert('提示', iMessage , 'info');
+                    return false;
+                }
+
+                if (checkSubmit) {
+                    //$.messager.alert("提示", "请勿重复提交！");
+                    return false;
+                }
+                checkSubmit = true;
+                loading();
+
+                $http({
+                    method: 'post',
+                    url: "@Url.Content("~/InspectionCustoms/Edit")",
+                    data:  {
+                        ThisModel:listModel,
+                    },
+                }).success(function (data) {
+                    checkSubmit = false;
+                    completeLoading();
+
+                    if (data == 0) {
+                        $.messager.alert('提示', '提交出错', 'info');
+                        return;
+                    } else if (data == 1) {
+                        OA.CloseMe(true);
+                        parentGridReload();
+
+                    } else {
+                        $.messager.alert('提示', '没有更新任何数据', 'info');
+                        return false;
+                    }
+
+                });
+
+                return false;
+            };
+        });
+    
+</script>

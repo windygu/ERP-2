@@ -1,0 +1,235 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>KOTest</title>
+
+    <link href="~/Content/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.0/jquery.min.js"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    @*<script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>*@
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+
+    <style>
+        .folders {
+            background-color: #bbb;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            border-radius: 7px;
+            background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0, #d6d6d6), color-stop(0.4, #c0c0c0), color-stop(1,#a4a4a4));
+            margin: 10px 0 16px 0;
+            font-size: 0px;
+        }
+
+            .folders li:hover {
+                background-color: #ddd;
+            }
+
+            .folders li:first-child {
+                border-left: none;
+                border-radius: 7px 0 0 7px;
+            }
+
+            .folders li {
+                font-size: 16px;
+                font-weight: bold;
+                display: inline-block;
+                padding: 0.5em 1.5em;
+                cursor: pointer;
+                color: #444;
+                text-shadow: #f7f7f7 0 1px 1px;
+                border-left: 1px solid #ddd;
+                border-right: 1px solid #888;
+            }
+
+            .folders li {
+                *display: inline !important;
+            }
+            /* IE7 only */
+            .folders .selected {
+                background-color: #444 !important;
+                color: white;
+                text-shadow: none;
+                border-right-color: #aaa;
+                border-left: none;
+                box-shadow: inset 1px 2px 6px #070707;
+            }
+    </style>
+</head>
+<body style="margin: 20px!important; padding: 20px !important">
+    @{
+        string pwd = ERP.Tools.DTRequest.Encrypt("Jet05023");
+        Response.Write(pwd+" ");
+        string pwd2 = ERP.Tools.DTRequest.Decrypt(pwd);
+        Response.Write(pwd2);
+
+    }
+    <div class="row">
+        <div class="panel panel-success">
+            <div class="panel-heading">1.Introduction</div>
+            <div class="panel-body">
+                <p>First name: <input data-bind="value: firstName" /></p>
+                <p>Last name: <input data-bind="value: lastName" /></p>
+
+                <p>Full name: <input data-bind="value: fullName" /></p>
+                <button data-bind="click:capitalizeLastName ">Go caps</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="panel panel-success">
+            <div class="panel-heading">2.Working with Lists and Collections</div>
+            <div class="panel-body">
+
+                <button data-bind="click:addSeat,enable:seats().length < 5 ">Add Seat</button>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Passenger name</th>
+                            <th>Meal</th>
+                            <th>Surcharge</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach:seats">
+                        <tr>
+                            @*<td data-bind="text:name"></td>
+                                <td data-bind="text:meal().mealName"></td>
+                                <td data-bind="text:meal().price"></td>*@
+                            <td><input data-bind="value:name" /></td>
+                            <td><select data-bind="options:$root.availableMeals,value:meal,optionsText:'mealName'"></select></td>
+                            <td data-bind="text:formattedPrice"></td>
+                            <td><a href="#" data-bind="click:$root.removeSeat">Remove</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <h3 data-bind="visible:totalSurcharge()>0">
+                    Total surcharge: $<span data-bind="text:totalSurcharge().toFixed(2)"></span>
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="panel panel-success">
+            <div class="panel-heading">3.Single page applications</div>
+            <div class="panel-body">
+                <ul class="folders" data-bind="foreach: folders">
+                    <li data-bind="text: $data,css: { selected: $data == $root.chosenFolderId() },click: $root.goToFolder"></li>
+                </ul>
+
+                <table class="mails" data-bind="with: chosenFolderData">
+                    <thead><tr><th>From</th><th>To</th><th>Subject</th><th>Date</th></tr></thead>
+                    <tbody data-bind="foreach: mails">
+                        <tr>
+                            <td data-bind="text: from"></td>
+                            <td data-bind="text: to"></td>
+                            <td data-bind="text: subject"></td>
+                            <td data-bind="text: date"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function SeatReservation(name, initialMeal) {
+            var self = this;
+            self.name = name;
+            self.meal = ko.observable(initialMeal);
+            self.formattedPrice = ko.computed(function () {
+                var price = self.meal().price;
+                return price ? "$" + price.toFixed(2) : "None";
+            });
+        }
+
+        function TestMethod() {
+        }
+
+        function KOViewModel() {
+            //1.基础
+            this.firstName = ko.observable("Michael");
+            this.lastName = ko.observable("Jiang");
+            this.fullName = ko.computed(function () {
+                return this.firstName() + " " + this.lastName();
+            }, this);
+            this.capitalizeLastName = function () {
+                var currentVal = this.lastName();
+                this.lastName(currentVal.toUpperCase());
+            };
+
+            //2.绑定列表
+            var self = this;
+            self.availableMeals = [
+                { mealName: "Standard (sandwich)", price: 0 },
+                { mealName: "Premium (lobster)", price: 34.95 },
+                { mealName: "Ultimate (whole zebra)", price: 290 },
+            ];
+            self.seats = ko.observableArray([
+                new SeatReservation("Steve", self.availableMeals[0]),
+                new SeatReservation("Bert", self.availableMeals[0]),
+            ]);
+            self.addSeat = function () {
+                self.seats.push(new SeatReservation("", self.availableMeals[0]));
+            };
+            self.removeSeat = function (seat) {
+                self.seats.remove(seat);
+            };
+            self.totalSurcharge = ko.computed(function () {
+                var total = 0;
+                for (var i = 0; i < self.seats().length; i++) {
+                    total += self.seats()[i].meal().price;
+                }
+                return total;
+            });
+
+            //3.单页面
+            self.folders = ['Inbox', 'Archive', 'Sent', 'Spam'];
+            self.chosenFolderId = ko.observable();
+            self.chosenFolderData = ko.observable();
+            self.goToFolder = function (folder) {
+                self.chosenFolderId(folder);
+
+                $.ajax({
+                    type: 'get',
+                    //jsonp: 'jsonp',
+                    dataType: 'jsonp',
+                    jsonpCallback: 'callback',
+                    url: "https://status.github.com/api/status.json?callback=apiStatus",
+                    data: { folder: folder }
+                }).success(function (e) {
+                    console.log(5);
+                    debugger;
+                })
+                .error(function (XHR, textStatus, errorThrown) {
+                    debugger;
+                })
+                .done(function () {
+                    debugger;
+                    console.log(3);
+                    //self.chosenFolderData
+                });
+
+            };
+        }
+
+        function callback(e) {
+            debugger;
+            console.log(4);
+        }
+
+
+        ko.applyBindings(new KOViewModel());
+    </script>
+</body>
+
+</html>

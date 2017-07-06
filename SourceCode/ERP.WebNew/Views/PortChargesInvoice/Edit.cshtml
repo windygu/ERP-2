@@ -1,0 +1,372 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@using ERP.Models.CustomEnums
+@model ERP.Models.Order.VMOrderEdit
+
+@section styles{
+
+    <link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+}
+
+<style>
+    .glyphicon {
+        right: 20px;
+    }
+</style>
+
+<script src="~/Scripts/angular.min-1.5.8.js"></script>
+
+<form id="frmEdit" ng-app="myApp" ng-controller="formCtrl" ng-model="formModel">
+
+    @Html.HiddenFor(d => d.OrderID)
+
+    <h3 class="popTitle">
+        销售订单信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+
+    <div class="row popContent" style="overflow: inherit;">
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">销售核算单号：</label>
+            <div class="col-sm-8 control-label">
+                @Model.OrderNumber
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">Shipping Window：</label>
+            <div class="col-sm-8 control-label">
+                @(Model.OrderDateStart + " ~ " + Model.OrderDateEnd)
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">@ERP.Tools.Keys.CustomerPO：</label>
+            <div class="col-sm-8 control-label">
+                @Model.POID
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">@ERP.Tools.Keys.ECHPO：</label>
+            <div class="col-sm-8 control-label">
+                @Model.EHIPO
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">客户：</label>
+            <div class="col-sm-8 control-label">
+                @Model.CustomerNo
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">客户下单日期：</label>
+            <div class="col-sm-8 control-label">
+                @Model.CustomerDate
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        港杂费信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+
+    <div class="row popContent" style="overflow: inherit;">
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">指定船代金额：</label>
+            <div class="col-sm-8 control-label">
+                <div class="col-sm-1 control-label">
+                    @ERP.Tools.Keys.RMB_Sign
+                </div>
+                <div class="col-sm-10 control-label">
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.TextBoxFor(d => d.DesignatedAgencyAmount, new { @class = "form-control", disabled = "disable" })
+                    }
+                    else
+                    {
+                        @Html.TextBoxFor(d => d.DesignatedAgencyAmount, new { @class = "form-control" })
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label text-danger">我司船代金额：</label>
+            <div class="col-sm-8 control-label">
+                <div class="col-sm-1 control-label">
+                    @ERP.Tools.Keys.RMB_Sign
+                </div>
+                <div class="col-sm-10 control-label">
+                    @if (Model.PageType == PageTypeEnum.Details)
+                    {
+                        @Html.TextBoxFor(d => d.OurAgencyAmount, new { @class = "form-control", disabled = "disable" })
+                    }
+                    else
+                    {
+                        @Html.TextBoxFor(d => d.OurAgencyAmount, new { @class = "form-control" })
+
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+    @if (Model.PageType != PageTypeEnum.Details)
+    {
+        <h3 class="popTitle">
+            附件信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent" style="overflow: inherit;">
+            <div class="form-group col-sm-6 has-feedback">
+                <label class="col-sm-4 control-label">附件：</label>
+                <div class="col-sm-8 control-label">
+                    <div class="uploadify">
+                        <input type="file" name="uploadify" id="uploadify" />
+                        <a class="a_upload" onclick="UpLoadFile()">上传</a>
+                        <div class="fileQueue">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <h3 class="popTitle">
+        已上传的附件信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="history_box">
+            <table id="fileListTable" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                <thead>
+                    <tr class="t_bg">
+                        <td width="50%">附件名称</td>
+                        <td width="20%">上传时间</td>
+                        <td width="30%">操作</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.list_UploadPortChargesInvoice != null)
+                    {
+                        int i = 0;
+                        foreach (var item in Model.list_UploadPortChargesInvoice.OrderByDescending(d => d.DT_CREATEDATE))
+                        {
+                            <tr>
+                                <td class="hide">
+                                    <input type="hidden" value="@item.ID" class="UpLoadFileListID" />
+                                    <input class="IsDelete" type="hidden" value="@item.IsDelete" />
+                                    <input class="ServerFileName" type="hidden" value="@item.ServerFileName" />
+                                    <input class="DisplayFileName" type="hidden" value="@item.DisplayFileName" />
+                                </td>
+                                <td>@item.DisplayFileName</td>
+                                <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+                                    @if (Model.PageType != PageTypeEnum.Details)
+                                    {
+                                        <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>
+                                    }
+                                </td>
+                            </tr>
+                            ++i;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="popBtns">
+        @switch (Model.PageType)
+        {
+            case PageTypeEnum.Add:
+            case PageTypeEnum.Edit:
+                <button type="button" class="btn btn-info" value="" ng-click="submit(@((int)PortChargesInvoiceStatusEnum.OutLine))">保存为草稿</button>
+                <button type="button" class="btn btn-danger" value="" ng-click="submit(@((int)PortChargesInvoiceStatusEnum.PassedCheck))">保存为已维护</button>
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                break;
+            case PageTypeEnum.Details:
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">关闭</button>
+                break;
+            default:
+                break;
+
+        }
+    </div>
+</form>
+
+
+@section scripts{
+    <script>
+
+        uploadifyInitial();
+
+        function uploadifyInitial() {
+            $("#uploadify").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@UploadFileType.PortChargesInvoice&id=@Model.OrderID', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+                fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                //uploadLimit: 10, //同时上传多小个文件
+                sizeLimit: 100000000, //限制上传大小10M
+                //queueSizeLimit: 10, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) { }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) { }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    var count = $("#fileListTable tr:not(:first)").length;
+                    var serverFileName = $.parseJSON(response).data.NewFilePath;
+                    var displayFileName = $.parseJSON(response).data.OldFileName;
+                    var fileListStr = '<tr>';
+                    fileListStr += '<td class="hide">';
+                    fileListStr += '<input type="hidden" value="' + displayFileName + '" class="DisplayFileName" />';
+                    fileListStr += '<input type="hidden" value="' + serverFileName + '" class="ServerFileName" />';
+                    fileListStr += '<input type="hidden" value="' + formateDate2(new Date()) + '" class="DT_CREATEDATE" />';
+                    fileListStr += '<input type="hidden" class="IsDelete" />';
+                    fileListStr += '</td>';
+                    fileListStr += '<td>' + displayFileName + '</td>';
+                    fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                    fileListStr += '<td>';
+                    fileListStr += '<button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button>';
+                    fileListStr += '<button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button>';
+                    fileListStr += '</td>';
+                    fileListStr += '</tr>';
+                    $("#fileListTable").prepend(fileListStr);
+                }  //当单个文件上传成功后激发的事件
+            });
+        }
+
+        //上传
+        function UpLoadFile() {
+            $('#uploadify').uploadifyUpload('*');
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+
+        //删除
+        function DeleteFile(e, path) {
+            $(e).closest("tr").find(".IsDelete").val(true);
+            $(e).closest("tr").hide();
+        }
+
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            onError: function (e) {
+                e.preventDefault();
+                return false;
+            },
+            onSuccess: function (e) {
+                e.preventDefault();
+                return false;
+            },
+            fields: {
+                DesignatedAgencyAmount: {
+                    validators: {
+                        notEmpty: { message: '指定船代金额不能为空' },
+                        regexp: jav.regx.numValid,
+                    }
+                },
+                OurAgencyAmount: {
+                    validators: {
+                        notEmpty: { message: '我司船代金额不能为空' },
+                        regexp: jav.regx.numValid,
+                    }
+                },
+            }
+        });
+
+        var checkSubmit = false;//防止重复提交
+
+        var app = angular.module("myApp", []);
+        app.controller("formCtrl", function ($scope, $http) {
+            $scope.submit = function (PortChargesInvoice_StatusID) {
+                var DesignatedAgencyAmount = $("#DesignatedAgencyAmount").val();
+                if (!jav.IsFloat(DesignatedAgencyAmount) ) {
+                    return false;
+                }
+
+                var OurAgencyAmount = $("#OurAgencyAmount").val();
+                if (!jav.IsFloat(OurAgencyAmount) ) {
+                    return false;
+                }
+
+                if (checkSubmit) {
+                    //$.messager.alert("提示", "请勿重复提交！");
+                    return false;
+                }
+                checkSubmit = true;
+                loading();
+
+                var UpLoadFileList = [];
+                if ($("#fileListTable tbody tr .ServerFileName").length > 0) {
+                    $("#fileListTable tbody tr").each(function () {
+                        var $this=$(this);
+                        var UpLoadFileListID = $this.find(".UpLoadFileListID").val();
+                        var DisplayFileName = $this.find(".DisplayFileName").val();
+                        var ServerFileName = $this.find(".ServerFileName").val();
+                        var DT_CREATEDATE = $this.find(".DT_CREATEDATE").val();
+                        var IsDelete = $this.find(".IsDelete").val();
+                        if (ServerFileName != "undefined") {
+                            UpLoadFileList.push({
+                                ID:UpLoadFileListID,
+                                DisplayFileName:DisplayFileName,
+                                ServerFileName:ServerFileName,
+                                DT_CREATEDATE:DT_CREATEDATE,
+                                IsDelete:IsDelete
+                            });
+                        }
+                    });
+                }
+
+                $http({
+                    method: 'post',
+                    url: "@Url.Content("~/PortChargesInvoice/Edit")",
+                    data:  {
+                        OrderID:$("#OrderID").val(),
+                        PortChargesInvoice_StatusID:PortChargesInvoice_StatusID,
+                        DesignatedAgencyAmount:DesignatedAgencyAmount,
+                        OurAgencyAmount:OurAgencyAmount,
+                        list_UploadPortChargesInvoice:UpLoadFileList,
+                    },
+                }).success(function (response) {
+                    checkSubmit = false;
+                    completeLoading();
+                        parentGridReload();
+                        OA.CloseMe(true);
+                });
+
+                return false;
+            };
+        });
+
+    </script>
+}

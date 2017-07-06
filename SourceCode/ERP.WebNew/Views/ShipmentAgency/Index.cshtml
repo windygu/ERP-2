@@ -1,0 +1,151 @@
+﻿@model ERP.Models.Shipment.VMShipmentAgencySearchModel
+
+@{
+    ViewBag.Title = "船代公司信息管理";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="content-wrapper">
+    <form class="form-inline frmFind" role="form" method="get">
+        <div class="search_Condition box_1k">
+            <ul>
+                <li>
+                    <label class="col-xs-2">船代公司名</label><div class="col-sm-10">
+                        @Html.TextBoxFor(u => u.ShippingAgencyName, new { @class = "form-control" })
+                    </div>
+                </li>
+                <li class="search">
+                    <button id="bntFind" type="submit" onclick="return OA.s(this)" class="btn btn-info">查询</button>
+                    <button id="bntClearAll" type="button" class="btn btn-info">清空所有</button>
+                </li>
+            </ul>
+        </div>
+        <div class="Control">
+            @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ShipmentAgencyElementPrivileges.Create) > 0)
+            {
+                <button id="bntSearch" wintype="idialog" type="button" winsize="1200,900,yes" onclick="return OA.i(this);" href="@Url.Content("~/ShipmentAgency/Edit/0")" class="btn btn-danger">新建船代公司</button>
+            }
+            @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ShipmentAgencyElementPrivileges.BatchDelete) > 0)
+            {
+                <button id="bntDelete" type="button" onclick="deleteSelected()" class="btn btn-default">批量删除</button>
+            }
+        </div>
+    </form>
+    <table id="tblShipmentAgencies" class="easyui-datagrid"
+           data-options="resizeHandle:'right',singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/ShipmentAgency/GetAll")?@HttpContext.Current.Request.QueryString',method:'get',onLoadSuccess:onLoadSuccess,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+        <thead>
+            <tr>
+                <!--基本信息-->
+                <th data-options="field:'ck',checkbox:true,align:'center'" rowspan="2"></th>
+                <th data-options="field:'ShippingAgencyName',width:200,align:'center',sortable:true" rowspan="2">船代公司名</th>
+                <th colspan="10">费用信息</th>
+                <th data-options="field:'ShippingAgencyID',align:'center',formatter:operationFormatter" rowspan="2">操作</th>
+            </tr>
+            <tr>
+                <th data-options="field:'Currency',width:80,align:'center'">Currency</th>
+                <th data-options="field:'FeeDocument',width:120,align:'center'">文件费</th>
+                <th data-options="field:'FeeDockOperation',width:120,align:'center'">码头操作费</th>
+                <th data-options="field:'FeeYangShanPicking',width:120,align:'center'">附加提还箱费</th>
+                <th data-options="field:'FeeFacilityManagement',width:120,align:'center'">散货设备管理费</th>
+                <th data-options="field:'FeePortSecurity',width:120,align:'center'">散货港口设备安保费</th>
+                <th data-options="field:'FeeImporterSecurityClassify',width:120,align:'center'">进口商安保归类</th>
+                <th data-options="field:'FeeWarehousing',width:120,align:'center'">散货入仓费</th>
+                <th data-options="field:'FeePicking',width:120,align:'center'">提单费</th>
+                <th data-options="field:'FeeCustomDeclaration',width:120,align:'center'">报关费</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+        $(function () {
+            //清空所有
+            $("#bntClearAll").click(function () {
+                $("#ShippingAgencyName").val("");
+            });
+        })
+
+        var showEdit = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ShipmentAgencyElementPrivileges.Edit);
+        var showView = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ShipmentAgencyElementPrivileges.View);
+        var showDelete = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.ShipmentAgencyElementPrivileges.Delete);
+        function operationFormatter(val, row, index) {
+            var ops = "";
+            if(showEdit > 0){
+                ops += "<button winType='idialog' winSize='1200,900,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentAgency/Edit/"))" + val + "'>编辑</button>";
+            }
+            if(showView > 0){
+                ops += "<button winType='idialog' winSize='1200,900,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentAgency/Edit/"))" + val + "?isview=true'>查看</button>";
+            }
+            if(showDelete > 0){
+                ops += "<button class='btn btn-danger btn-xs w_auto' onclick='deleteAgency(" + val + ")'>删除</button>";
+            }
+            return ops;
+        }
+
+        function deleteAgency(aid) {
+            $.messager.confirm('Confirm','是否删除选中的船代公司?',function(r){
+                if (r){
+                    $.post('@Url.Content("~/ShipmentAgency/Delete")', { idList: aid },
+                       function (result) {
+                           switch (result) {
+                               case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect) :
+                                   $.messager.alert("提示","没有可以删除删除的记录");
+                                   break;
+                               case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success) :
+                                   $.messager.alert("提示","删除成功");
+                                   $('#tblShipmentAgencies').datagrid('reload');
+                                   break;
+                               default:
+                                   break;
+                           }
+                       }, "json");
+                }
+            });
+        }
+
+        //删除选中
+        function deleteSelected() {
+            var idArray = getAllSelections();
+            if (idArray.length <= 0) {
+                $.messager.alert("未选中数据","请选中要删除的船代公司！");
+                return;
+            }
+
+            $.messager.confirm('Confirm','是否删除选中的船代公司?',function(r){
+                if (r){
+                    $.post("@Url.Content("~/ShipmentAgency/Delete")", { idList: idArray.join(',') },
+                        function (result) {
+                            switch (result) {
+                                case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect) :
+                                    $.messager.alert("提示","没有可以删除删除的记录");
+                                    break;
+                                case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success) :
+                                    $.messager.alert("提示","删除成功");
+                                    $('#tblShipmentAgencies').datagrid('reload');
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }, "json");
+                }
+            });
+        }
+
+        function getAllSelections(){
+            var idArray = [];
+            var rows = $('#tblShipmentAgencies').datagrid('getSelections');
+            for(var i=0; i<rows.length; i++){
+                idArray.push(rows[i].ShippingAgencyID);
+            }
+            return idArray;
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["CreateDate","ShippingAgencyID"]);
+        }
+    </script>
+}

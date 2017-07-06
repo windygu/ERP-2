@@ -1,0 +1,223 @@
+﻿@{
+    Layout = null;
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using System.Drawing
+@using ERP.Tools
+@using ERP.BLL.Consts
+@using ERP.Models.CustomEnums
+@using ERP.Tools.EnumHelper
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <div>
+        @{
+
+            ERP.Models.Purchase.VMPurchaseProduct vm_product = new ERP.Models.Purchase.VMPurchaseProduct();
+
+            vm_product.Desc = "(RR)15.75IN GLITTER MIRRORWG HOST";//产品品名
+            vm_product.OuterBoxRate = 6;//外箱率
+            vm_product.InnerBoxRate = 12;//内核率
+            vm_product.WeightLBS = 5;//产品重量
+            vm_product.LengthIN = 12.99m;//产品长
+            vm_product.WidthIN = 8.86m;//产品宽
+            vm_product.HeightIN = 7.09m;//产品高
+            vm_product.SkuNumber = "123456";//产品SKU
+            vm_product.OuterPKUPC = "9999999999999";//产品外箱UPC
+            vm_product.InnerPKUPC = "8888888888888";//产品内核UPC
+            vm_product.UPC = "7777777777777";//产品UPC
+            vm_product.InnerGrossWeightLBS = 8.04m;//产品内核毛重
+            vm_product.InnerNetWeightLBS = 7.80m;//产品内核净重
+
+            vm_product.POID = "571117";//customer po
+            vm_product.Qty = 200;//下单数量
+            vm_product.No = "JK29272FR";//产品货号
+            vm_product.OuterWeightNet = 200;//外箱净重
+            vm_product.OuterWeightGross = 300;//外箱毛重
+            vm_product.SeasonName = "Easter";//季节名称
+            vm_product.DestinationPortName = "MEMPHIS,TN";//订单目的港
+            vm_product.CaseOrderQty = 331;//订单箱数
+            vm_product.OuterLengthIN = 8.45m;//外箱长
+            vm_product.OuterWidthIN = 6.23m;//外箱宽
+            vm_product.OuterHeightIN = 9.23m;//外箱高
+            vm_product.DepartmentName = "Gift Wrap";
+            vm_product.SeasonDepartmentNumber = "360";
+
+            //预设的变量，如果需要有其他变量，可以在此预先定义
+
+
+            string templatePath = Utils.GetMapPath("/data/ShippingMark/S60/S60外箱正侧唛模板.jpg");
+            Bitmap bmp = new Bitmap(templatePath);
+            Graphics g = Graphics.FromImage(bmp);
+            Font font = new Font("Arial", 20, FontStyle.Regular);//字体
+            SolidBrush sb = new SolidBrush(Color.Black);
+            Image image1 = null;
+            Image image2 = null;
+            Image image3 = null;
+            string Desc_Start = vm_product.Desc;
+
+            int x = 16;//初始X坐标的值
+            int y = 25;//初始Y坐标的值
+            int i = 33;//Y坐标每次增加的值，行间距
+            int y2 = y + 25;//字符换行后，更新后的y2的坐标的值
+
+            #region 外箱正唛
+
+            templatePath = Utils.GetMapPath("/data/ShippingMark/S60/S60外箱正侧唛模板.jpg");
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+            //更换背景图
+
+            if (!File.Exists(Utils.GetMapPath("~/data/ShippingMark/S60/" + vm_product.SeasonName + ".png")))
+            {
+                throw new Exception("季节色带不存在！" + Utils.GetMapPath("~/data/ShippingMark/S60/" + vm_product.SeasonName + ".png"));
+            }
+            image1 = Image.FromFile(Utils.GetMapPath("~/data/ShippingMark/S60/" + vm_product.SeasonName + ".png"));//图标路径
+
+            g.DrawImageUnscaledAndClipped(image1, new Rectangle(2, 2, 343, 33));//写季节图标
+
+            Pen p = new Pen(sb, 33);
+            if(vm_product.SeasonPrefix == "Christmas")//只有圣诞的季节，才会有黑色季节标
+            {
+                g.DrawLine(p, 2, 51, 345, 51);//写黑色图标
+            }
+
+            sb = new SolidBrush(Color.White);
+            font = new Font("Arial", 16, FontStyle.Regular);//字体
+            g.DrawString(vm_product.DepartmentName, font, sb, (155 - 5 * vm_product.DepartmentName.Length), 38);//往黑色图标里写白色文字,最多只能放35个字符,每个字符10个像素
+
+            sb = new SolidBrush(Color.Black);
+            font = new Font("Arial", 14, FontStyle.Regular);//字体
+
+            g.DrawString("BIGLOTS", font, sb, 110, 85);//写BIGLOTS固定值
+            g.DrawString("STORES", font, sb, 110, 110);//写STORES固定值
+
+            x = 5;
+            y = 160;
+            i = 30;
+            g.DrawString("PO#: " + vm_product.POID, font, sb, x, y);//写customer po值
+            g.DrawString("SKU#: " + vm_product.SkuNumber, font, sb, x, y + i);//写product sku值
+            g.DrawString("DEPT#: " + vm_product.SeasonDepartmentNumber, font, sb, x, y + 2 * i);//写dept number值
+            g.DrawString("Country of Origin:  China", font, sb, x, y + 3 * i);//写固定值
+
+            g.Save();
+
+
+            string img1 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S60);
+
+            #endregion 外箱正唛
+
+
+            #region 外箱侧唛
+
+            templatePath = Utils.GetMapPath("/data/ShippingMark/S60/S60外箱正侧唛模板.jpg");
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+            //更换背景图
+
+            if (!File.Exists(Utils.GetMapPath("~/data/ShippingMark/S60/" + vm_product.SeasonName + ".png")))
+            {
+                throw new Exception("季节色带不存在！" + Utils.GetMapPath("~/data/ShippingMark/S60/" + vm_product.SeasonName + ".png"));
+            }
+            image2 = Image.FromFile(Utils.GetMapPath("~/data/ShippingMark/S60/" + vm_product.SeasonName + ".png"));//图标路径
+
+            g.DrawImageUnscaledAndClipped(image1, new Rectangle(2, 2, 343, 33));//写季节图标
+
+            p = new Pen(sb, 33);
+            if (vm_product.SeasonPrefix == "Christmas")//只有圣诞的季节，才会有黑色季节标
+            {
+                g.DrawLine(p, 2, 51, 345, 51);//写黑色图标
+            }
+
+            sb = new SolidBrush(Color.White);
+            font = new Font("Arial", 16, FontStyle.Regular);//字体
+            g.DrawString(vm_product.DepartmentName, font, sb, (155 - 5 * vm_product.DepartmentName.Length), 38);//往黑色图标里写白色文字,最多只能放35个字符,每个字符10个像素
+
+            sb = new SolidBrush(Color.Black);
+            font = new Font("Arial", 14, FontStyle.Regular);//字体
+
+            x = 5;
+            y = 90;
+            i = 30;
+            y2 = y + 25;
+            Desc_Start = vm_product.Desc;
+            if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > 22)
+            {
+                Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, 22);
+                i = 27;
+            }
+
+            g.DrawString("SKU#: " + vm_product.SkuNumber, font, sb, x, y + i);//写product sku值
+            if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > 22)
+            {
+                g.DrawString("Description: " + Desc_Start, font, sb, x, y + 2 * i);//写第一行item description的值
+                g.DrawString(vm_product.Desc.Substring(Desc_Start.Length, vm_product.Desc.Length - Desc_Start.Length), font, sb, x + 103, y2 + 2 * i);//写第二行item description的值
+                y = y2;
+            }
+            else
+            {
+                g.DrawString("Description: " + Desc_Start, font, sb, x, y + 2 * i);//写item description的值
+            }
+
+            g.DrawString("Master Pack: " + vm_product.OuterBoxRate + "  PCS", font, sb, x, y + 3 * i);//写外箱率的值
+            g.DrawString("Inner Pack: "+ vm_product.InnerBoxRate + "  PCS", font, sb, x, y + 4 * i);//写内核率的值
+            g.DrawString("GW/NW (kgs):", font, sb, x, y + 5 * i);//写固定值
+
+            g.Save();
+
+            string img2 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S60);//创建jpg的文件
+
+            #endregion 外箱侧唛
+
+            #region 内盒唛
+
+            if (vm_product.OuterBoxRate != vm_product.InnerBoxRate)
+            {
+                templatePath = Utils.GetMapPath("/data/ShippingMark/S60/S60内核唛模板.jpg");
+                bmp = new Bitmap(templatePath);
+                g = Graphics.FromImage(bmp);
+                //更换背景图
+
+                font = new Font("Arial", 14, FontStyle.Regular);//字体
+                g.DrawString("SKU#: " + vm_product.SkuNumber, font, sb, 5, 10);//写product sku值
+                if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > 22)
+                {
+                    g.DrawString("Description: " + Desc_Start, font, sb, 5, 43);//写第一行item description的值
+                    g.DrawString(vm_product.Desc.Substring(Desc_Start.Length, vm_product.Desc.Length - Desc_Start.Length), font, sb, 105, 70);//写第二行item description的值
+                }
+                else
+                {
+                    g.DrawString("Description: " + Desc_Start, font, sb, 5, 43);//写item description的值
+                }
+                g.Save();
+            }
+            string img3 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S60);
+
+
+            #endregion 内盒唛
+
+
+
+
+        }
+
+        外箱正唛(印前后两面)<br />
+        <img src="@(img1)" />
+
+        <hr />
+        外箱侧唛(印左右两面)<br />
+        <img src="@(img2)" />
+
+
+        <hr />
+        内盒唛(一面印刷)<br />
+        <img src="@(img3)" />
+    </div>
+</body>
+</html>

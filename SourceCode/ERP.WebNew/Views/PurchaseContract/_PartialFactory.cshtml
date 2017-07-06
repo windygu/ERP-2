@@ -1,0 +1,252 @@
+﻿@model ERP.Models.Purchase.VMPurchase
+@using ERP.Models.CustomEnums
+
+<div class="row_Factory" style="display:none;">
+    @Html.HiddenFor(d => d.FactoryID)
+    @Html.HiddenFor(d => d.OrderID)
+    @Html.HiddenFor(d => d.PurchaseNumber)
+    @Html.HiddenFor(d => d.CurrentSign)
+    @Html.HiddenFor(d => d.AllAmount)
+    @Html.HiddenFor(d => d.AllQty)
+    @Html.HiddenFor(d => d.ContractType)
+
+    <input class="hiddenAllAmount" name="hiddenAllAmount" type="hidden" value="@(Model.AllAmount - Model.OtherFee)" />
+
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">工厂：</label>
+        <div class="col-sm-8 control-label">
+            @Model.FactoryName
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">采购订单编号：</label>
+        <div class="col-sm-8 control-label">
+            @Model.PurchaseNumber
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">联络人：</label>
+        <div class="col-sm-8 control-label">
+            @Model.CallPeople
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">采购日期：</label>
+        <div class="col-sm-8 control-label">
+            @Model.PurchaseDate
+        </div>
+    </div>
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">电话：</label>
+        <div class="col-sm-8 control-label">
+            @Model.Telephone
+        </div>
+    </div>
+    
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label text-danger">交货地：</label>
+        <div class="col-sm-8 control-label">
+            @if (Model.PageType == PageTypeEnum.Details)
+            {
+                @Html.TextBoxFor(d => d.Port, new { @class = "form-control", disabled = "disabled" })
+            }
+            else
+            {
+                @Html.TextBoxFor(d => d.Port, new { @class = "form-control" })
+            }
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">传真：</label>
+        <div class="col-sm-8 control-label">
+            @Model.Fax
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label text-danger">交货日期：</label>
+        <div class="col-sm-8 control-label">
+            @if (Model.PageType == PageTypeEnum.Details)
+            {
+                @(Model.DateStartFormatter)
+            }
+            else
+            {
+                <div class="col-sm-5" style="padding:0;">
+                    @Html.TextBoxFor(d => d.DateStartFormatter, new { @class = "form-control Wdate", style = "padding-right: 20px;" })
+                </div>
+                    <span class="col-sm-2" style="padding: 0; text-align: center;display:none;">-</span>
+                    <div class="col-sm-5" style="padding:0;display:none;">
+                        @Html.TextBoxFor(d => d.DateEndFormatter, new { @class = "form-control Wdate", style = "padding-right: 20px;" })
+                    </div>
+            }
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">客户：</label>
+        <div class="col-sm-8 control-label">
+            @Model.CustomerCode
+        </div>
+    </div>
+    
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label text-danger">付款方式：</label>
+        <div class="col-sm-8 control-label divPaymentType">
+
+            <div class="col-sm-6" style="padding:0;">
+                <select id="PaymentType" name="PaymentType" class="form-control" style="padding-right:0;" @(Model.PageType == PageTypeEnum.Details ? "disabled='disabled'" : "") onchange="PaymentTypeChange(this)">
+                    <option></option>
+
+                    @if (Model.CurrentSign != "$")
+                    {
+                        <option value="1" @(Model.PaymentType == ((int)PaymentTypeEnum.AfterClearance).ToString() ? "selected='selected'" : "")>结关后</option>
+                        <option value="2" @(Model.PaymentType == ((int)PaymentTypeEnum.AfterShipToStock).ToString() ? "selected='selected'" : "")>进仓后</option>
+                        <option value="3" @(Model.PaymentType == ((int)PaymentTypeEnum.AfterDelivery).ToString() ? "selected='selected'" : "")>发货后</option>
+                    }
+                    else
+                    {
+                        <option value="4" @(Model.PaymentType == ((int)PaymentTypeEnum.AfterReceivingTheOriginalDocuments).ToString() ? "selected='selected'" : "")>收到正本单据后</option>
+                        <option value="5" @(Model.PaymentType == ((int)PaymentTypeEnum.AfterReceivingTheOriginalDocumentsScannedCopy).ToString() ? "selected='selected'" : "")>收到正本单据扫描件后</option>
+                        <option value="6" @(Model.PaymentType == ((int)PaymentTypeEnum.LC_SIGHT).ToString() ? "selected='selected'" : "")>L/C SIGHT</option>
+                        <option value="7" @(Model.PaymentType == ((int)PaymentTypeEnum.AfterReceiptOfTheOriginalFCR).ToString() ? "selected='selected'" : "")>收到正本FCR后</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-4 divAfterDate">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.AfterDate, new { @class = "form-control", style = "padding-right: 0;", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.AfterDate, new { @class = "form-control", style = "padding-right: 0;", onchange = "AfterDateChange(this)" })
+                }
+            </div>
+            <div class="col-sm-2 divAfterDate" style="padding:0;">
+                天付款
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">销售订单编号：</label>
+        <div class="col-sm-8 control-label">
+            @(Model.OrderNumber)
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">采购订单总数量：</label>
+        <div class="col-sm-8 control-label divAllQty">
+            @(Model.AllQty)
+        </div>
+    </div>
+
+    @if (Model.ContractType == 0)
+    {
+        <div class="form-group col-sm-6 has-feedback divOtherFee">
+            <label class="col-sm-4 control-label">额外费用：</label>
+            <div class="col-sm-8 control-label">
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.TextBoxFor(d => d.OtherFee, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.OtherFee, new { @class = "form-control", onchange = "OtherFeeChange(this)" })
+                }
+            </div>
+        </div>
+    }
+
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label">采购订单总金额：</label>
+        <div class="col-sm-8 control-label divAllAmount">
+            @(Model.CurrentSign + Model.AllAmount)
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6 has-feedback">
+        <label class="col-sm-4 control-label"></label>
+        <div class="col-sm-8 control-label">
+            <label>
+                @if (Model.PageType == PageTypeEnum.Details)
+                {
+                    @Html.CheckBoxFor(d => d.IsImmediatelySend, new { disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.CheckBoxFor(d => d.IsImmediatelySend)
+                }
+                审核成功后自动发送邮件给工厂
+            </label>
+        </div>
+    </div>
+
+    @if (Model.ContractType == 0)
+    {
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8 control-label">
+                <label>
+                    @Html.CheckBoxFor(d => d.IsThirdVerification, new { disabled = "disabled" })
+                    第三方验货
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8 control-label">
+                <label>
+                    @if (Model.PageType == PageTypeEnum.Details)
+                {
+                        @Html.CheckBoxFor(d => d.IsThirdAudits, new { disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdAudits)
+                    }
+                    第三方验厂
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8 control-label">
+                <label>
+                    @if (Model.PageType == PageTypeEnum.Details)
+                {
+                        @Html.CheckBoxFor(d => d.IsThirdTest, new { disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdTest)
+                    }
+                    第三方检测
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8 control-label">
+                <label>
+                    @if (Model.PageType == PageTypeEnum.Details)
+                {
+                        @Html.CheckBoxFor(d => d.IsThirdSampling, new { disabled = "disabled" })
+                    }
+                    else
+                    {
+                        @Html.CheckBoxFor(d => d.IsThirdSampling)
+                    }
+                    第三方抽检
+                </label>
+            </div>
+        </div>
+    }
+
+</div>

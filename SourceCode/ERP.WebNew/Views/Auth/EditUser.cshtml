@@ -1,0 +1,392 @@
+﻿@model ERP.Models.AdminUser.VMERPUser
+
+@{
+    ViewBag.Title = "编辑用户信息";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+<style type="text/css">
+    .with {
+        width: 90px;
+        line-height: 45px;
+    }
+</style>
+
+@using (Ajax.BeginForm("EditUser", "Auth", null, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit", @class = "form-horizontal bv-form" }))
+{
+    <h3 class="popTitle">
+        用户信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-6">
+            <label class="col-sm-3 control-label text-danger">用户名</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="userName" id="userName" @(!string.IsNullOrEmpty(Model.UserName) ? "disabled" : "") data-bind="value: UserName" />
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-3 control-label text-danger">Email</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="email" id="email" @(!string.IsNullOrEmpty(Model.UserName) ? "disabled" : "") data-bind="value: Email" />
+            </div>
+        </div>
+        <div class="form-group col-sm-6">
+            <label class="col-sm-3 control-label text-danger">姓名</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="displayName" id="displayName" data-bind="value: DisplayName" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 hidden">
+            <label class="col-sm-3 control-label">邮箱密码</label>
+            <div class="col-sm-9">
+                <input type="text" class="form-control" name="EmailPassword" id="EmailPassword" data-bind="value: EmailPassword" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-3 control-label text-danger">部门</label>
+            <div class="col-sm-9">
+                @if (ViewData["Hierachies"] == null)
+                {
+                    @InlineHelpers.GetSelectionForAdminUserHierachy(Enumerable.Empty<System.Web.Mvc.SelectListItem>(), "HierachyID", true, Model.HierachyID, "value:HierachyID")
+                }
+                else
+                {
+                    @InlineHelpers.GetSelectionForAdminUserHierachy(ViewData["Hierachies"] as IEnumerable<System.Web.Mvc.SelectListItem>, "HierachyID", true, Model.HierachyID, "value:HierachyID")
+                }
+            </div>
+        </div>
+        <div class="form-group col-sm-12">
+            <label class="col-sm-2 control-label text-danger" style="width: 12.2%;">邮件签名</label>
+            <div class="col-sm-10" style="width: 84%;">
+                <div id="divEmailSign" style="display:none;">@Model.EmailSign</div>
+                <textarea class="form-control" name="EmailSign" id="EmailSign" data-bind="value: EmailSign" rows="6" >
+                                       
+                </textarea>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        角色权限
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-12">
+            <label class="col-sm-2 control-label">用户角色</label>
+            <div class="col-sm-10  col-md-10  col-lg-10">
+                <table id="treeUserRoles" class="easyui-tree" style="width:680px;height:200px"
+                       data-options="url: '@(Url.Content("~/Auth/GetAllUserRoles/" + Model.UserID))',method: 'get',checkbox:true,onCheck:onCheck,onLoadSuccess:onLoadSuccess,">
+                    <thead>
+                        <tr>
+                            <th data-options="field:'Name'" width="50%">Name</th>
+                            <th data-options="field:'PageURL'" width="40%">路径</th>
+                            <th data-options="field:'CanView'" width="10%">是否可见</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <h3 class="popTitle div_Customer" style="display:none;">
+        <span id="temp_span">业务员</span>负责的客户分工
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent div_Customer" style="display:none;">
+        <div class="form-group col-sm-12">
+            <label class="col-sm-2 control-label">客户</label>
+            <div class="col-sm-10  col-md-10  col-lg-10">
+                <table id="treeCustomers" class="easyui-tree" style="width:680px;height:200px"
+                       data-options="url: '@(Url.Content("~/Auth/GetAllCustomer/" + Model.UserID))',method: 'get',checkbox:true"></table>
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        用户数据权限
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="form-group col-sm-12">
+
+            <table style="margin:20px 70px" cellpadding="0" cellspacing="0" id="table">
+                @{
+                    Dictionary<string, string> dataPermissionModules = (Dictionary<string, string>)ViewData["DataName"];
+
+                    <tr>
+                        <th class="with">模块</th>
+                        <th class="" style="text-align:center" data-options="field:'FirstName',width:65,sortable:true,editor:{type:'validatebox',options:{required:true}}">权限</th>
+                    </tr>
+
+                    foreach (var item in dataPermissionModules)
+                    {
+
+                        <tr style="margin-top:80px">
+                            <td class="with">@item.Value</td>
+
+                            <td class="">
+                                <input class="easyui-combobox" id="@item.Key" data-options="url:'@Url.Content("/Auth/SelectRPO")?@Request.QueryString', method: 'get',  valueField: 'id', textField: 'name',  panelWidth: 350,  panelHeight: 'auto',  formatter: formatItem " style="width:280px" data-bind="value: @(item.Key)">
+
+                                @* 点击保存的时候*@
+                                <script type="text/javascript">
+                                    function formatItem(row) {
+                                        var s = '<span style="font-weight:bold">' + row.name + '</span><br />' +
+                                                '<span style="color:#888">' + row.text + '</span>';
+                                        return s;
+                                    }
+                                </script>
+                            </td>
+                        </tr>
+
+                    }
+                }
+            </table>
+        </div>
+    </div>
+
+    <div class="popBtns">
+        <button type="button" id="bntSave" class="btn btn-danger">保存</button>
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong>
+        <span>字体颜色为红色是必填项。</span>
+        <span>有效期必须大于价格输入日期。</span>
+    </div>
+                    }
+
+@section scripts{
+    <script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+    <script type="text/javascript">
+
+        function UserInfoModel() {
+            var self = this;
+
+            self.UserID = ko.observable();
+            self.UserName = ko.observable();
+            self.DisplayName = ko.observable();
+            self.EmailSign = ko.observable();
+            self.Email = ko.observable();
+            self.HierachyID = ko.observable();
+            self.Roles = ko.observableArray();
+            self.Customers = ko.observableArray();
+
+            self.DataPermissionForCustomer = ko.observable();
+            self.DataPermissionForFactory = ko.observable();
+            self.DataPermissionForOrder = ko.observable();
+            self.DataPermissionForOutsourcing = ko.observable();
+            self.DataPermissionForPacks = ko.observable();
+            self.DataPermissionForProduct = ko.observable();
+            self.DataPermissionForPurchase = ko.observable();
+            self.DataPermissionForQuote = ko.observable();
+            self.DataPermissionForSample = ko.observable();
+            self.DataPermissionForShipmentAgency = ko.observable();
+            self.DataPermissionForDelivery = ko.observable();
+            self.DataPermissionForProducePlan= ko.observable();
+            self.ForInspectionReceipt= ko.observable();
+            self.ForInspectionCustoms= ko.observable();
+            self.ForInspectionClearance= ko.observable();
+            self.ForInspectionExchange= ko.observable();
+            self.ForThirdParty= ko.observable();
+            self.ForShippingMark= ko.observable();
+            self.ForDocumentsIndexing= ko.observable();
+            self.ForFinance= ko.observable();
+
+            self.EmailPassword = ko.observable();
+        };
+        var vm = new UserInfoModel();
+        vm.UserID(@Model.UserID);
+        vm.UserName("@Model.UserName");
+        vm.DisplayName("@Model.DisplayName");
+        vm.Email("@Model.Email");
+        vm.HierachyID(@Model.HierachyID);
+
+        ko.applyBindings(vm);
+
+        $(function () {
+
+            $("#EmailSign").val($("#divEmailSign").html().replace(new RegExp("&amp;", "g"), "&"));
+
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+
+                fields: {
+                    userName: {
+                        validators: {
+                            notEmpty: { message: '用户名不能为空' },
+                            stringLength: {
+                                min: 6,
+                                max: 50,
+                                message: '长度在1-50之间'
+                            },
+                        }
+                    },
+                    email: {
+                        validators: {
+                            notEmpty: { message: 'email不能为空' },
+                            stringLength: {
+                                min: 6,
+                                max: 200,
+                                message: '长度在1-200之间'
+                            },
+                        }
+                    },
+                    displayName: {
+                        validators: {
+                            notEmpty: { message: '姓名不能为空' },
+                            stringLength: {
+                                min: 1,
+                                max: 50,
+                                message: '长度在1-50之间'
+                            },
+                        }
+                    },
+                    ddlHierachies: {
+                        validators: {
+                            notEmpty: { message: '部门不能为空' }
+                        }
+                    }
+                }
+            }).on('success.form.bv', function (e) {
+                e.preventDefault();
+
+                var $form = $(e.target);
+                $("#bntSave").removeAttr("disabled");
+
+                var selectedNodes = $('#treeUserRoles').tree('getChecked');
+                var arrSelectedRoles = [];
+                for (var i = 0; i < selectedNodes.length; i++) {
+                    arrSelectedRoles.push(selectedNodes[i].id);
+                }
+                vm.Roles(arrSelectedRoles);
+
+                selectedNodes = $('#treeCustomers').tree('getChecked');
+                arrSelectedRoles = [];
+                for (var i = 0; i < selectedNodes.length; i++) {
+                    arrSelectedRoles.push(selectedNodes[i].id);
+                }
+                vm.Customers(arrSelectedRoles);
+
+                vm.DataPermissionForFactory($("#ForFactory").combobox('getValue'));
+                vm.DataPermissionForOrder($("#ForOrder").combobox('getValue'));
+                vm.DataPermissionForOutsourcing($("#ForOutsourcing").combobox('getValue'));
+                vm.DataPermissionForPacks($("#ForPacks").combobox('getValue'));
+                vm.DataPermissionForProduct($("#ForProduct").combobox('getValue'));
+                vm.DataPermissionForPurchase($("#ForPurchase").combobox('getValue'));
+                vm.DataPermissionForQuote($("#ForQuote").combobox('getValue'));
+                vm.DataPermissionForSample($("#ForSample").combobox('getValue'));
+                vm.DataPermissionForCustomer($("#ForCustomer").combobox('getValue'));
+                vm.DataPermissionForShipmentAgency($("#ForShipmentAgency").combobox('getValue'));
+                vm.DataPermissionForDelivery($("#ForDelivery").combobox('getValue'));
+                vm.DataPermissionForProducePlan($("#ForProducePlan").combobox('getValue'));
+                vm.ForInspectionReceipt($("#ForInspectionReceipt").combobox('getValue'));
+                vm.ForInspectionCustoms($("#ForInspectionCustoms").combobox('getValue'));
+                vm.ForInspectionClearance($("#ForInspectionClearance").combobox('getValue'));
+                vm.ForInspectionExchange($("#ForInspectionExchange").combobox('getValue'));
+                vm.ForThirdParty($("#ForThirdParty").combobox('getValue'));
+                vm.ForShippingMark($("#ForShippingMark").combobox('getValue'));
+                vm.ForDocumentsIndexing($("#ForDocumentsIndexing").combobox('getValue'));
+                vm.ForFinance($("#ForFinance").combobox('getValue'));
+
+                vm.EmailSign($("#EmailSign").val());
+                $.ajax({
+                    url: $form.attr('action'),
+                    type: 'post',
+                    dataType: 'json',
+                    contentType: 'application/json',
+                    data: ko.toJSON(vm),
+                    success: function (result) {
+                        if (result == 1) {
+                            $.messager.alert("成功", "更新成功！", null, function () {
+                                OA.CloseMe(true);
+                                parent.$('#tblAdminUsers').datagrid('reload');
+                            });
+                        }
+                        else if (result == 0) {
+                            $.messager.alert("错误", "更新失败！");
+                        }
+                        else if (result == 2) {
+                            $.messager.alert("提示", "您并没有改变数据！");
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    }
+                });
+
+            });
+
+            $("#bntSave").click(function () {
+                var selectedNodes = $('#treeUserRoles').tree('getChecked');
+                if (selectedNodes.length<=0) {
+                    $("#bntSave").removeAttr("disabled");
+                    $.messager.alert("提示", "请选择用户角色！");
+                    return;
+                }
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (!bootstrapValidator.isValid()) {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+                $("#bntSave").attr("disabled", "disabled");
+            });
+
+            $('#ForCustomer').combobox('setValue', @((short)Model.DataPermissionForCustomer));
+            $('#ForFactory').combobox('setValue', @((short)Model.DataPermissionForFactory));
+            $('#ForOrder').combobox('setValue', @((short)Model.DataPermissionForOrder));
+            $('#ForOutsourcing').combobox('setValue', @((short)Model.DataPermissionForOutsourcing));
+            $('#ForPacks').combobox('setValue', @((short)Model.DataPermissionForPacks));
+            $('#ForProduct').combobox('setValue', @((short)Model.DataPermissionForProduct));
+            $('#ForPurchase').combobox('setValue', @((short)Model.DataPermissionForPurchase));
+            $('#ForQuote').combobox('setValue', @((short)Model.DataPermissionForQuote));
+            $('#ForSample').combobox('setValue', @((short)Model.DataPermissionForSample));
+            $('#ForShipmentAgency').combobox('setValue', @((short)Model.DataPermissionForShipmentAgency));
+            $('#ForDelivery').combobox('setValue', @((short)Model.DataPermissionForDelivery));
+            $('#ForProducePlan').combobox('setValue', @((short)Model.DataPermissionForProducePlan));
+            $('#ForInspectionReceipt').combobox('setValue', @((short)Model.ForInspectionReceipt));
+            $('#ForInspectionCustoms').combobox('setValue', @((short)Model.ForInspectionCustoms));
+            $('#ForInspectionClearance').combobox('setValue', @((short)Model.ForInspectionClearance));
+            $('#ForInspectionExchange').combobox('setValue', @((short)Model.ForInspectionExchange));
+            $('#ForThirdParty').combobox('setValue', @((short)Model.ForThirdParty));
+            $('#ForShippingMark').combobox('setValue', @((short)Model.ForShippingMark));
+            $('#ForDocumentsIndexing').combobox('setValue', @((short)Model.ForDocumentsIndexing));
+            $('#ForFinance').combobox('setValue', @((short)Model.ForFinance));
+
+        });
+
+        function onLoadSuccess(){
+            var selectedNodes = $('#treeUserRoles').tree('getChecked');
+            var arrSelectedRoles = [];
+            for (var i = 0; i < selectedNodes.length; i++) {
+                if (selectedNodes[i].text=="业务员"||selectedNodes[i].text=="业务跟单") {
+                    $(".div_Customer").show();
+                }
+                
+                if (selectedNodes[i].text=="业务跟单") {
+                    $("#temp_span").text("业务跟单");
+                }
+            }
+
+        }
+
+        function onCheck(a,b,c){
+            if ((a.text=="业务员"|| a.text=="业务跟单") && b) {
+                $(".div_Customer").show();
+                $("#temp_span").text(a.text);
+            }else {
+                $(".div_Customer").hide();
+
+            }
+        }
+    </script>
+}

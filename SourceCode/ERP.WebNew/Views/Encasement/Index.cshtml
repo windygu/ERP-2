@@ -1,0 +1,47 @@
+﻿@model ERP.Models.Encasement.VMFilterEncasement
+@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@{
+    ViewBag.Title = "待审核出运明细列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var ControllerURL="href='@(Url.Content("~/Encasement/Edit"))?ContractID=";
+
+        var showView = @(Model.PageElementPrivileges & (int)EncasementElementPrivileges.EncasementWatch);
+        var showEdit = @(Model.PageElementPrivileges & (int)EncasementElementPrivileges.EncasementEdit);
+        var showCheck = @(Model.PageElementPrivileges & (int)EncasementElementPrivileges.EncasementCheck);
+        var statusPendingCheck=@((int)EncasementStatusEnum.PendingCheck);
+
+        function operationFormatter(val, row, index) {
+            var ops="";
+            var url=ControllerURL + val + "&EncasementID="+row.EncasementID;
+
+            if(showView>0){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + "&PageType=1' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showEdit>0&&row.EncasementStatusID!=statusPendingCheck){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + "&PageType=2' style='margin: 0 5px;'>编辑</a>";
+            }
+
+            if(showCheck>0&&row.EncasementStatusID==statusPendingCheck&&row.IsCanAudit){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + "&PageType=3' style='margin: 0 5px;'>审核</a>";
+            }
+
+            return ops;
+        }
+
+        //列表数据加载成功时，使单元格鼠标移动呈现title
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ContractID"]);
+        }
+    </script>
+}

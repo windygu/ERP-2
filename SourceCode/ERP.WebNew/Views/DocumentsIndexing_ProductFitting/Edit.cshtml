@@ -1,0 +1,731 @@
+﻿@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@model ERP.Models.DocumentIndexing.VMDocumentIndexing
+@using ERP.Models.CustomEnums
+@using ERP.Tools
+
+<link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+<style type="text/css">
+    .glyphicon {
+        right: 20px;
+    }
+
+    .box_1k {
+        margin-top: 0;
+    }
+
+    .table-advance thead tr th {
+        background: #666;
+        color: #fff;
+    }
+
+    .bg_contact {
+        height: 600px;
+    }
+
+    .bg_fff {
+        height: 850px;
+    }
+
+    #ContactInformation .modal-header {
+        border-bottom: none;
+    }
+
+    .datagrid-row-selected {
+        color: #000;
+    }
+
+    .datagrid-header-check input, .datagrid-cell-check input {
+        margin-bottom: 20px;
+    }
+
+    .validatebox-invalid {
+        border-color: red !important;
+        background-color: #ffa8a8 !important;
+    }
+    .form-control-feedback {
+        right: 10px;
+    }
+</style>
+
+
+<form id="frmEdit" method="post" class="form-horizontal">
+    <h3 class="popTitle">
+        单证索引信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+
+    <div class="row popContent" style="overflow: inherit;">
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">客户代码：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @Model.CustomerCode
+            </div>
+        </div>
+        
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">报关单位：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+
+                @InlineHelpers.GetSelection(ViewData["list_CustomsUnit"] as IEnumerable<System.Web.Mvc.SelectListItem>, "CustomsUnit", !(bool)ViewData["IsView"], Model.CustomsUnit, "value:ThisModel().CustomsUnit")
+            </div>
+        </div>
+        
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">船期：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @if ((bool)ViewData["IsView"])
+                {
+                    @Html.TextBoxFor(d => d.ShippingDate, new { @class = "form-control Wdate", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextBoxFor(d => d.ShippingDate, new { @class = "form-control Wdate" })
+                }
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">收款方式：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @Model.PaymentType
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback" style="display:none;">
+            <label class="col-sm-4 control-label">是否保函出货：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @if (!(bool)ViewData["IsView"])
+                {
+                    <select name="IsGuaranteeShipments" class="form-control">
+                        <option value="1" @(!Model.IsGuaranteeShipments ? "selected='selected'" : "")>是</option>
+                        <option value="0" @(Model.IsGuaranteeShipments ? "selected='selected'" : "")>否</option>
+                    </select>
+                }
+                else
+                {
+                    <select name="IsGuaranteeShipments" class="form-control" disabled="disabled">
+                        <option value="1" @(!Model.IsGuaranteeShipments ? "selected='selected'" : "")>是</option>
+                        <option value="0" @(Model.IsGuaranteeShipments ? "selected='selected'" : "")>否</option>
+                    </select>
+                }
+            </div>
+        </div>
+    </div>
+
+    <h3 class="popTitle">
+        需备单据
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="popContent">
+        
+        <div class="form-group col-sm-6 has-feedback" style="border-bottom: 1px solid #ccc;">
+            <label class="col-sm-4 control-label" style="text-align:left;">合同金额(@Keys.USD_Sign)：</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                @Keys.USD_Sign@Model.AllAmount
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback" style="border-bottom: 1px solid #ccc;">
+            <label class="col-sm-4 control-label" style="text-align:left;"></label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                &nbsp;
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label" style="text-align:left;">@Html.CheckBoxFor(d => d.IsPurchaseContract, new { disabled = "disabled" })  工厂合同</label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label" style="text-align:left;"></label>
+            <div class="col-sm-8 control-label" style="text-align:left;">
+                &nbsp;
+            </div>
+        </div>
+
+        <table id="FactoryDataList" class="easyui-datagrid" style="width:100%;overflow:auto;"
+                       data-options="singleSelect:true
+                       ,pageList:[10,20,50,100]
+                       ,pageSize:10
+                       ,pagination:false
+                       ,checkOnSelect:true
+                       ,onBeforeEdit:onBeforeEditFactory
+                       ,onAfterEdit:onAfterEditFactory
+                       ,onCancelEdit:onCancelEditFactory
+                       ,toolbar: '#tbFactoryInfo'">
+            <thead>
+                <tr>
+                    @if (!(bool)ViewData["IsView"])
+                    {
+                        <th data-options="field:'ID',width:100,formatter:actionsFormatterFactory">操作</th>
+                    }
+                    <th data-options="field:'FactoryAbbreviation',width:120,align:'center'">工厂</th>
+                    <th data-options="field:'AllAmount',width:120,align:'center'">合同金额</th>
+                    <th data-options="field:'File',width:120,align:'center',formatter:operationFormatter">查看合同附件</th>
+                    <th data-options="field:'File_MakeMoney',width:120,align:'center',formatter:operationFormatter_MakeMoney">查看货款明细</th>
+
+                    <th data-options="field:'DocumentsIndexing_IsGuaranteeShipments',width:100,editor:'text',align:'center',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:[{'Selected':false,'Text':'是','Value':true},{'Selected':false,'Text':'否','Value':false}],
+                                    editable:false,
+                                }
+                            },formatter:operationFormatter_IsGuaranteeShipments">是否保函出货</th>
+
+                    <th data-options="field:'PurchaseID',width:120,align:'center',hidden:true"></th>
+                    <th data-options="field:'IsUpload',width:120,align:'center',hidden:true"></th>
+                    <th data-options="field:'IsUpload_MakeMoney',width:120,align:'center',hidden:true"></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+
+    @if (Model.PageType == PageTypeEnum.Approval)
+    {
+        <h3 class="popTitle">
+            审批意见
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            @Html.TextAreaFor(d => d.CheckSuggest, new { @class = "form-control" })
+        </div>
+    }
+    <div class="popBtns">
+
+        @switch (Model.PageType)
+        {
+            case PageTypeEnum.Add:
+            case PageTypeEnum.Edit:
+                <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)DocumentsIndexingStatusEnum.OutLine))">保存</button>
+                <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)DocumentsIndexingStatusEnum.PendingCheck))">保存并提交审批</button>
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                break;
+            case PageTypeEnum.Details:
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">关闭</button>
+                break;
+            case PageTypeEnum.Approval:
+                <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)DocumentsIndexingStatusEnum.PassedCheck))">审批通过</button>
+                <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)DocumentsIndexingStatusEnum.NotPassCheck))">驳回重审</button>
+                <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                break;
+            default:
+                break;
+
+        }
+    </div>
+
+    @if (Model.PageType != PageTypeEnum.Add)
+    {
+        <h3 class="popTitle">
+            历史记录
+            <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+        </h3>
+        <div class="popContent" style="display:none;">
+            <div class="history_box">
+                <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr class="t_bg">
+                            <td width="20%">日期</td>
+                            <td width="20%">操作者</td>
+                            <td width="30%">状态</td>
+                            <td width="30%">意见/备注</td>
+                        </tr>
+                        @if (Model.list_history!=null) { 
+                        foreach (var item_history in Model.list_history.OrderByDescending(d => d.DT_CREATEDATE))
+                        {
+                            <tr>
+                                <td>@Utils.DateTimeToStr2(item_history.DT_CREATEDATE)</td>
+                                <td>@item_history.ST_CREATEUSER</td>
+                                <td>@item_history.Comment</td>
+                                <td>@item_history.CheckSuggest</td>
+                            </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</form>
+
+@section scripts{
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+
+    <script>
+        $(function() {
+
+            $("#FactoryDataList").datagrid({
+                data: @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_Purchase))),
+            });
+
+            $("#MyPopGrid2").datagrid({
+                data: @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_RegisterFee))),
+            });
+
+            $("#MyPopGrid3").datagrid({
+                data: @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_Outsourcing))),
+            });
+
+            $("#MyPopGrid4").datagrid({
+                data: @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_Inspection))),
+            });
+
+            $("#OtherFeesDataList").datagrid({
+                data: @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_OtherFees))),
+            });
+        });
+
+        function CustomerCodeFormatter(val, row, index) {
+            return "<a class='data-content' href='@(Url.Content("~/Customer/Edit/"))" + row.OCID+"?isview=true' target='_blank'>" + row.CustomerCode + "</a>";
+        }
+
+        function KOModel() {
+            this.ID = ko.observable(@Model.ID);
+            this.CustomsUnit = ko.observable(@Model.CustomsUnit);
+            this.IsGuaranteeShipments = ko.observable();
+            this.IsOther = ko.observable();
+            this.OtherFee = ko.observable();
+            this.Comment = ko.observable();
+            this.StatusID = ko.observable();
+            this.CheckSuggest = ko.observable();
+            this.ShippingDate = ko.observable();
+
+            this.list_Purchase = ko.observableArray();
+        }
+
+        function RepEditViewModel() {
+            var self = this;
+
+            self.ThisModel = ko.observableArray();
+            self.ThisModel(new KOModel());
+
+            var checkSubmit = false;//防止重复提交
+            //提交
+            self.submit = function (StatusID) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+
+                if (!bootstrapValidator.isValid()) {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+                var CheckSuggest = $.trim($("#CheckSuggest").val());
+
+                var NotPassCheck = @((int)DocumentsIndexingStatusEnum.NotPassCheck);
+                if (StatusID == NotPassCheck && CheckSuggest == "") {
+                    $.messager.alert("提示", "请输入审批意见！", "info", function () {
+                        $("#CheckSuggest").focus();
+                    });
+                    return;
+                }
+
+                self.ThisModel().CustomsUnit($("#CustomsUnit").val());
+                self.ThisModel().IsGuaranteeShipments($("#IsGuaranteeShipments").is(':checked'));
+                self.ThisModel().IsOther($("#IsOther").is(':checked'));
+                self.ThisModel().OtherFee($("#OtherFee").val());
+                self.ThisModel().Comment($("#Comment").val());
+                self.ThisModel().CheckSuggest($("#CheckSuggest").val());
+                self.ThisModel().ShippingDate($("#ShippingDate").val());
+                self.ThisModel().StatusID(StatusID);
+
+                var acceptInfos = $('#FactoryDataList').datagrid("getRows");
+                if(acceptInfos && acceptInfos.length > 0){
+                    self.ThisModel().list_Purchase(acceptInfos);
+                } else{
+                    self.ThisModel().list_Purchase(null);
+                }
+                
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/DocumentsIndexing_ProductFitting/Edit")',
+                    data: ko.toJSON(self.ThisModel)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    completeLoading();
+                    if (!data.IsSuccess) {
+                        $.messager.alert("提示", data.Msg);
+                        return;
+                    } else {
+                        parentGridReload();
+                        OA.CloseMe(true);
+                    }
+                });
+            }
+
+        }
+
+        var RepEditViewModel = new RepEditViewModel();
+        ko.applyBindings(RepEditViewModel);
+
+        $(function () {
+            // 表单验证
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+
+                fields: {
+                    OtherFee: {
+                        validators: {
+                            //notEmpty: { message: 'Company Name不能为空' },
+                            regexp: jav.regx.numValid
+                        }
+                    },
+                }
+            });
+        });
+
+        //生成文件
+        function MakerExcel(MakerTypeEnum,PurchaseID) {
+
+            loading();
+
+            if (PurchaseID == null) {
+                PurchaseID=-1;
+            }
+
+            $.ajax({
+                type: 'post',
+                contentType: 'application/json',
+                url: "@Url.Content("~/DocumentsIndexing/MakerExcel?ID=" + Model.ID)" + "&MakerTypeEnum=" + MakerTypeEnum+"&PurchaseID="+PurchaseID,
+                data: {}
+            }).done(function (data) {
+                completeLoading();
+                if (data == "") {
+                    $.messager.alert("出错了", "出错了，数据文件生成失败。");
+                }
+                else {
+                    window.open(data);
+                }
+            });
+        }
+
+        function operationFormatter(val, row, index) {
+            var rows = $("#FactoryDataList").datagrid('getRows');
+            var row = rows[index];
+            var  ops = "";
+            if (row.IsUpload) {
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class=' w_auto' onclick='MakerExcel(@((int)MakerTypeEnum.DocumentsIndexing_Purchase),"+row.PurchaseID+")' href='#' style='margin: 0 5px;'>查看</a>";
+            }
+            return ops;
+        }
+
+        function operationFormatter_MakeMoney(val, row, index) {
+            var rows = $("#FactoryDataList").datagrid('getRows');
+            var row = rows[index];
+            var  ops = "";
+            if (row.IsUpload_MakeMoney) {
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class=' w_auto' onclick='MakerExcel(@((int)MakerTypeEnum.DocumentsIndexing_Purchase_MakeMoney),"+row.PurchaseID+")' href='#' style='margin: 0 5px;'>查看</a>";
+            }
+            return ops;
+        }
+
+        $("#IsOther").click(function(){
+            if ($(this).is(":checked")) {
+                $("#div_OtherFeesDataList").show();
+            }else {
+
+                $("#div_OtherFeesDataList").hide();
+
+            }
+        });
+
+        //Factory信息
+
+        function operationFormatter_IsGuaranteeShipments(value,row,index){
+            if (value=="") {
+                value=null;
+            }
+            if (value=="true") {
+                value=true;
+            }
+            if (value=="false") {
+                value=false;
+            }
+                        
+            if (value) {
+                return "是";
+            }
+            else {
+                return "否";
+            }
+        }
+
+
+        var editFactory=undefined;
+
+        function updateActionsFactory(index){
+            $('#FactoryDataList').datagrid('refreshRow', index);
+        }
+
+        function onBeforeEditFactory(index,row){
+            row.editing=true;
+            updateActionsFactory(index);
+        }
+
+        function onCancelEditFactory(index,row){
+            row.editing = false;
+            updateActionsFactory(index);
+        }
+
+        function onAfterEditFactory(index,row){
+            row.editing = false;
+            updateActionsFactory(index);
+        }
+
+        function endEditingFactory(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editFactory == undefined){return true}
+            if ($('#FactoryDataList').datagrid('validateRow', editFactory)){
+                $('#FactoryDataList').datagrid('endEdit', editFactory);
+                editFactory = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function EditFactory(target){
+            acceptFactory(target, true);
+            $('#FactoryDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendFactory(){
+            if (endEditingAcceptFactory()){
+                $('#FactoryDataList').datagrid('appendRow',{});
+                editFactory = $('#ContactsDataList').datagrid('getRows').length-1;
+                $('#FactoryDataList').datagrid('selectRow', editFactory)
+                        .datagrid('beginEdit', editFactory);
+            }
+        }
+        function removeFactory(target){
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#FactoryDataList').datagrid('deleteRow', getRowIndex(target));
+
+                }
+            });
+        }
+        function acceptFactory(target, justAccept){
+            editFactory = getRowIndex(target);
+            if(justAccept){
+                if (endEditingFactory()){
+                    $('#FactoryDataList').datagrid('acceptChanges');
+                }
+            }
+            else{
+                if (endEditingFactory()){
+                    $('#FactoryDataList').datagrid('acceptChanges');
+                }
+            }
+
+            onLoadSuccess();
+        }
+        function rejectFactory(){
+            $('#FactoryDataList').datagrid('rejectChanges');
+            editFactory = undefined;
+        }
+        function actionsFormatterFactory(value,row,index){
+            if (row.editing){
+                var s = '<input type="button" onclick="acceptFactory(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectFactory()" value="Cancel" style="width:40px"></input>';
+                return s+c;
+            } else {
+                var e = '<input type="button" onclick="EditFactory(this)" value="Edit" style="width:40px"></input>';
+                //var d = '&nbsp;<input type="button" onclick="removeFactory(this)" value="Delete" style="width:40px"></input>';
+                return e;
+            }
+        }
+        function endEditingAcceptFactory(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editFactory == undefined){return true}
+            if ($('#FactoryDataList').datagrid('validateRow', editFactory)){
+                $('#FactoryDataList').datagrid('endEdit', editFactory);
+                editFactory = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function appendAcceptFactory(){
+            if (endEditingAcceptFactory()){
+                $('#FactoryDataList').datagrid('appendRow',{});
+                editFactory = $('#FactoryDataList').datagrid('getRows').length-1;
+                $('#FactoryDataList').datagrid('selectRow', editFactory)
+                        .datagrid('beginEdit', editFactory);
+            }
+        }
+        function removeitFactory(){
+            if (editFactory == undefined){return}
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#FactoryDataList').datagrid('cancelEdit', editFactory)
+                        .datagrid('deleteRow', editFactory);
+                    editFactory = undefined;
+                }else{
+                    return;
+                }
+            });
+        }
+
+        //OtherFees信息
+        
+        var editOtherFees=undefined;
+
+        function updateActionsOtherFees(index){
+            $('#OtherFeesDataList').datagrid('refreshRow', index);
+        }
+
+        function onBeforeEditOtherFees(index,row){
+            row.editing=true;
+            updateActionsOtherFees(index);
+        }
+
+        function onCancelEditOtherFees(index,row){
+            row.editing = false;
+            updateActionsOtherFees(index);
+        }
+
+        function onAfterEditOtherFees(index,row){
+            row.editing = false;
+            updateActionsOtherFees(index);
+        }
+
+        function endEditingOtherFees(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editOtherFees == undefined){return true}
+            if ($('#OtherFeesDataList').datagrid('validateRow', editOtherFees)){
+                $('#OtherFeesDataList').datagrid('endEdit', editOtherFees);
+                editOtherFees = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function EditOtherFees(target){
+            acceptOtherFees(target, true);
+            $('#OtherFeesDataList').datagrid('beginEdit', getRowIndex(target));
+        }
+        function appendOtherFees(){
+            if (endEditingAcceptOtherFees()){
+                $('#OtherFeesDataList').datagrid('appendRow',{});
+                editOtherFees = $('#ContactsDataList').datagrid('getRows').length-1;
+                $('#OtherFeesDataList').datagrid('selectRow', editOtherFees)
+                        .datagrid('beginEdit', editOtherFees);
+            }
+        }
+        function removeOtherFees(target){
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#OtherFeesDataList').datagrid('deleteRow', getRowIndex(target));
+
+                }
+            });
+        }
+        function acceptOtherFees(target, justAccept){
+            editOtherFees = getRowIndex(target);
+            if(justAccept){
+                if (endEditingOtherFees()){
+                    $('#OtherFeesDataList').datagrid('acceptChanges');
+                }
+            }
+            else{
+                if (endEditingOtherFees()){
+                    $('#OtherFeesDataList').datagrid('acceptChanges');
+                }
+            }
+
+            onLoadSuccess();
+        }
+        function rejectOtherFees(){
+            $('#OtherFeesDataList').datagrid('rejectChanges');
+            editOtherFees = undefined;
+        }
+        function actionsFormatterOtherFees(value,row,index){
+            if (row.editing){
+                var s = '<input type="button" onclick="acceptOtherFees(this)" value="Save" style="width:40px"></input> ';
+                var c = '<input type="button" onclick="rejectOtherFees()" value="Cancel" style="width:40px"></input>';
+                return s+c;
+            } else {
+                var e = '<input type="button" onclick="EditOtherFees(this)" value="Edit" style="width:40px"></input>';
+                //var d = '&nbsp;<input type="button" onclick="removeOtherFees(this)" value="Delete" style="width:40px"></input>';
+                return e;
+            }
+        }
+        function endEditingAcceptOtherFees(){
+            var isView = @((bool)ViewData["IsView"] ? 1 : 0);
+            if(isView === 1){
+                return false;
+            }
+            if (editOtherFees == undefined){return true}
+            if ($('#OtherFeesDataList').datagrid('validateRow', editOtherFees)){
+                $('#OtherFeesDataList').datagrid('endEdit', editOtherFees);
+                editOtherFees = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function appendAcceptOtherFees(){
+            if (endEditingAcceptOtherFees()){
+                $('#OtherFeesDataList').datagrid('appendRow',{});
+                editOtherFees = $('#OtherFeesDataList').datagrid('getRows').length-1;
+                $('#OtherFeesDataList').datagrid('selectRow', editOtherFees)
+                        .datagrid('beginEdit', editOtherFees);
+            }
+        }
+        function removeitOtherFees(){
+            if (editOtherFees == undefined){return}
+            $.messager.confirm('Confirm','确定要删除吗?',function(r){
+                if (r){
+                    $('#OtherFeesDataList').datagrid('cancelEdit', editOtherFees)
+                        .datagrid('deleteRow', editOtherFees);
+                    editOtherFees = undefined;
+                }else{
+                    return;
+                }
+            });
+        }
+
+        function getRowIndex(target){
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","DT_MODIFYDATE","ID"]);
+        }
+    </script>
+}

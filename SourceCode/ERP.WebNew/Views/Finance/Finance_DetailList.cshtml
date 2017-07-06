@@ -1,0 +1,286 @@
+﻿@{
+    ViewBag.Title = "订单明细一览查询";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@model ERP.Models.Order.VMOrderSearch
+
+<link href="@Url.Content("~/Content/themes/icon.css")" rel="stylesheet" />
+
+<div class="content-wrapper">
+    <div align="right">
+        <form class="form-inline frmFind" role="form" method="get">
+            <div class="search_Condition box_1k">
+                <ul>
+                    <li>
+                        <label class="col-xs-2">销售核算单号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.OrderNumber, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">客户下单日期：</label>
+                        <div class="col-sm-10">
+                            <div class="col-xs-5" style="padding: 0;">
+                                @Html.TextBoxFor(d => d.CustomerDateStart, new { @class = "form-control Wdate" })
+                            </div>
+                            <span class="col-xs-1" style="padding: 0;">-</span>
+                            <div class="col-xs-5" style="padding: 0;">
+                                @Html.TextBoxFor(d => d.CustomerDateEnd, new { @class = "form-control Wdate" })
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">客户：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.CustomerCode, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">@ERP.Tools.Keys.CustomerPO：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.POID, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">工厂：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.FactoryAbbreviation, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">采购合同编号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.PurchaseNumber, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">货号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.No, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">出口发票号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.InvoiceNo, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li class="search">
+                        <button type="submit" class="btn btn-info" onclick="return OA.s(this)">查询</button>
+                        <button type="button" class="btn btn-info" onclick="clearAll(this)">清空所有</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+
+    <div class="Control">
+        @if ((Model.PageElementPrivileges & (int)FinanceElementPrivileges.Export_DetailList) > 0)
+        {
+            <button id="btn_Export" href="#" class="btn btn-default" onclick="ActionSelected()" type="button">导出Excel</button>
+        }
+    </div>
+
+    <div class="box_1k" style="width:100%;overflow:auto">
+        <table id="MyGrid" class="easyui-datagrid" data-options="singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/Finance/GetAll_ForOther")?PageType=@((int)Model.PageType)&@Request.QueryString',method:'get',onLoadSuccess:onLoadSuccess,onHeaderContextMenu:onHeaderContextMenu,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+            <thead data-options="frozen:true">
+                <tr>
+                    <th data-options="field:'ck',checkbox:true"></th>
+                    <!--隐藏列-->
+                    <th data-options="field:'ID',width:80,align:'center',hidden:true"></th>
+                    <th data-options="field:'OrderProductID',width:80,align:'center',hidden:true"></th>
+                    <th data-options="field:'CurrencySign',width:100,align:'center',hidden:true"></th>
+                    <th data-options="field:'ProductID',width:80,align:'center',hidden:true"></th>
+                    <th data-options="field:'Image',width:80,align:'center',hidden:true"></th>
+
+                    <th data-options="field:'FactoryAbbreviation',width:80,align:'center'">工厂</th>
+                    <th data-options="field:'PurchaseNumber',width:80,align:'center'">采购合同号</th>
+                    <th data-options="field:'PurchaseDateFormatter',width:80,align:'center'">采购合同日期</th>
+                    <th data-options="field:'DateStartFormatter',width:80,align:'center'">要求交货期</th>
+                    <th data-options="field:'No',width:100,align:'left',formatter:productNoFormatter">货号</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr>
+                    <!--1-->
+                    <th data-options="field:'ShippingDateFormatter',width:100,align:'center',editor:{type:'datebox',options:{formatter:myformatter,parser:myparser}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("ShippingDateFormatter") ? "false" : "true")">实际船期</th>
+                    <th data-options="field:'FactoryDateFormatter',width:100,align:'center',editor:{type:'datebox',options:{formatter:myformatter,parser:myparser}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("FactoryDateFormatter") ? "false" : "true")">实际工厂交货期</th>
+                    <th data-options="field:'SeasonName',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("SeasonName") ? "false" : "true")">季节</th>
+                    <th data-options="field:'Name',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Name") ? "false" : "true")">品名</th>
+                    <th data-options="field:'Qty',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Qty") ? "false" : "true")">数量</th>
+                    <th data-options="field:'PriceFactory',width:100,align:'center',formatter:formatPriceFactory,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PriceFactory") ? "false" : "true")">工厂价格</th>
+                    <th data-options="field:'AllAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("AllAmount") ? "false" : "true"),formatter:formatPriceWithCurrency">采购合同金额</th>
+                    <!--2-->
+                    <th data-options="field:'SettlementPeriod',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("SettlementPeriod") ? "false" : "true")">结算期</th>
+                    <th data-options="field:'InvoicedAmount',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InvoicedAmount") ? "false" : "true"),formatter:formatPriceWithCurrency">实际开票金额</th>
+                    <th data-options="field:'PaymentDateFormatter',width:100,align:'center',editor:{type:'datebox',options:{formatter:myformatter,parser:myparser}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PaymentDateFormatter") ? "false" : "true")">付款日</th>
+                    <th data-options="field:'PaymentAmount',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PaymentAmount") ? "false" : "true"),formatter:formatPriceWithCurrency">付款金额</th>
+                    <th data-options="field:'CertifiedInvoiceDateFormatter',width:100,align:'center',editor:{type:'datebox',options:{formatter:myformatter,parser:myparser}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CertifiedInvoiceDateFormatter") ? "false" : "true")">发票认证日期</th>
+                    <!--3-->
+                    <th data-options="field:'POPrice',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("POPrice") ? "false" : "true")">PO单价($)</th>
+                    <th data-options="field:'POAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("POAmount") ? "false" : "true")">PO金额($)</th>
+                    <th data-options="field:'CommissionPercent',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CommissionPercent") ? "false" : "true")">佣金比例(%)</th>
+                    <th data-options="field:'CommissionAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CommissionAmount") ? "false" : "true")">佣金金额($)</th>
+                    <th data-options="field:'FOBUSDAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("FOBUSDAmount") ? "false" : "true")">FOB净值美元</th>
+                    <th data-options="field:'USDExchangeRate',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("USDExchangeRate") ? "false" : "true")">美元汇率</th>
+                    <th data-options="field:'FOBRMBAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("FOBRMBAmount") ? "false" : "true")">FOB净值人民币</th>
+                    <!--4-->
+                    <th data-options="field:'ClearanceDateFormatter',width:100,align:'center',editor:{type:'datebox',options:{formatter:myformatter,parser:myparser}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("ClearanceDateFormatter") ? "false" : "true")">结汇日期</th>
+                    <th data-options="field:'ClearanceAmount',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("ClearanceAmount") ? "false" : "true")">结汇金额($)</th>
+                    <th data-options="field:'BankFees',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("BankFees") ? "false" : "true")">银行费用($)</th>
+                    <!--5-->
+                    <th data-options="field:'InvoiceNo',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InvoiceNo") ? "false" : "true")">出口发票号</th>
+                    <th data-options="field:'CustomsNumber',width:100,align:'center',editor:{type:'validatebox'},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CustomsNumber") ? "false" : "true")">报关单号</th>
+                    <th data-options="field:'CustomsAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CustomsAmount") ? "false" : "true")">报关金额($)</th>
+                    <th data-options="field:'HSCode',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("HSCode") ? "false" : "true")">报关编码</th>
+                    <th data-options="field:'HSCodeName',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("HSCodeName") ? "false" : "true")">报关品名</th>
+                    <!--6-->
+                    <th data-options="field:'PreRecordedStatus',width:100,editor:'text',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:[{'Selected':false,'Text':'&nbsp;','Value':'0'},{'Selected':false,'Text':'是','Value':'1'},{'Selected':false,'Text':'否','Value':'2'}],
+                                    required:true,
+                                    editable:false,
+                                }
+                            },formatter:formatPreRecordedStatus,hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PreRecordedStatus") ? "false" : "true")">预录单状态</th>
+                    <th data-options="field:'DocumentIndexUpLoadDate',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("DocumentIndexUpLoadDate") ? "false" : "true")">单证索引上传日期</th>
+                    <th data-options="field:'VolumeCUFT',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("VolumeCUFT") ? "false" : "true")">立方数(cuft)</th>
+                    <!--7 工厂-->
+                    <th data-options="field:'AllOutContractAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("AllOutContractAmount") ? "false" : "true")">代印及快递费(￥)</th>
+                    <th data-options="field:'InspectionAuditFee_ForFactory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionAuditFee_ForFactory") ? "false" : "true")">验厂费(￥)</th>
+                    <th data-options="field:'InspectionSamplingFee_ForFactory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionSamplingFee_ForFactory") ? "false" : "true")">重抽检费(￥)</th>
+                    <th data-options="field:'InspectionVerificationFee_ForFactory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionVerificationFee_ForFactory") ? "false" : "true")">重验货费(￥)</th>
+                    <th data-options="field:'InspectionDetectFee_ForFactory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionDetectFee_ForFactory") ? "false" : "true")">重检测费(￥)</th>
+                    <th data-options="field:'RegisterFees',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("RegisterFees") ? "false" : "true")">拖柜费(￥)</th>
+                    <!--8-->
+                    <th data-options="field:'OtherExpensesDeduction',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OtherExpensesDeduction") ? "false" : "true")">其他应扣费用(￥)</th>
+                    <th data-options="field:'AllAmount_Factory',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("AllAmount_Factory") ? "false" : "true")">合计应扣工厂费用(￥)</th>
+                    <th data-options="field:'FactoryFees',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("FactoryFees") ? "false" : "true")">应补工厂费用(￥)</th>
+                    <th data-options="field:'PacksDetectFees',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PacksDetectFees") ? "false" : "true")">包装检测费(￥)</th>
+                    <!--9 我司-->
+                    <th data-options="field:'InspectionAuditFee',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionAuditFee") ? "false" : "true")">验厂费(￥)</th>
+                    <th data-options="field:'InspectionSamplingFee',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionSamplingFee") ? "false" : "true")">抽检费(￥)</th>
+                    <th data-options="field:'InspectionVerificationFee',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionVerificationFee") ? "false" : "true")">验货费(￥)</th>
+                    <th data-options="field:'InspectionDetectFee',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InspectionDetectFee") ? "false" : "true")">检测费(￥)</th>
+                    <!--10-->
+                    <th data-options="field:'PortCharges',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("PortCharges") ? "false" : "true")">港杂费(￥)</th>
+                    <th data-options="field:'InternationalCourierFees',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("InternationalCourierFees") ? "false" : "true")">国际快递费(￥)</th>
+                    <th data-options="field:'OtherFees',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("OtherFees") ? "false" : "true")">其他费用(￥)</th>
+                    <!--11-->
+                    <th data-options="field:'CompanyManagementRate',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CompanyManagementRate") ? "false" : "true")">公司综合管理费率(%)</th>
+                    <th data-options="field:'CompanyManagementAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("CompanyManagementAmount") ? "false" : "true")">公司综合管理费(￥)</th>
+                    <th data-options="field:'AllAmount_CompanyManagement',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("AllAmount_CompanyManagement") ? "false" : "true")">合计我司成本(￥)</th>
+                    <!--12-->
+                    <th data-options="field:'RefundRate',width:100,align:'center',editor:{type:'numberbox',options:{precision:2}},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("RefundRate") ? "false" : "true")">退税率(%)</th>
+                    <th data-options="field:'RefundAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("RefundAmount") ? "false" : "true")">退税金额(￥)</th>
+                    <th data-options="field:'GrossProfitAmount',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("GrossProfitAmount") ? "false" : "true")">毛利(￥)</th>
+                    <th data-options="field:'GrossProfitPercent',width:100,align:'center',hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("GrossProfitPercent") ? "false" : "true")">毛利率(%)</th>
+                    <th data-options="field:'Comment',width:100,align:'center',editor:{type:'validatebox'},hidden:@(ViewBag.ColumnsVisible == null ? "false" : ((List<string>)ViewBag.ColumnsVisible).Contains("Comment") ? "false" : "true")">备注</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<script>
+    function onLoadSuccess() {
+        jav.initGridCellTooltips(["ID"]);
+        InitPopover();
+    }
+</script>
+
+<script>
+    var tableName = "#MyGrid";
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)FinanceElementPrivileges.View_ForFactory);
+
+        var ops = "";
+
+        if (showView > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Finance/Edit_ForFactory/"))" + val + "' style='margin: 0 5px;'>查看</a>";
+        }
+
+        return ops;
+    }
+
+    function ActionSelected() {
+        var idArray = getSelections(tableName, "OrderProductID");
+        if (idArray.length <= 0) {
+            $.messager.alert("提示","请选中信息！");
+            return;
+        }
+        loading();
+        $.post("@Url.Content("~/Finance/ExportExcel_DetailList")", { idList:  idArray.join(',') },
+            function (result) {
+                completeLoading();
+                window.open(result, "_blank");
+            }, "json");
+    }
+    
+    function formatPriceWithCurrency(value,row,index){
+        if (value == "" || value == null) {
+            return null;
+        }
+        return row.CurrencySign + value;
+    }
+
+    function productNoFormatter(val, row, index) {
+        if (row.ProductID == -1) {
+            return "";
+        }
+        return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+    }
+
+    function onHeaderContextMenu(e, field){
+        e.preventDefault();
+        jav.initGridColumnVisibilityMenus("MyGrid", @(ERP.WebNew.Service.CurrentUserServices.Me.UserID), @((int)ERP.Models.CustomEnums.DatagridCustomColumnVisibilityModules.FinanceManagement_DetailList), e.pageX, e.pageY, @(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.ColumnsVisible))));
+    }
+
+    function myformatter(date){
+        var y = date.getFullYear();
+        var m = date.getMonth()+1;
+        var d = date.getDate();
+        return y+'-'+(m<10?('0'+m):m)+'-'+(d<10?('0'+d):d);
+    }
+
+    function myparser(s){
+        if (!s) return new Date();
+        var ss = (s.split('-'));
+        var y = parseInt(ss[0],10);
+        var m = parseInt(ss[1],10);
+        var d = parseInt(ss[2],10);
+        if (!isNaN(y) && !isNaN(m) && !isNaN(d)){
+            return new Date(y,m-1,d);
+        } else {
+            return new Date();
+        }
+    }
+
+    function formatPriceFactory(value,row,index){
+        return row.CurrencySign + row.PriceFactory;
+    }
+
+    function formatPreRecordedStatus(value,row,index){
+
+        var temp = @((int)PreRecordedStatusEnum.Yes);
+        if (value==0) {
+            return "&nbsp;";
+        }
+        else if (value==temp) {
+            return "是";
+        }
+        else {
+            return "否";
+        }
+    }
+</script>

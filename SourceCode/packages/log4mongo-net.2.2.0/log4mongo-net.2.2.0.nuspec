@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>log4mongo-net</id>
+    <version>2.2.0</version>
+    <title>log4mongo-net</title>
+    <authors>Gian Marco Gherardi</authors>
+    <owners>Gian Marco Gherardi</owners>
+    <licenseUrl>https://raw.github.com/log4mongo/log4mongo-net/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/log4mongo/log4mongo-net</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>MongoDB appender for log4net</description>
+    <tags>log logging log4net debug diagnostic trace db database nosql mongo mongodb appender apache</tags>
+    <dependencies>
+      <dependency id="log4net" version="2.0.0" />
+      <dependency id="MongoDB.Driver" version="2.0.1" />
+    </dependencies>
+  </metadata>
+</package>

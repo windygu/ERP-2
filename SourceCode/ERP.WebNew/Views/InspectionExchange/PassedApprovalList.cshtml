@@ -1,0 +1,60 @@
+﻿@model ERP.Models.InspectionExchange.VMInspectionExchangeSearch
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@{
+    ViewBag.Title = "已审核结汇单据列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var showWatch = @(Model.PageElementPrivileges & (int)InspectionExchangeElementPrivileges.Watch);
+        var showDownLoad = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.DownLoad);
+        var showUpLoadModify = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.UpLoadModify);
+
+        function operationFormatter(val, row, index) {
+            var ops="";
+
+            if(showWatch>0){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionExchange/Edit/"))" + row.InspectionExchangeID + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showDownLoad>0 ){
+                if (row.SelectCustomer!="S13" &&
+                    row.SelectCustomer!="F20" &&
+                    row.SelectCustomer!="S52" &&
+                    row.SelectCustomer!="S56" &&
+                    row.SelectCustomer!="S164" ) {
+                    ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='DownLoad_PDFAndExcel("+row.InspectionExchangeID+")' style='margin: 0 5px;'>下载</a>";
+                }
+            }
+
+            if(showUpLoadModify>0 ){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionExchange/UploadModify/"))" + row.InspectionExchangeID + "' style='margin: 0 5px;'>上传</a>";
+            }
+            return ops;
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","ID"]);
+        }
+
+        function DownLoad_PDFAndExcel(id) {
+            loading();
+            $.post("@(Url.Content("~/InspectionExchange/DownLoad_PDFAndExcel"))", { "id": id }, function (data) {
+                completeLoading();
+
+                if (data.length>0) {
+                    for (var i = 0; i < data.length; i++) {
+                        window.open(data[i]);
+                    }
+                }else {
+                    $.messager.alert("出错了", "暂时还没有该客人的模板！");
+                }
+            });
+        }
+    </script>
+}

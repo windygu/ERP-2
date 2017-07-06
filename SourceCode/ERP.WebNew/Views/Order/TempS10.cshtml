@@ -1,0 +1,149 @@
+﻿@{
+    Layout = null;
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using System.Drawing
+@using ERP.Tools
+@using ERP.BLL.Consts
+@using ERP.Models.CustomEnums
+@using ERP.Tools.EnumHelper
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <div>
+        @{
+
+            ERP.Models.Purchase.VMPurchaseProduct vm_product = new ERP.Models.Purchase.VMPurchaseProduct();
+
+            vm_product.Desc = "(RR)15.75IN GLITTER MIRRORWG HOST GLITTER MIRRORWG";//产品品名
+            vm_product.OuterBoxRate = 6;//外箱率
+            vm_product.InnerBoxRate = 12;//内核率
+            vm_product.WeightLBS = 5;//产品重量
+            vm_product.LengthIN = 12.99m;//产品长
+            vm_product.WidthIN = 8.86m;//产品宽
+            vm_product.HeightIN = 7.09m;//产品高
+            vm_product.SkuNumber = "123456";//产品SKU
+            vm_product.OuterPKUPC = "9999999999999";//产品外箱UPC
+            vm_product.InnerPKUPC = "8888888888888";//产品内核UPC
+            vm_product.UPC = "7777777777777";//产品UPC
+            vm_product.InnerGrossWeightLBS = 8.04m;//产品内核毛重
+            vm_product.InnerNetWeightLBS = 7.80m;//产品内核净重
+
+            vm_product.POID = "571117";//customer po
+            vm_product.Qty = 200;//下单数量
+            vm_product.No = "JK29272FR";//产品货号
+            vm_product.OuterWeightNet = 200;//外箱净重KGS
+            vm_product.OuterWeightGross = 300;//外箱毛重KGS
+            vm_product.OuterWeightNetLBS = 234;//外箱净重LBS
+            vm_product.OuterWeightGrossLBS = 459;//外箱毛重LBS
+            vm_product.SeasonName = "Christmas";//季节名称
+            vm_product.DestinationPortName = "Eau Claire, Wisconsin";//订单目的港
+            vm_product.CaseOrderQty = 331;//订单箱数
+            vm_product.OuterLength = 8.45m;//外箱长
+            vm_product.OuterWidth = 6.23m;//外箱宽
+            vm_product.OuterHeight = 9.23m;//外箱高
+            vm_product.CompanyName = "Marshalls Distribution Center # 881";//公司名称
+            vm_product.Address1 = "3000 S.55TH AVENUE";//客户地址1，Street
+            vm_product.Address2 = "PHOENIX,AZ 85043";//客户地址2，State，City，Zipcode
+            vm_product.Address3 = "USA";//客户地址2，Country
+            vm_product.DepartmentName = "34";//客户部门
+            vm_product.StoreReadyInners = "Store Ready Inners";
+            vm_product.PreTicketed = "Pre-ticketed";
+            
+            //预设的变量，如果需要有其他变量，可以在此预先定义
+
+
+            string templatePath = Utils.GetMapPath("/data/ShippingMark/S10/外箱唛头.jpg");
+            Bitmap bmp = new Bitmap(templatePath);
+            Graphics g = Graphics.FromImage(bmp);
+            Font font = new Font("Arial", 20, FontStyle.Regular);//字体
+            SolidBrush sb = new SolidBrush(Color.Black);
+            Image image1 = null;
+            Image image2 = null;
+            Image image3 = null;
+            string Desc_Start = vm_product.Desc;
+            
+            int x = 16;//初始X坐标的值
+            int y = 25;//初始Y坐标的值
+            int i = 33;//Y坐标每次增加的值，行间距
+            int y2 = y + 25;//字符换行后，更新后的y2的坐标的值
+            
+        #region 外箱唛头
+
+            templatePath = Utils.GetMapPath("/data/ShippingMark/S10/外箱唛头.jpg");
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+            //更换背景图
+
+            x = 5;
+            y = 3;
+            i = 20;
+
+            font = new Font("Arial Regular", 10, FontStyle.Regular);//字体            
+
+            g.DrawString("To: " + vm_product.CompanyName, font, sb, x+435, y);//写公司名称
+            g.DrawString(vm_product.Address1, font, sb, x + 435, y + i);//写街道地址1
+            g.DrawString(vm_product.Address2, font, sb, x + 435, y + 2 * i);//写街道地址2
+            g.DrawString(vm_product.Address3, font, sb, x + 435, y + 3 * i);//写街道地址3
+            g.DrawString("Vender:                                                         Glitzhome,LLC." , font, sb, x, y + i);//写固定值
+            g.DrawString("MarshallsPO#                                                " + vm_product.POID, font, sb, x, y + 4 * i);//写customer po
+            g.DrawString("Vendor Style:                                                " + vm_product.No, font, sb, x, y + 5 * i);//写jk no
+            g.DrawString("Department #                                                 " + vm_product.DepartmentName, font, sb, x, y + 6 * i);//写部门编号
+            g.DrawString("Description/Color:                                    " + vm_product.Desc, font, sb, x, y + 7 * i);//写品名描述
+            g.DrawString("Size:                                                                             L" + "  x" + "               W" + "  x" + "               H" + " (cm)", font, sb, x, y + 8 * i);//写外箱尺寸
+            g.DrawString("Total Units:                                                     " + vm_product.OuterBoxRate, font, sb, x, y + 9 * i);//写外箱装箱率
+            g.DrawString("# of Store Ready inners enclosed:              " + vm_product.StoreReadyInners, font, sb, x, y + 10 * i);//写??
+            g.DrawString("Pre-ticketed:                                                  " + vm_product.PreTicketed, font, sb, x, y + 11 * i);//写??
+            g.DrawString("Carton:                                                                            " + "of    " + vm_product.CaseOrderQty, font, sb, x, y + 12 * i);//写箱数
+            g.DrawString("Country of Origin:                                          China", font, sb, x, y + 13 * i);//写固定值
+
+            g.Save();
+
+            string img1 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S10);
+
+         #endregion 外箱唛头
+
+
+        #region 内核唛头
+
+            templatePath = Utils.GetMapPath("/data/ShippingMark/S10/内核唛头.jpg");
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+            //更换背景图
+
+            x = 5;
+            y = 3;
+            i = 20;
+
+            font = new Font("Arial Regular", 10, FontStyle.Regular);//字体            
+            
+            g.DrawString("MarshallsPO#                                                " + vm_product.POID, font, sb, x, y);//写customer po
+            g.DrawString("Department #                                                 " + vm_product.DepartmentName, font, sb, x, y + 1 * i);//写部门编号
+            g.DrawString("                Marshalls Style #                                                                           Unit" , font, sb, x, y + 2 * i);//写固定值
+            g.DrawString("                     " + vm_product.SkuNumber + "                                                                                        " + vm_product.InnerBoxRate, font, sb, x, y + 3 * i);//写内核率
+            g.DrawString("Total:                                                              " + vm_product.InnerBoxRate, font, sb, x, y + 4 * i);//写内核率
+
+            g.Save();
+
+            string img2 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S10);
+
+         #endregion 内核唛头
+        
+
+        }
+
+        外箱唛头<br />
+        <img src="@(img1)" /><br />
+        内核唛头<br />
+        <img src="@(img2)" /><br />
+
+
+    </div>
+</body>
+</html>

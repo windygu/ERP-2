@@ -1,0 +1,314 @@
+﻿@{
+    ViewBag.Title = "添加工厂信息";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+<style>
+    .Factory1 {
+    margin-top:30px
+    }
+
+    .border_color {
+        border: 1px solid #CCC;
+    }
+
+ 
+</style>
+@*style="border-top: 1px solid white; border-left: 1px solid white; border-right: 1px solid white; border-bottom:1px solid white"*@
+@model ERP.Models.Factory.VMDTOFactory
+<form action='@Url.Content("~/Factory/AddFactory")' method="post" enctype="multipart/form-data" id="frm">
+    <input type="text" name="ID" id="ID" placeholder="" style="visibility: hidden" />
+    <div class="search_Cs Factory1" style="border:none" >
+        <ul id="box">
+            <li>
+                <label class="col-xs-2 text-danger">工厂名称</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Name" id="Name" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">工厂简称</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Abbreviation" id="Abbreviation" placeholder="" required="required" />
+                </div>
+            </li>
+
+            <li>
+                <label class="col-xs-2 ">英文名：</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="EnglishName" id="EnglishName" placeholder="" />
+                </div>
+            </li>
+
+            <li>
+                <label class="col-xs-2 text-danger">联系人</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="CallPeople" id="CallPeople" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 ">职务</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Duty" id="Duty" placeholder="" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">电话</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Telephone" id="Telephone" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">手机</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Cellphone" id="Cellphone" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2">传真</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="Fax" id="Fax" placeholder="" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">邮箱地址</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="EmailAdress" id="EmailAdress" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">省</label><div class="col-sm-10 form-group">
+                                                             
+                    @Html.DropDownListFor(n => n.Province, ViewData["Data"] as SelectList, new { @class = "form-control btn dropdown-toggle selectpicker border_color " })
+                </div>
+            </li>
+            <li id="one">
+                <label class="col-xs-2 " id="sel">市</label><div class="col-sm-10 form-group">
+                                                               <select id="Select2" class="form-control btn dropdown-toggle selectpicker border_color" name="Select2"></select>
+                    <span id="span1"></span>
+                </div>
+            </li>
+            <li id="two">
+                <div id="ses">
+                    <label class="col-xs-2 ">区</label><div class="col-sm-10 form-group">
+                                                          <select id="Select3" class="form-control btn dropdown-toggle selectpicker border_color" name="Select3"></select>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">工厂地址</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="adress" id="adress" placeholder="" required="required" />
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 text-danger">工厂类别</label><div class="col-sm-10 form-group">
+                    @Html.DropDownListFor(n => n.DataFlag, ViewData["Da"] as SelectList, new { @class = "form-control btn dropdown-toggle selectpicker border_color" })
+                </div>
+            </li>
+            <li>
+                <label class="col-xs-2 ">跟单人</label><div class="col-sm-10 form-group">
+                    @Html.DropDownListFor(n =>n.Hierachy, ViewData["Work"] as SelectList, new { @class = "form-control btn dropdown-toggle selectpicker border_color" })
+                </div>
+            </li>
+
+            <li>
+                <label class="col-xs-2 ">拉柜收费标准：</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="RegisterFees" id="RegisterFees" placeholder="" />
+                </div>
+            </li>
+
+            <li>
+                <label class="col-xs-2 ">英文地址：</label><div class="col-sm-10 form-group">
+                    <input type="text" class="form-control" name="EnglishAddress" id="EnglishAddress" placeholder="" />
+                </div>
+            </li>
+
+            <li>
+                <label class="col-xs-2 text-danger">结算币种：</label><div class="col-sm-10 form-group">
+                    @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.Currencies, "CurrencyType", true, null)
+                </div>
+            </li>
+
+            <li class="search">
+                <button type="submit" id="bntSave" class="btn btn-danger">保存</button>
+                <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong><span>字体颜色为红色是必填项。</span>
+    </div>
+</form>
+@section scripts{
+    <script src="@Url.Content("~/Scripts/h5uploader.js")" type="text/javascript" charset="utf-8"></script>
+
+    <script>
+        $(function () {
+
+            var numValid = {
+                regexp: /^[a-zA-Z0-9_-]+@@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
+                message: '请输入有效的邮箱'
+            };
+
+            $('#frm').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+                fields: {
+                    Name: {
+                        validators: {
+                            notEmpty: { message: '工厂名称不能为空值' }
+                        }
+                    },
+
+                    Abbreviation: {
+                        validators: {
+                            notEmpty: { message: '工厂简称不能为空值' }
+                        }
+                    },
+
+                    CallPeople:
+                        {
+                            validators: {
+                                notEmpty: { message: '联系人不能为空值' }
+                            }
+                        },
+                    Telephone:
+                       {
+                           validators: {
+                               notEmpty: { message: '电话不能为空值' }
+                           }
+                       },
+                    Cellphone:
+                       {
+                           validators: {
+
+                               notEmpty: { message: '手机不能为空值' }
+                           }
+                       },
+
+                    EmailAdress: {
+                        validators: {
+                            notEmpty: { message: '邮箱地址不能为空值' },
+                            regexp: numValid
+                        }
+                    }
+                    ,
+                    Province:
+                       {
+                           validators: {
+
+                               notEmpty: { message: '省份不能为空值' }
+
+                           }
+                       },
+
+                    adress:
+                       {
+                           validators: {
+
+                               notEmpty: { message: '地址不能为空值' }
+                           }
+                       },
+
+                    DataFlag:
+                       {
+                           validators: {
+
+                               notEmpty: { message: '工厂类别不能为空值' }
+                           }
+                       },
+
+                  
+
+                }
+            }).on('success.form.bv', function (e) {
+                e.preventDefault();
+                var $form = $(e.target);
+                $.post($form.attr('action'), $form.serialize(),
+                    function (result) {
+
+                        if (result == 2) {
+                            $.messager.alert("提示", "已存在此结算币种的工厂名称，请重新输入！");
+                           
+                        }
+                       
+                        else {
+                            OA.CloseMe(true);
+                            parentGridReload();
+                           
+                        }
+                    }, "text");
+
+            });
+
+            ///页面加载时，首先为国家，赋值
+            $("#Province").change(function () {
+
+                var sel = document.getElementById("Select2");
+                sel.length = 0;
+                //得到点击选中的值
+                var checkvalue = $("#Province").val();
+
+                if (checkvalue != null && checkvalue != "") {
+                    //将选中的值传入方法中，根据选中的国家的id号，查询国家所对应的省市/州
+                    $.post('@Url.Content("~/Factory/SelectByCity")', { id: checkvalue }, function (data) {
+
+                        for (var i = 0; i < eval(data).length; i++) {
+                            var sel = document.getElementById("Select2");
+                            var option = new Option(eval(data)[i].Text, eval(data)[i].Value, name = eval(data)[i].ARID);
+                            sel.options.add(option);
+                        }
+                        var c = document.getElementById("Select2");
+
+                        var sel = document.getElementById("Select3");
+                        sel.length = 0;
+                        var city = document.getElementById("Select2");
+                        var cityvalue = $("#Select2").val();
+
+                        if (cityvalue != null && cityvalue != "") {
+                            //将选中的值传入方法中，根据选中的国家的id号，查询国家所对应的省市/州
+                            $.post('@Url.Content("~/Factory/SelectByArea")', { id: cityvalue }, function (data) {
+
+                                for (var i = 0; i < eval(data).length; i++) {
+                                    var sel = document.getElementById("Select3");
+                                    var option = new Option(eval(data)[i].Text, eval(data)[i].Value, name = eval(data)[i].ARID);
+                                    sel.options.add(option);
+                                }
+                                var d = document.getElementById("Select3");
+
+                            });
+                        }
+                        //}
+                    });
+
+                }
+
+            });
+
+            $("#Select2").change(function () {
+                var sel = document.getElementById("Select3");
+                sel.length = 0;
+                //得到点击选中的值
+                var checkvalue = $("#Select2").val();
+                
+                if (checkvalue != null && checkvalue != "") {
+                    //将选中的值传入方法中，根据选中的国家的id号，查询国家所对应的省市/州
+                    $.post('@Url.Content("~/Factory/SelectByArea")', { id: checkvalue }, function (data) {
+
+                        if (data == "查询失败！") {
+                            alert("没有相关信息！");
+                        }
+                        else {
+
+                            for (var i = 0; i < eval(data).length; i++) {
+                                var sel = document.getElementById("Select3");
+                                var option = new Option(eval(data)[i].Text, eval(data)[i].Value, name = eval(data)[i].ARID);
+                                sel.options.add(option);
+                            }
+
+                        }
+                    });
+                }
+
+            })
+
+        })
+    </script>
+
+}

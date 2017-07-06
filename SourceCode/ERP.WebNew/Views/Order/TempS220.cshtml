@@ -1,0 +1,255 @@
+﻿@{
+    Layout = null;
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using System.Drawing
+@using ERP.Tools
+@using ERP.BLL.Consts
+@using ERP.Models.CustomEnums
+@using ERP.Tools.EnumHelper
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <div>
+        @{
+
+            ERP.Models.Purchase.VMPurchaseProduct vm_product = new ERP.Models.Purchase.VMPurchaseProduct();
+
+            vm_product.Desc = "(RR)15.75IN GLITTER MIRRORWG HOST MIRRORWG HOST";//产品品名
+            vm_product.OuterBoxRate = 6;//外箱率
+            vm_product.InnerBoxRate = 12;//内核率
+            vm_product.WeightLBS = 5;//产品重量
+            vm_product.LengthIN = 12.99m;//产品长
+            vm_product.WidthIN = 8.86m;//产品宽
+            vm_product.HeightIN = 7.09m;//产品高
+            vm_product.SkuNumber = "123456";//产品SKU
+            vm_product.OuterPKUPC = "9999999999999";//产品外箱UPC
+            vm_product.InnerPKUPC = "8888888888888";//产品内核UPC
+            vm_product.UPC = "7777777777777";//产品UPC
+            vm_product.InnerGrossWeightLBS = 8.04m;//产品内核毛重
+            vm_product.InnerNetWeightLBS = 7.80m;//产品内核净重
+
+            vm_product.POID = "A1CDE3";//customer po
+            vm_product.Qty = 200;//下单数量
+            vm_product.No = "JK29272FR";//产品货号
+            vm_product.OuterWeightNet = 200;//外箱净重
+            vm_product.InnerWeightNet = 200;//内核净重
+            vm_product.OuterWeightNetLBS = 220;//外箱毛重LBS
+            vm_product.OuterWeightGross = 300;//外箱毛重
+            vm_product.InnerWeightGross = 300;//内核毛重
+            vm_product.OuterWeightGrossLBS = 230;//外箱毛重LBS
+            vm_product.OuterVolume = 2.34m;//外箱材积
+            vm_product.SeasonPrefix = "Spring & Summer";//季节名称,父类名称
+            vm_product.DestinationPortName = "MEMPHIS,TN";//订单目的港
+            vm_product.CaseOrderQty = 331;//订单箱数
+            vm_product.OuterLengthIN = 8.45m;//外箱长 inch
+            vm_product.OuterWidthIN = 6.23m;//外箱宽 inch
+            vm_product.OuterHeightIN = 5.23m;//外箱高 inch
+            vm_product.OuterLength = 8.43m;//外箱长 cm
+            vm_product.OuterWidth = 7.23m;//外箱宽 cm
+            vm_product.OuterHeight = 6.56m;//外箱高 cm
+            vm_product.InnerLength = 8.43m;//外箱长 cm
+            vm_product.InnerWidth = 7.23m;//外箱宽 cm
+            vm_product.InnerHeight = 6.56m;//外箱高 cm
+            vm_product.DepartmentName = "Gift Wrap";
+            vm_product.SeasonDepartmentNumber = "360";
+            vm_product.SeasonSuffix = "Lights & Outdoor";//季节名称,子类名称
+            vm_product.PDQPackRate = 3;//PDQ装箱率
+            vm_product.IsFragile2 = true;//易碎标标记
+            vm_product.CarbinetType = 3;//1=标准箱，2=非标准箱，3=小箱；从生成唛头时获取值
+            vm_product.ColorName = "Red";//产品的颜色
+
+            //预设的变量，如果需要有其他变量，可以在此预先定义
+
+            string templatePath = Utils.GetMapPath("/data/ShippingMark/S220/外箱唛头模板.jpg");
+            Bitmap bmp = new Bitmap(templatePath);
+            Graphics g = Graphics.FromImage(bmp);
+            string img1 = "";
+            string img2 = "";
+            Font font = new Font("Arial", 3, FontStyle.Bold);//正唛字体
+            Font font_1 = new Font("Arial", 3, FontStyle.Bold);//侧唛字体
+            SolidBrush sb = new SolidBrush(Color.Black);
+            string Desc_Start = vm_product.Desc;
+
+            int x = 10;//初始X坐标的值
+            int y = 150;//初始Y坐标的值
+            int i = 20;//Y坐标每次增加的值，行间距
+            int y2 = y + 15;//字符换行后，更新后的y2的坐标的值
+
+            int x0 = 360;//初始侧唛X坐标的值
+            int y0 = 180;//初始侧唛Y坐标的值
+            int i0 = 18;//侧唛Y坐标每次增加的值，行间距
+            int y02 = y0 + 15;
+            int Desc_Lenth = 30;
+
+            #region 外箱正侧唛
+            //正唛
+            g.DrawString("Season:" + vm_product.SeasonPrefix + " " + DateTime.Now.Year, font, sb, x, y);
+            g.DrawString("Shoppers Drug Mart Inc/ Pharmaprix", font, sb, x, y + i);//写固定值
+            if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > Desc_Lenth)
+            {
+                Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, Desc_Lenth);
+                g.DrawString("Product Description: " + Desc_Start, font, sb, x, y + 2 * i);//写第一行item description的值
+                g.DrawString(vm_product.Desc.Substring(Desc_Start.Length, vm_product.Desc.Length - Desc_Start.Length), font, sb, x + 125, y + 3 * i);//写第二行item description的值
+                y = y2;
+            }
+            else
+            {
+                g.DrawString("Product Description: " + Desc_Start, font, sb, x, y + 2 * i);//写item description的值
+            }
+            g.DrawString("UPC: " + vm_product.UPC, font, sb, x, y + 3 * i);//写产品UPC值
+            g.DrawString("PO#  " + vm_product.POID, font, sb, x, y + 4 * i);//写PO值
+            g.DrawString("Country of Origin: China", font, sb, x, y + 5 * i);//写固定值
+            g.DrawString("Case Pack Quantity: " + vm_product.CaseOrderQty, font, sb, x, y + 6 * i);//写订单箱数值
+
+            if (vm_product.InnerBoxRate.HasValue && vm_product.InnerBoxRate.Value > 0)
+            {
+                g.DrawString("Inner: " + vm_product.InnerBoxRate + " PCS/Master: " + vm_product.OuterBoxRate + " PCS", font, sb, x, y + 7 * i);//写内核率外箱率值
+            }
+            else
+            {
+                g.DrawString("Master: " + vm_product.OuterBoxRate + " PCS", font, sb, x, y + 7 * i);//写内核率外箱率值
+            }
+            g.DrawString("Carton Dimension in CM:", font, sb, x, y + 8 * i);//写固定值
+            g.DrawString(vm_product.OuterLength.ToString() + "cm(L)x" + vm_product.OuterWidth.ToString() + "cm(W)x" + vm_product.OuterHeight.ToString() + "cm(H)", font, sb, x, y + 9 * i);//写外箱长宽高值
+            g.DrawString("N.W.: " + vm_product.OuterWeightNet + " KG/G.W.: " + vm_product.OuterWeightGross + " KG", font, sb, x, y + 10 * i);//写外箱净重毛重的值
+            g.DrawString("Carton#:                 of  " + vm_product.CaseOrderQty, font, sb, x, y + 11 * i);//写订单箱数值
+
+            //侧唛
+            Desc_Start = vm_product.Desc;
+            Desc_Lenth = 25;
+            g.DrawString("Season:" + vm_product.SeasonPrefix + " " + DateTime.Now.Year, font_1, sb, x0, y0);
+            g.DrawString("Shoppers Drug Mart Inc/ Pharmaprix", font_1, sb, x0, y0 + i0);//写固定值
+            if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > Desc_Lenth)
+            {
+                Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, Desc_Lenth);
+                g.DrawString("Product Description: " + Desc_Start, font_1, sb, x0, y0 + 2 * i0);//写第一行item description的值
+                g.DrawString(vm_product.Desc.Substring(Desc_Start.Length, vm_product.Desc.Length - Desc_Start.Length), font_1, sb, x + 475, y0 + 3 * i0);//写第二行item description的值
+                y0 = y02;
+            }
+            else
+            {
+                g.DrawString("Product Description: " + Desc_Start, font_1, sb, x0, y0 + 2 * i0);//写item description的值
+            }
+            g.DrawString("UPC: " + vm_product.UPC, font_1, sb, x0, y0 + 3 * i0);//写产品UPC值
+            g.DrawString("PO#  " + vm_product.POID, font_1, sb, x0, y0 + 4 * i0);//写PO值
+            g.DrawString("Country of Origin: China", font_1, sb, x0, y0 + 5 * i0);//写固定值
+            g.DrawString("Case Pack Quantity: " + vm_product.CaseOrderQty, font_1, sb, x0, y0 + 6 * i0);//写订单箱数值
+
+            if (vm_product.InnerBoxRate.HasValue && vm_product.InnerBoxRate.Value > 0)
+            {
+                g.DrawString("Inner: " + vm_product.InnerBoxRate + " PCS/Master: " + vm_product.OuterBoxRate + " PCS", font_1, sb, x0, y0 + 7 * i0);//写内核率外箱率值
+            }
+            else
+            {
+                g.DrawString("Master: " + vm_product.OuterBoxRate + " PCS", font_1, sb, x0, y0 + 7 * i0);//写内核率外箱率值
+            }
+
+            g.DrawString("Carton Dimension in CM:", font_1, sb, x0, y0 + 8 * i0);//写固定值
+            g.DrawString(vm_product.OuterLength.ToString() + "cm(L)x" + vm_product.OuterWidth.ToString() + "cm(W)x" + vm_product.OuterHeight.ToString() + "cm(H)", font_1, sb, x0, y0 + 9 * i0);//写外箱长宽高值
+            g.DrawString("N.W.: " + vm_product.OuterWeightNet + " KG/G.W.: " + vm_product.OuterWeightGross + " KG", font_1, sb, x0, y0 + 10 * i0);//写外箱净重毛重的值
+            g.DrawString("Carton#:                 of  " + vm_product.CaseOrderQty, font_1, sb, x0, y0 + 11 * i0);//写订单箱数值
+
+            //vm_product.CartonBarcodeLabel_Image = "http://localhost:9001//ShippingMark_For188/3305/2016/09-14/74ecaa8a-53f4-43ec-a98d-ad985433e027.png";
+            if (!string.IsNullOrEmpty(vm_product.CartonBarcodeLabel_Image))
+            {
+                var stream = Thumbnail.GetRemoteImage(vm_product.CartonBarcodeLabel_Image);
+
+                //产品设计图
+                Image image1 = Image.FromStream(stream);
+                g.DrawImage(image1, 230, 284, 80, 120);
+                g.DrawImage(image1, 564, 250, 80, 120);
+            }
+
+
+            g.Save();
+
+            img1 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S220);
+
+            #endregion 外箱正侧唛
+
+            #region 内核正侧唛
+            templatePath = Utils.GetMapPath("/data/ShippingMark/S220/内核唛头模板.jpg");
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+
+            Desc_Start = vm_product.Desc;
+
+            x = 10;//初始X坐标的值
+            y = 50;//初始Y坐标的值
+            i = 20;//Y坐标每次增加的值，行间距
+            y2 = y + 15;//字符换行后，更新后的y2的坐标的值
+
+            x0 = 380;//初始侧唛X坐标的值
+            y0 = 70;//初始侧唛Y坐标的值
+            i0 = 18;//侧唛Y坐标每次增加的值，行间距
+            y02 = y0 + 15;
+            Desc_Lenth = 50;
+
+            //正唛
+            g.DrawString("Season: Harvest 2016", font, sb, x, y);//写固定值
+            g.DrawString("Shoppers Drug Mart Inc/ Pharmaprix", font, sb, x, y + i);//写固定值
+            if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > Desc_Lenth)
+            {
+                Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, Desc_Lenth);
+                g.DrawString(Desc_Start, font, sb, x, y + 2 * i);//写第一行item description的值
+                g.DrawString(vm_product.Desc.Substring(Desc_Start.Length, vm_product.Desc.Length - Desc_Start.Length), font, sb, x + 125, y + 3 * i);//写第二行item description的值
+                y = y2;
+            }
+            else
+            {
+                g.DrawString(Desc_Start, font, sb, x, y + 2 * i);//写item description的值
+            }
+            g.DrawString("UPC: " + vm_product.UPC, font, sb, x, y + 3 * i);//写产品UPC值
+            g.DrawString("PO#  " + vm_product.POID, font, sb, x, y + 4 * i);//写PO值
+            g.DrawString("Country of Origin: China", font, sb, x, y + 5 * i);//写固定值
+            g.DrawString("Inner Case Quantity: " + vm_product.OuterBoxRate/vm_product.InnerBoxRate + " PCS", font, sb, x, y + 6 * i);//写内核数量值
+            g.DrawString("Carton Dimension in CM:", font, sb, x, y + 7 * i);//写固定值
+            g.DrawString(vm_product.InnerLength.ToString() + "cm(L)x" + vm_product.InnerWidth.ToString() + "cm(W)x" + vm_product.InnerHeight.ToString() + "cm(H)", font, sb, x, y + 8 * i);//写外箱长宽高值
+            g.DrawString("N.W.: " + vm_product.InnerWeightNet + " KG/G.W.: " + vm_product.InnerWeightGross + " KG", font, sb, x, y + 9 * i);//写外箱净重毛重的值
+
+            //侧唛
+            Desc_Start = vm_product.Desc;
+            Desc_Lenth = 50;
+            g.DrawString("Season: Harvest 2016", font_1, sb, x0, y0);//写固定值
+            g.DrawString("Shoppers Drug Mart Inc/ Pharmaprix", font_1, sb, x0, y0 + i0);//写固定值
+            if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > Desc_Lenth)
+            {
+                Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, Desc_Lenth);
+                g.DrawString(Desc_Start, font_1, sb, x0, y0 + 2 * i0);//写第一行item description的值
+                g.DrawString(vm_product.Desc.Substring(Desc_Start.Length, vm_product.Desc.Length - Desc_Start.Length), font_1, sb, x + 515, y0 + 3 * i0);//写第二行item description的值
+                y0 = y02;
+            }
+            else
+            {
+                g.DrawString(Desc_Start, font_1, sb, x0, y0 + 2 * i0);//写item description的值
+            }
+            g.DrawString("UPC: " + vm_product.UPC, font_1, sb, x0, y0 + 3 * i0);//写产品UPC值
+            g.DrawString("PO#  " + vm_product.POID, font_1, sb, x0, y0 + 4 * i0);//写PO值
+            g.DrawString("Country of Origin: China", font_1, sb, x0, y0 + 5 * i0);//写固定值
+            g.DrawString("Inner Case Quantity: " + vm_product.OuterBoxRate / vm_product.InnerBoxRate + " PCS", font_1, sb, x0, y0 + 6 * i0);//写内核数量值
+            g.DrawString("Carton Dimension in CM:", font_1, sb, x0, y0 + 7 * i0);//写固定值
+            g.DrawString(vm_product.InnerLength.ToString() + "cm(L)x" + vm_product.InnerWidth.ToString() + "cm(W)x" + vm_product.InnerHeight.ToString() + "cm(H)", font_1, sb, x0, y0 + 8 * i0);//写外箱长宽高值
+            g.DrawString("N.W.: " + vm_product.InnerWeightNet + " KG/G.W.: " + vm_product.InnerWeightGross + " KG", font_1, sb, x0, y0 + 9 * i0);//写外箱净重毛重的值
+
+            g.Save();
+
+            img2 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S220);
+
+            #endregion 内核正侧唛
+
+        }
+
+        外箱正侧唛<br />
+        <img src="@(img1)" /><br />
+        内核正侧唛<br />
+        <img src="@(img2)" />
+    </div>
+</body>
+</html>

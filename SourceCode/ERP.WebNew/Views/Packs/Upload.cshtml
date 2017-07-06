@@ -1,0 +1,276 @@
+﻿@model ERP.Models.Packs.VMPacks
+@using ERP.Models.CustomEnums;
+
+@{
+    ViewBag.Title = "上传包装资料样张";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+<script type="text/javascript">
+
+    //上传附件插件初始化代码
+    function InitialUploadify(id,index,inputFileId,tableFileListId,uploadFilesClass)
+    {
+
+        var postUrl="@Url.Content("~/FileUploader/UploadFiles?type=")" +uploadFilesClass+"&id="+id;
+
+        $(inputFileId).uploadify({
+            swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+            uploader: postUrl, //Post文件到指定的处理文件
+            postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+            auto: false,
+            buttonClass: 'JQButton', //浏览按钮的class
+            buttonText: '浏览', //浏览按钮的Text
+            cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+            //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+            fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+            height: 40, //浏览按钮高
+            width: 50, //浏览按钮宽
+            multi: true, //是否允许多文件上传
+            //uploadLimit: 10, //同时上传多小个文件
+            sizeLimit: 100000000, //限制上传大小10M
+            //queueSizeLimit: 10, //队列允许的文件总数
+            removeCompleted: true, //当上传成功后是否将该Item删除
+            onSelect: function (file) { }, //选择文件时触发事件
+            onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+            onUploadComplete: function (file) { }, //上传成功触发事件
+            onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+            onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+            onUploadStart: function (file) { }, //上传开始触发事件
+            onUploadSuccess: function (event, response, status) {
+
+                var count = $(tableFileListId+" tr:not(:first)").length;
+                var serverFileName = $.parseJSON(response).data.NewFilePath;
+                var displayFileName = $.parseJSON(response).data.OldFileName;
+                var fileListStr = '<tr><td  style="display:none;">';
+
+                fileListStr += '<input name="PacksList[' + index + '].UpLoadFileList[' + count + '].DisplayFileName" value="' + displayFileName + '" />';
+                fileListStr += '<input name="PacksList[' + index + '].UpLoadFileList[' + count + '].ServerFileName" value="' + serverFileName + '" />';
+                fileListStr += '<input name="PacksList[' + index + '].UpLoadFileList[' + count + '].DT_CREATEDATE" value="' + formateDate2(new Date()) + '" />';
+                fileListStr += '<input name="PacksList[' + index + '].UpLoadFileList[' + count + '].IsDelete"  class="IsDelete" />';
+
+                fileListStr += '</td>';
+
+                fileListStr += '<td>' + displayFileName + '</td>';
+
+                fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+
+                fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button>';
+                fileListStr += '<button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+
+                fileListStr += '</tr>';
+
+                $(tableFileListId).prepend(fileListStr);
+
+            }  //当单个文件上传成功后激发的事件
+        });
+    }
+
+    //上传
+    function UpLoadFile(htmlId) {
+        $(htmlId).uploadifyUpload('*');
+    }
+
+    //下载
+    function DownLoadFile(path) {
+        window.open(path);
+    }
+
+    //删除
+    function DeleteFile(e, path) {
+        $(e).closest("tr").find(".IsDelete").val(true);
+        $(e).closest("tr").hide();
+    }
+</script>
+
+@using (Ajax.BeginForm("Save_Upload", "Packs", new { }, new AjaxOptions() { HttpMethod = "Post", OnBegin = "return CheckOut()", OnSuccess = "SaveOnSuccess" }))
+{
+    <input id="tempPacksStatusID" type="hidden" value="@(Model.PacksStatusID)" />
+    @Html.HiddenFor(d => d.PurchaseContractID)
+    @Html.HiddenFor(d => d.PacksStatusID)
+    @Html.HiddenFor(d => d.PageType)
+
+    <h3 class="popTitle">
+        基本信息<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div style="margin:0" class="popContent search_Condition box_1k p_t0">
+        <ul>
+            <li><label class="col-xs-2">采购合同编号：</label><div class="col-sm-10">@Model.PurchaseNumber</div></li>
+
+            <li><label class="col-xs-2">工厂简称：</label><div class="col-sm-10">@Model.FactoryAbbreviation</div></li>
+
+            <li><label class="col-xs-2">采购合同金额：</label><div class="col-sm-10">@Model.AllAmount</div></li>
+
+            <li><label class="col-xs-2">客户代号：</label><div class="col-sm-10">@Model.CustomerCode</div></li>
+
+            <li><label class="col-xs-2">采购合同日期：</label><div class="col-sm-10">@Model.PurchaseDate</div></li>
+
+        </ul>
+    </div>
+
+
+    <h3 class="popTitle">标签种类信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+    <div id="dvPacksUploadFiles" class="popContent">
+        @if (Model.PacksList != null)
+        {
+            for (int i = 0; i < Model.PacksList.Count; i++)
+            {
+
+                <div class="Factory">
+                    <div style="margin-bottom:0px;" class="modal-title">
+                        @Html.HiddenFor(p => p.PacksList[i].ID)
+
+                        @Model.PacksList[i].TagName
+                        <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+                    </div>
+
+                    <div class="history_box">
+                        <div class="form-group col-sm-12 has-feedback">
+                            <label class="col-sm-2 control-label">上传附件:</label>
+                            <div class="col-sm-10 control-label">
+                                <div class="uploadify">
+                                    <input type="file" name="txtUploadFile_@(i+1)" id="txtUploadFile_@(i+1)" />
+                                    <a class="a_upload" onclick="UpLoadFile('#txtUploadFile_@(i+1)')">上传</a>
+                                    <div class="fileQueue"></div>
+                                </div>
+                            </div>
+
+                            <script type="text/javascript">
+                                //上传附件插件初始化代码
+                                InitialUploadify(@(i+1),@i,'#txtUploadFile_@(i+1)','#fileListTable_@(i+1)','@(UploadFileType.PacksUploadFiles)');
+                            </script>
+                        </div>
+                    </div>
+
+                    <div class="history_box">
+                        <table id="fileListTable_@(i+1)" class="table table-bordered TableTrList" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                            <thead>
+                                <tr class="t_bg">
+                                    <td width="50%">附件名称</td>
+                                    <td width="20%">上传时间</td>
+                                    <td width="30%">操作</td>
+                                </tr>
+                            </thead>
+
+                            @if (Model.PacksList[i].UpLoadFileList != null)
+                            {
+                                for (int j = 0; j < Model.PacksList[i].UpLoadFileList.Count; j++)
+                                {
+                                    <tr>
+                                        <td style="display:none;">
+                                            @Html.TextBoxFor(u => u.PacksList[i].UpLoadFileList[j].ID, new { })
+                                            @Html.TextBoxFor(u => u.PacksList[i].UpLoadFileList[j].IsDelete, new { @class = "IsDelete" })
+                                        </td>
+
+                                        <td>@Model.PacksList[i].UpLoadFileList[j].DisplayFileName</td>
+
+                                        <td>@ERP.Tools.Utils.DateTimeToStr2(Model.PacksList[i].UpLoadFileList[j].DT_CREATEDATE)</td>
+
+                                        <td>
+                                            <button type="button" class="btn btn-primary" onclick="DownLoadFile('@Model.PacksList[i].UpLoadFileList[j].ServerFileName')">下载</button>
+
+                                            <!--编辑时才能删除-->
+                                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@Model.PacksList[i].UpLoadFileList[j].ServerFileName')">删除</button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </table>
+                    </div>
+                </div>
+
+            }
+        }
+    </div>
+
+    <!--操作按钮-->
+    <div id="dvButton" class="form-group text-right tijiao">
+        <button type="submit" id="bntSaveA" name="SaveDraft" class="btn btn-primary" onclick="SetDataStatus(@((int)PurchasePacksStatusEnum.HadUploaded));">提交</button>
+
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+    </div>
+}
+
+<h3 class="popTitle">
+    历史记录
+    <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+</h3>
+<div style="display:none;" class="popContent">
+    <div class="history_box">
+        <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+            <thead>
+                <tr class="TH">
+                    <th width="20%">审批日期</th>
+                    <th width="20%">审批人</th>
+                    <th width="20%">状态</th>
+                    <th width="40%">审批意见</th>
+                </tr>
+            </thead>
+
+            @foreach (var item in Model.AuditPacksHisList.OrderByDescending(d => d.AuditCreateDate))
+            {
+                <tr>
+                    <td>@item.AuditCreateDate</td>
+                    <td>@item.AuditUserName</td>
+                    <td>@item.PacksStatus</td>
+                    <td>@item.AuditPacksIdea</td>
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var AuditedPacksDataList = "#MyGrid";//已审核包装资料列表数据的table.id
+
+        //不同按钮的验证
+        function SetDataStatus(dataStatus){
+            $("#PacksStatusID").val(dataStatus);
+        }
+
+        function CheckOut() {
+            var bResult = false;
+            var iMessage="";
+            var iDataRows = 0;
+            var iTagRowNo=[];
+
+            //申报要素选项卡每个单据必须上传至少一个附件
+            $("#dvPacksUploadFiles").find("table.TableTrList").each(function (i, j) {
+                iDataRows = j.rows.length;
+                $.each(j.rows, function (k, h) {
+                    if (h.style.display == "none") {
+                        iDataRows -= 1;
+                    }
+                });
+
+                if (iDataRows < 2) {
+                    iTagRowNo.push(i+1);
+                }
+            });
+
+            if (iTagRowNo.length>0) {
+                $.messager.alert('提示', "第"+iTagRowNo.toString()+"个标签没有上传附件", 'info'); return false;
+
+            }
+        }
+
+        //提交数据后的处理
+        function SaveOnSuccess(data) {
+
+            if (data == 0) {
+                $.messager.alert('提示', '提交出错', 'info'); return;
+
+            } else if (data == 1) {
+                OA.CloseMe(true);
+
+                parent.$(AuditedPacksDataList).datagrid("reload");
+
+            } else {
+                $.messager.alert('提示', '没有更新任何数据', 'info'); return;
+
+            }
+
+        }
+    </script>
+}

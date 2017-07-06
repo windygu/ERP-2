@@ -1,0 +1,106 @@
+﻿@{
+    ViewBag.Title = "选择采购合同";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+<div>
+    <h3 class="popTitle">查询采购合同信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+
+    <div style="overflow: inherit;margin: 0;margin-bottom: 10px;" class="row popContent">
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">采购合同编号</label>
+            <div class="col-sm-8 control-label">
+                <input id="txtPurchaseNumber" name="txtPurchaseNumber" type="text" value="" class="form-control">
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-3 control-label">客户</label>
+            <div class="col-sm-9 control-label">
+                @InlineHelpers.GetSelectionForCustomers(ViewBag.CustomerInfos, "CustomerID", true, null)
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label">工厂</label>
+            <div class="col-sm-8 control-label">
+                <input id="txtFactoryAbbreviation" name="txtFactoryAbbreviation" type="text" value="" class="form-control">
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-3 control-label">交货期间</label>
+            <div class="col-sm-9 control-label">
+                <div class="col-sm-5" style="padding: 0;">
+                    <input id="txtPurchaseDateStart" name="txtPurchaseDateStart" class="form-control Wdate" type="text" value="">
+                </div>
+
+                <span class="col-sm-2">-</span>
+
+                <div class="col-sm-5" style="padding: 0;">
+                    <input id="txtPurchaseDateEnd" name="txtPurchaseDateEnd" class="form-control Wdate" type="text" value="">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-4 control-label"></label>
+            <div class="col-sm-8 control-label">
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6 has-feedback">
+            <label class="col-sm-3 control-label"></label>
+            <div class="col-sm-9 control-label">
+                <button type="submit" style="float:right;" class="btn btn-info" onclick="loadPContarctGrid()">查询</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <!--符合条件的采购合同数据列表-->
+    <table id="tblDataList" class="easyui-datagrid" data-options="width:'auto',height:'300',pagelist: [10,20,50,100],pagesize:10,singleselect:false,remotesort:true,multisort:true,pagination:true,striped:true,method:'get'">
+        <thead>
+            <tr>
+                <th data-options="field:'PurchaseNumber',sortable:true,align:'center',width:120">采购合同编号</th>
+                <th data-options="field:'PurchaseDate',sortable:true,align:'center',width:100">采购合同日期</th>
+                <th data-options="field:'PurchaseAmount',sortable:true,align:'center',width:100">采购合同金额</th>
+                <th data-options="field:'CustomerCode',sortable:true,align:'center',width:100">客户</th>
+                <th data-options="field:'FactoryAbbreviation',sortable:true,align:'center',width:100">工厂</th>
+
+                <th data-options="field:'PCID',align:'center',formatter:operationFormatter,width:120">操作</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        //客户信息下拉框列表筛选初始化
+        $("select[name=CustomerID]").selectpicker();
+
+        var ContractListTableName = "#tblDataList";
+        var ServerUrl = @Url.Content("~/Outsourcing/");
+
+        //按筛选条件加载数据列表
+        function loadPContarctGrid() {
+            var sUrl=ServerUrl+"GeContractDataList?CustomerID=" + $("select[name=CustomerID]").val() +
+                        "&FactoryAbbreviation=" + $("input[name=txtFactoryAbbreviation]").val() +
+                        "&PurchaseNumber=" + $("input[name=txtPurchaseNumber]").val() +
+                        "&PurchaseDateStart=" + $("input[name=txtPurchaseDateStart]").val() +
+                        "&PurchaseDateEnd=" + $("input[name=txtPurchaseDateEnd]").val();
+
+            $(ContractListTableName).datagrid({
+                url: sUrl
+            });
+        }
+
+        function operationFormatter(val, row, index) {
+            var ops = "<a class='btn btn-info' wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this);' href='"+ServerUrl+"Edit?id=" + val + "&pageType=1' style='margin: 0 5px;'>确定</a>";
+
+            return ops;
+        }
+    </script>
+}

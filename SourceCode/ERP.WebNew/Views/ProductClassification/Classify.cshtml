@@ -1,0 +1,637 @@
+﻿@{
+    ViewBag.Title = "产品分类管理";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml"; ;
+}
+
+<style type="text/css">
+    .upload_progress {
+        display: none;
+        padding: 5px;
+        border-radius: 10px;
+        color: #fff;
+        background-color: rgba(0,0,0,.6);
+        position: absolute;
+        left: 80px;
+        top: 90px;
+    }
+
+    #container {
+        min-width: 320px;
+        margin: 0px auto 0 auto;
+        background: white;
+        border-radius: 0px;
+        padding: 0px;
+        overflow: hidden;
+    }
+
+    #tree {
+        float: left;
+        width: 280px;
+        border-right: 1px solid silver;
+        overflow: auto;
+        padding: 0px 0;
+    }
+
+    #data {
+        margin-left: 300px;
+        margin-right: 10px;
+        margin-top: -25px;
+    }
+
+    .b {
+        font-weight: bolder;
+    }
+
+    #iconList ul {
+        margin: 10px;
+        padding: 0px;
+        border: 0px;
+    }
+
+        #iconList ul li {
+            display: block;
+            width: 20px;
+            height: 20px;
+            float: left;
+            overflow: hidden;
+            text-align: center;
+            line-height: 20px;
+        }
+
+            #iconList ul li i {
+                color: gray;
+                font-size: 16px;
+            }
+
+            #iconList ul li a:hover i,
+            #iconList ul li a:hover i.no {
+                color: red !important;
+                font-size: 22px;
+            }
+
+            #iconList ul li i.no {
+                color: #f0f0f0 !important;
+            }
+
+    div.row > div.control-label {
+        margin: 0px 0px 0px 0px !important;
+        padding: 5px 0px 0px 0px !important;
+        text-align: right;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+    }
+
+    form > div.row {
+        margin: 5px 0px 0px 0px !important;
+        padding: 5px 0px 0px 0px !important;
+    }
+
+    .right {
+        text-align: right !important;
+    }
+
+    .nowrap {
+        white-space: nowrap;
+    }
+
+    #frmEdit .row {
+        border: 0px;
+    }
+
+    .imgPreviewDiv {
+        min-height: 200px;
+        min-width: 200px;
+        max-height: 300px;
+        border: 1px solid #ccc;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    #imgPreview, #image {
+        min-height: 200px;
+        min-width: 200px;
+        max-height: 300px;
+        max-width: 300px;
+    }
+
+    #imgPreview {
+        max-width: 300px;
+    }
+</style>
+<div id="container" role="main">
+    <div id="tree"></div>
+    <div id="data">
+        <div class="content bs-docs-section " style="overflow: auto">
+            <div class="page-header">
+            </div>
+            <div class="page">
+                <form autocheck="true" id='frmEdit' role="form">
+                    <input type="hidden" id="id" />
+
+                    <div class="row">
+                        <div class='control-label col-sm-2 b'>
+                            上级分类
+                        </div>
+                        <div class='control col-sm-8' style="margin-left: 10px;">
+                            <input id='parentid' type="hidden" class="form-control" type="text" readonly />
+                            <input id='parentname' class="form-control" type="text" readonly />
+                        </div>
+                    </div>
+
+                    <div class='row'>
+                        <div class='control-label col-sm-2 b'>
+                            分类名称
+                        </div>
+                        <div class='control col-sm-8' style="margin-left: 10px;">
+                            <input type="text" id='name' maxlength="50" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-2 control-label b">
+                            缩略图
+                        </div>
+                        <div class='control col-sm-8' style="margin-left: 10px;">
+                            <div class="imgPreviewDiv">
+                                <img id="image" class="form-control-static" style="cursor: pointer;" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-2 control-label b">
+                            其他选项
+                        </div>
+                        <div class=' control col-sm-8' style="margin-left: 10px;">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" id="show" value="" />
+                                有效
+                            </label>
+                        </div>
+                    </div>
+                    <div class="row" style="text-align: center;">
+                        <hr />
+                        <button type="button" onclick="Save()" disabled="disabled" class="btn btn-danger ">保存信息</button>
+                        @*<button type="button" onclick="More()" disabled="disabled" class="btn btn-info">恢复</button>*@
+                        <button type="button" onclick="View()" id="bntView" class="btn btn-default ">查看产品图片</button>
+                        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭窗口</button>
+                    </div>
+
+                    <div class="row">
+                        <strong>备注：</strong>
+                        <ol>
+                            <li>目录树区域右击可以进行结点的更名、新建、删除子结点等功能。</li>
+                            <li>拖动结点可以实现结点的移动、改变层级关系。</li>
+                        </ol>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 上传图片弹出框 -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="myModalLabel">上传图片</h3>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid">
+
+                    <form id="uploadForm" action="@Url.Content("~/FileUploader/ClassificationImg")" method="post">
+                        <div class="row">
+                            <input type="file" width="500" name="fileSelect" id="fileSelect" value="" />
+                        </div>
+
+                        <div class="row">
+                            预览：
+                            <span id="uploadProgress" class="upload_progress">NaN%</span>
+                            <div class="imgPreviewDiv">
+                                <img id="imgPreview" src="@Url.Content("~/images/default/upload.jpg")" />
+                            </div>
+                        </div>
+
+                        <div class="row" style="text-align: right; margin-top: 15px;">
+                            <input type="button" id="fileSubmit" class="btn btn-success" value="确认上传图片" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="@Url.Content("~/Scripts/h5uploader.js")" type="text/javascript" charset="utf-8"></script>
+
+<script type="text/javascript">
+    var newNodeName = "请更名节点";
+
+    function Random() {
+        return Math.random() * Math.random() * Math.random();
+    }
+
+    function getRef() {
+        return $('#tree').jstree(true)
+    }
+
+    function getNode() {
+        var ref = getRef();
+        sel = ref.get_selected();
+        if (!sel.length) { return null; }
+        sel = sel[0];
+        return ref.get_node(sel);
+    }
+
+    function setText(text) {
+        var ref = getRef();
+        sel = ref.get_selected();
+        if (!sel.length) { return null; }
+        sel = sel[0];
+        return ref.set_text(sel, text);
+    }
+
+    function demo_selectedIcon() {
+        var node = getNode();
+        if (node == null || node.id == -1) {
+            $.messager.alert("提示", "根结点不能更改图标,你需要选择一个非根结点");
+            return false;
+        }
+        $("#selectIconDiv").modal({ keyboard: true });
+    }
+
+    function demo_create() {
+        var ref = $('#tree').jstree(true),
+            sel = ref.get_selected();
+        if (!sel.length) { return false; }
+        sel = sel[0];
+        sel = ref.create_node(sel, { "icon": "fa fa-folder-o", "text": newNodeName });
+        if (sel) {
+            ref.edit(sel);
+        }
+    };
+    function demo_rename() {
+        var ref = $('#tree').jstree(true),
+            sel = ref.get_selected();
+        if (!sel.length) { return false; }
+        sel = sel[0];
+        par = ref.get_node(sel);
+
+        par.text = par.text.substring(0, par.text.lastIndexOf('('));//去掉数字标
+        if (par.id == -1) {
+            $.messager.alert("提示", "根不能更名");
+            return false;
+        }
+        ref.edit(sel);
+    };
+    function demo_delete() {
+        var ref = $('#tree').jstree(true),
+            sel = ref.get_selected();
+        if (!sel.length) { return false; }
+        par = ref.get_node(sel[0]);
+        if (par.id == -1) {
+            $.messager.alert("提示", "根不能删除");
+            return false;
+        }
+
+        $.messager.confirm('Confirm', '是否删除此结点?', function (r) {
+            if (r) {
+                $.post('@Url.Content("~/ProductClassification/Delete")', {
+                    id: sel[0],
+                    _: Random(),
+                }).done(function (d) {
+                    if (d == 3) {
+                        $.messager.alert("提示", "该节点已经在产品里面使用了！");
+                        return;
+                    } else if (d == 1) {
+                        ref.delete_node(sel);
+                    } else if (d == 0) {
+                        $.messager.alert("提示", "删除失败！");
+                    }
+                    else if (d == 2) {
+                        $.messager.alert("提示", "没有可以删除的节点或该节点已被删除！");
+                    } else if (d == 4) {
+                        $.messager.alert("提示", "该分类存在产品！不能删除。");
+                    }
+                })
+                .fail(function () {
+                    data.instance.refresh();
+                });
+            }
+        })
+    };
+
+    $(function () {
+        //InitIcon();
+
+        $(window).resize(function () {
+            var size = OA.getWinSize();
+            var h = Math.max($(window).height() - 0, 420);
+            $('#container, #data, #tree, #data .content').height(h);
+            $('#data').outerWidth(size.width - $('#tree').outerWidth() - 20);
+        });
+
+        $('#tree')
+            .jstree({
+                'core': {
+                    lang: { loading: "加载中…" },
+                    'data': {
+                        'url': '@Url.Content("~/ProductClassification/Get")',
+                        'data': function (node) {
+                            return {
+                                pid: node.id,
+                                _: Random(),
+                            };
+                        },
+                    },
+                    'check_callback': true,
+                    'themes': {
+                        'responsive': false,
+                        'icon': true
+                    }
+                },
+                'plugins': ['state', 'dnd', 'contextmenu', 'wholerow', 'hotkeys'],
+                "contextmenu": {
+                    "items": {
+                        create: { label: "新建子项", icon: 'fa fa-file-text-o', action: function () { demo_create(); } },
+                        rename: {
+                            label: "更名", "shortcut": 113, "shortcut_label": 'F2', "icon": "fa fa-exchange",
+                            action: function () { demo_rename(); }
+                        },
+                        //icon: {
+                        //    label: "更改图标", icon: 'fa fa-bookmark', action: function ()
+                        //    { demo_selectedIcon(); }
+                        //},
+
+                        remove: {
+                            label: "删除", icon: 'fa fa-times', action: function () {
+                                demo_delete();
+                            }
+                        },
+
+                        //"ccp": null
+                    }
+                }
+            })
+            .on('create_node.jstree', function (e, data) {
+                $.post('@Url.Content("~/ProductClassification/Create")',
+                    {
+                        parentid: data.node.parent,
+                        name: data.node.text,
+                        _: Random(),
+                    })
+                    .done(function (d) {
+                        data.instance.set_id(data.node, d);
+                    })
+                    .fail(function () {
+                        data.instance.refresh();
+                    });
+            })
+            .on('rename_node.jstree', function (e, data) {
+                $.post('@Url.Content("~/ProductClassification/Rename")', {
+                    id: data.node.id,
+                    name: data.text,
+                    parentid: data.node.parent,
+                    _: Random(),
+                }).done(function (d) {
+                    if (d === 4) {
+                        if (data.text != newNodeName) {
+                            $.messager.alert("提示", "已经存在名为[" + data.text + "]的记录");
+                        }
+                        data.instance.refresh();
+                    }
+                    else {
+                        if (data.node.id == $("#id").val())
+                            $("#name").val(data.text);
+                    }
+                })
+                    .fail(function () {
+                        data.instance.refresh();
+                    });
+            })
+            .on('move_node.jstree', function (e, data) {
+                //debugger;
+               var targetText= $("#" + data.parent+" a:first").text();
+               $.messager.confirm('Confirm', '确定移动到' + targetText + '吗?', function (r) {
+                    if (r) {
+                        if (data.parent != '#') {
+                            $.post('@Url.Content("~/ProductClassification/Move")',
+                                    {
+                                        id: data.node.id,
+                                        parentid: data.parent,
+                                        name: data.node.text,
+                                        _: Random(),
+                                    })
+                                .fail(function () {
+                                    data.instance.refresh();
+                                });
+                        }
+                        else {
+                            $.messager.alert("提示", "不能移到根目录同级");
+                            data.instance.refresh();
+                            return false;
+                        }
+                    } else {
+
+                    }
+                });
+            })
+            .on('copy_node.jstree', function (e, data) {
+                $.messager.alert("提示", "目前不支持结果复制");
+            })
+            .on('changed.jstree', function (e, data) {
+                if (data && data.selected && data.selected.length == 1) {
+                    var id = data.selected.join(':');
+                    $("#id").val(id);
+                    var disabled = (id == "#" || id <= 0);
+                    if (disabled) {
+                        $("#frmEdit").attr("disabled", true);
+                        $("#frmEdit input,select,textarea,button").attr("disabled", true);
+                    }
+                    else {
+                        $("#frmEdit").removeAttr("disabled");
+                        $("#frmEdit input,select,textarea,button").removeAttr("disabled");//,disabled);
+                    }
+
+                    $("#bntClose").removeAttr("disabled");
+
+                    if (!disabled)
+                        More(id);
+                }
+                else {
+                }
+            });
+    });
+
+    function setCheckBoxValue(id, val) {
+        $("#" + id).prop("checked", val);
+    }
+
+    function getCheckBoxValue(id) {
+        return $("#" + id).is(':checked');
+    }
+
+    function More(id) {
+        if (typeof (id) == "undefined") id = $("#id").val();
+        if (id < 1)
+            $.messager.alert("提示", "没有记录可供选取");
+        $("#id").val(id);
+        $(window).resize();
+        $.getJSON('@Url.Content("~/ProductClassification/MoreInfo/")' + id + '?_=' + Random(),
+                    function (data) {
+                        for (var id in data) {
+                            var val = data[id];
+                            if (val == null) val = "";
+                            switch (id) {
+                                case "image":
+                                    $("#" + id).attr("src", val);
+                                    break;
+                                case "show":
+                                    setCheckBoxValue("show", val);
+                                    break;
+                                default:
+                                    $("#" + id).val(val);
+                                    break;
+                            }
+                        }
+                    });
+    }
+    function Save() {
+        var d = {
+            id: $("#id").val(),
+            name: $("#name").val(),
+            image: $("#image").attr('src'),
+            show: getCheckBoxValue("show"),
+        };
+        if ($.trim(d.name) == "") {
+            $.messager.alert("提示", "分类名称不能为空值");
+            $("#name").focus();
+            return false;
+        }
+
+        $.ajax({
+            url: "@Url.Content("~/ProductClassification/Update")",
+            data: d,
+            type: 'post',
+            dataType: 'json',
+            success: function (data) {
+                if (data == 1) {
+                    $.messager.alert("提示", "更新成功");
+                    setText(d.name);
+                }
+                else if (data == 2) {
+                    $.messager.alert("提示", "您没有修改数据");
+                }
+                else if (data == 4) {
+                    $.messager.alert("提示", "已经存在名为[" + d.name + "]的记录");
+                }
+                else {
+                    $.messager.alert("提示", "更新失败");
+                }
+            },
+            error: function () {
+                $.messager.alert("提示", "更新失败");
+            }
+        });
+    }
+
+    function View() {
+        var d = {
+            ID: $("#id").val()
+        };
+
+        $.post("@Url.Content("~/ProductClassification/IsExitViewProductList")", d, function (data) {
+            if (data == 0) {
+                $.messager.alert("提示", "该产品分类没有产品！");
+            }
+            else {
+                window.open("@Url.Content("~/ProductClassification/ViewProductList/")" + d.ID, "_blank");
+            }
+        });
+    }
+
+    $(function () {
+        $("#iconClass").keyup(function () {
+            var s = $.trim($(this).val());
+            if (s == "")
+                $("#iconList li i").removeClass("no");
+            else {
+                s = s.split(' ');
+                $("#iconList li").each(function () {
+                    var ts = $(this).find("a").attr("title");
+                    var b = false;
+                    for (var ti = 0; ti < s.length; ti++) {
+                        if (ts.indexOf($.trim(s[ti])) >= 0)
+                        { b = true; break; }
+                    }
+
+                    if (b)
+                        $(this).find("a i").removeClass("no");
+                    else
+                        $(this).find("a i").addClass("no");
+                });
+            }
+        });
+    });
+
+    $(function () {
+        $('#image').parents(".imgPreviewDiv").click(function () {
+            $('#myModal').modal({ keyboard: true });
+            $("#uploadProgress").hide();
+            return false;
+        });
+        var params = {
+            fileInput: document.getElementById("fileSelect"),
+            upButton: document.getElementById("fileSubmit"),
+            url: $("#uploadForm").attr("action"),
+            filter: function (file) {
+                var f = null;
+                if (file.type.indexOf("image") == 0) {
+                    if (file.size >= 3600000) {	// 3M
+                        $.messager.alert("提示", '您这张"' + file.name + '"图片大小过大,请不要超过3M');
+                    } else {
+                        f = file;
+                    }
+                } else {
+                    $.messager.alert("提示", '文件"' + file.name + '"不是图片。');
+                }
+                return f;
+            },
+            onSelect: function (file) {
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $("#imgPreview").attr('src', e.target.result);
+                    }
+                    reader.readAsDataURL(file);
+                }
+                else {
+                    $("#imgPreview").attr('src', '');
+                }
+                $("#uploadProgress").hide();
+            },
+            onProgress: function (file, loaded, total) {
+                var eleProgress = $("#uploadProgress"), percent = (loaded / total * 100).toFixed(2) + '%';
+                eleProgress.show().html(percent);
+            },
+            onSuccess: function (file, response) {
+                var result = JSON.parse(response);
+                if (result.ok) {
+                    $("#image").attr('src', result.data.imgPath);
+                    $("#imgPreview").attr("src", "/images/default/upload.jpg");
+                    $("#fileSelect").val("");
+                    $('#myModal').modal('hide');
+                }
+            },
+            onFailure: function (file) {
+                $("#uploadProgress").html('失败');
+                $.messager.alert("提示", '上传失败');
+            },
+        };
+        h5uploader = $.extend(h5uploader, params);
+        h5uploader.init();
+    });
+</script>

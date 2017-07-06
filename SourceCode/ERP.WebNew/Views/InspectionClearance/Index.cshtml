@@ -1,0 +1,75 @@
+﻿@model ERP.Models.InspectionClearance.VMInspectionClearanceSearch
+@using ERP.Models.CustomEnums;
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@{
+    ViewBag.Title = "待审核清关单据列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+
+        var showWatch = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.Watch);
+        var showClearance = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.Clearance);
+        var showEdit = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.Edit);
+        var showApproval = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.Approval);
+        var showDownLoad_CreditNumber = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.DownLoad_CreditNumber);
+
+        var PendingMaintenance= @((int)InspectionClearanceStatusEnum.PendingMaintenance);
+        var PendingCheck= @((int)InspectionClearanceStatusEnum.PendingCheck);
+        var OutLine= @((int)InspectionClearanceStatusEnum.OutLine);
+        var NotPassCheck= @((int)InspectionClearanceStatusEnum.NotPassCheck);
+
+        function operationFormatter(val, row, index) {
+            var ops="";
+            var StatusID = row.StatusID;
+
+            if(showWatch>0 && StatusID>PendingMaintenance){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionClearance/Edit/"))" + row.InspectionClearanceID + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showClearance>0 && StatusID==PendingMaintenance){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionClearance/Edit/"))" + row.InspectionClearanceID + "?Type=Add' style='margin: 0 5px;'>清关</a>";
+            }
+
+            if(showEdit>0&&(StatusID == OutLine || StatusID == NotPassCheck)){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionClearance/Edit/"))" + row.InspectionClearanceID + "' style='margin: 0 5px;'>编辑</a>";
+            }
+
+            if(showApproval>0 && StatusID==PendingCheck && row.IsHasApprovalPermission){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionClearance/Edit/"))" + row.InspectionClearanceID + "?Type=Approval' style='margin: 0 5px;'>审核</a>";
+            }
+
+            if(showDownLoad_CreditNumber>0 && row.SelectCustomer=="S05"){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='DownLoad_CreditNumber("+row.InspectionClearanceID+")' style='margin: 0 5px;'>生成信用证文件</a>";
+            }
+
+            return ops;
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","ID"]);
+        }
+        
+        function DownLoad_CreditNumber(id) {
+            loading();
+            $.post("@(Url.Content("~/InspectionClearance/DownLoad_CreditNumber"))", { "id": id }, function (data) {
+            completeLoading();
+
+            if (data.length>0) {
+                for (var i = 0; i < data.length; i++) {
+                    window.open(data[i]);
+                }
+            }else {
+                $.messager.alert("出错了", "暂时还没有该客人的模板！");
+            }
+        });
+        }
+    </script>
+}

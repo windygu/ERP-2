@@ -1,0 +1,192 @@
+﻿@using ERP.Models.CustomEnums
+@model ERP.Models.ProducePlan.DTOProducePlan
+
+@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+<link href="@Url.Content("~/Content/Quotation.css")" rel="stylesheet" />
+
+<style>
+    label.control-label, .control-label, label {
+        margin-top: 2px;
+        text-align: right;
+        font-weight: normal;
+    }
+</style>
+
+@using (Ajax.BeginForm("Upload", "ProducePlan", null, new AjaxOptions() { HttpMethod = "Post", OnBegin = "OnBegin", OnSuccess = "OnSuccess" }, new { id = "frmEdit" }))
+{
+    @Html.HiddenFor(p => p.ID)
+
+    <input type="hidden" value="@Model.ID" id="IDText" />
+    <input type="hidden" value="@ViewBag.title" id="Value" />
+    <div id="inline">
+        @Html.Partial("_PartialPurchaseContract", Model.PurchaseContract)
+
+        <h3 class="popTitle">
+            已上传的生产信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            <div class="history_box">
+                <table id="fileListTable" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr class="t_bg">
+                            <td width="50%">附件名称</td>
+                            <td width="20%">上传时间</td>
+                            <td width="30%">操作</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.list_UpLoadFile != null)
+                        {
+                            int index = 0;
+                            foreach (var item in Model.list_UpLoadFile.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                        <tr>
+                            <td class="hide">
+                                <input name="list_UpLoadFile[@(index)].ID" type="hidden" value="@item.ID" />
+                                <input class="IsDelete" name="list_UpLoadFile[@(index)].IsDelete" type="text" value="@item.IsDelete" />
+                            </td>
+                            <td>@item.DisplayFileName</td>
+                            <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                            <td>
+                                <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+
+                                @*<button type="button" class="btn btn-danger" id="delete" onclick="DeleteFile(this,'@item.ServerFileName')">删除</button>*@
+                            </td>
+                        </tr>
+                                ++index;
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="one">
+            <h3 class="popTitle">
+                审核意见
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="popContent">
+                <textarea class="form-control" cols="20" id="AuditPacksIdea" name="AuditPacksIdea" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="popBtns">
+
+            <button type="button" class="btn btn-primary" name="AuditPass" id="AuditPass" onclick="CheckOutAudit(5);">审核通过</button>
+            <button type="button" class="btn btn-danger" name="AuditNoPass" id="AuditNoPass" onclick="CheckOutAudit(4);">驳回重审</button>
+            <button type="button" class="btn btn-default" onclick="OA.CloseMe()" id="Close1">取消</button>
+            <button type="button" class="btn btn-default" onclick="OA.CloseMe()" id="Close2">关闭</button>
+        </div>
+
+        <h3 class="popTitle">
+            历史记录
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            <div class="history_box">
+                <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                    <tbody>
+                        <tr class="t_bg">
+                            <td width="20%">日期</td>
+                            <td width="20%">操作者</td>
+                            <td width="30%">状态</td>
+                            <td width="30%">意见/备注</td>
+                        </tr>
+                        @foreach (var item_history in Model.list_history.OrderByDescending(d => d.ProduceDate))
+                        {
+                            <tr>
+                                <td>@item_history.ProduceDate</td>
+                                <td>@item_history.ProducePeople</td>
+                                <td>@item_history.ProduceResultName</td>
+                                <td>@item_history.HistorySomeThing</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+@section scripts{
+    <script>
+
+        $(function () {
+            var file = $("#Value").val();
+            if (file == "查看生产计划") {
+                $("#AuditPacksIdea").prop("disabled", true);
+                $("#AuditPass").hide();
+                $("#AuditNoPass").hide();
+                $("#Close1").hide();
+                $("#one").hide();
+
+            }
+            else if (file == "查看待审核生产计划") {
+                //$("#Close2").hide();
+                $("#AuditPass").hide();
+                $("#AuditNoPass").hide();
+                $("#Close1").hide();
+                $("#one").hide();
+            }
+            else if (file == "审核生产计划") {
+                $("#Close2").hide();
+            }
+            else if (file == "查看已审核生产计划") {
+                $("#AuditPacksIdea").prop("disabled", true);
+                $("#AuditPass").hide();
+                $("#AuditNoPass").hide();
+                $("#Close1").hide();
+                $("#one").hide();
+            }
+
+        });
+
+        var checkSubmit = false;//防止重复提交
+        function CheckOutAudit(Status) {
+            var IDText = $("#IDText").val();
+            var AuditPacksIdea = $("#AuditPacksIdea").val();
+
+            if (Status == 4) {
+                var AuditPacksIdeaTrim = $.trim(AuditPacksIdea);
+                if (AuditPacksIdeaTrim == "") {
+                    $.messager.alert("提示", "请输入审核意见！");
+                    return;
+                }
+            }
+
+            if (checkSubmit) {
+                //$.messager.alert("提示", "请勿重复提交！");
+                return false;
+            }
+            checkSubmit = true;
+            loading();
+
+            $.post('@Url.Content("/ProducePlan/WaitCheck")', {
+                ID: IDText,
+                SomeThing: AuditPacksIdea,
+                Status: Status
+            }, function (data) {
+                checkSubmit = false;
+                var IsSuccess = @((int)DBOperationStatus.Success);
+                if (data == IsSuccess) {
+                    parentGridReload();
+                    OA.CloseMe(true);
+                } else {
+                    $.messager.alert("提示", "出错了！");
+                    completeLoading();
+                }
+            });
+
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+    </script>
+}

@@ -1,0 +1,144 @@
+﻿@model List<ERP.Models.InspectionCustoms.VMInspectionCustoms>
+@using ERP.Models.CustomEnums
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    var ThisModel = Model;
+}
+
+<!--发票选项卡-->
+<div id="dvTab_Invoice" title="发票">
+    <h3 class="popTitle">发票信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+    <div class="popContent">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var item2 = Model[i];
+            <div class="Factory">
+                <div style="margin-bottom:0px;" class="modal-title">
+                    <span class="txt_InvoiceNO_@(i) text-center" style="width: 98%;">
+                        @item2.InvoiceNO
+                    </span>
+                    <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+                </div>
+
+                <div class="history_box">
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">TO:</label>
+                        <div class="col-sm-8 control-label">@item2.CustomerName</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Inv. No:</label>
+                        <div class="col-sm-8 control-label">
+                            @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                            {
+                                <div class="col-sm-7" style="padding:0;">
+                                    @InlineHelpers.GetSelection(ViewData["list_InvoiceNO" + i.ToString()] as SelectList, "ThisModel[" + i + "].InvoiceNO", false, ThisModel[i].InvoiceNO, "txt_InvoiceNO_" + i, "txt_InvoiceNO")
+                                </div>
+                                <div class="col-sm-5">
+                                    @InlineHelpers.GetSelection(ViewData["list_Letter"] as SelectList, "ThisModel[" + i + "].Letter", true, ThisModel[i].Letter, "txt_Letter_" + i, "txt_Letter")
+                                </div>
+                            }
+                            else
+                            {
+                                @item2.InvoiceNO
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">地址:</label>
+                        <div class="col-sm-8 control-label">@item2.CustomerStreet <br />@item2.CustomerReg</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">DATE:</label>
+                        <div class="col-sm-8 control-label">@item2.CreateDateFormatter</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Loading port:</label>
+                        <div class="col-sm-8 control-label">
+                            @item2.PortName ,CHINA
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Destination:</label>
+                        <div class="col-sm-8 control-label">
+                            @item2.DestinationPortName
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Terms of Sale:</label>
+                        <div class="col-sm-8 control-label" style="padding: 0;">
+                            @if (item2.SelectCustomer == SelectCustomerEnum.S188.ToString() || item2.SelectCustomer == SelectCustomerEnum.S220.ToString() || item2.SelectCustomer == SelectCustomerEnum.S235.ToString() || item2.SelectCustomer == SelectCustomerEnum.S135.ToString())
+                            {
+                                <div class="col-sm-6 control-label">FOB @item2.PortName</div>
+                            }
+                            else
+                            {
+                                <div class="col-sm-6 control-label">
+
+                                    @if (ViewBag.PageTypeID == PageTypeEnum.Details)
+                                    {
+                                        @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.TradeType, "ThisModel[" + i + "].TradeType", false, item2.TradeType, "", "TradeType")
+                                    }
+                                    else
+                                    {
+                                        @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.TradeType, "ThisModel[" + i + "].TradeType", true, item2.TradeType, "", "TradeType")
+                                    }
+                                </div>
+                                <div class="col-sm-6 control-label">
+                                    @item2.PortName
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+
+                    <table id="MyPopGrid_Invoice_@(i)" class="easyui-datagrid" style="width:100%">
+                        <thead data-options="frozen:true">
+                            <tr>
+                                <th data-options="field:'No',width:100,sortable:true">OUR ITEM #</th>
+                                <th data-options="field:'HsName',width:150,sortable:true,align:'center',editor:{type:'validatebox'}">报关品名</th>
+                                <th data-options="field:'HsEngName',width:150,sortable:true,align:'center',editor:{type:'validatebox'}">报关英文品名</th>
+                            </tr>
+                        </thead>
+                        <thead>
+                            <tr>
+                                <th data-options="field: 'HsCode', width: 100, align: 'center'">报关编码</th>
+                                <th data-options="field: 'ProductPrice', width: 100, align: 'center',editor:{type:'numberbox',options:{precision:4}}">产品单价($)</th>
+                                <th data-options="field: 'Qty', width: 100, align: 'center'">产品数量</th>
+                                <th data-options="field: 'Amount', width: 100, align: 'center'">总金额($)</th>
+
+                                <th data-options="field: 'ID', width: 100, align: 'center',hidden:true"></th>
+                                <th data-options="field: 'HSID', width: 100, align: 'center',hidden:true"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var j = 0; j < Model[i].list_OrdersProducts.Count; j++)
+                            {
+                                var item = Model[i].list_OrdersProducts[j];
+                                <tr>
+                                    <td style="width:100px;"></td>
+                                    <td style="width:100px;">@item.HsName</td>
+                                    <td style="width:100px;">@item.HsEngName</td>
+                                    <td style="width:100px;">@item.HsCode</td>
+                                    <td style="width:100px;">@item.ProductPrice</td>
+                                    <td style="width:100px;">@item.Qty</td>
+                                    <td style="width:100px;">@item.Amount</td>
+
+                                    <td style="width:100px;">@item.ID</td>
+                                    <td style="width:100px;">@item.HSID</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        }
+    </div>
+</div>

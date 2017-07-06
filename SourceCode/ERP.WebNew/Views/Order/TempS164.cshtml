@@ -1,0 +1,208 @@
+﻿@{
+    Layout = null;
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using System.Drawing
+@using ERP.Tools
+@using ERP.BLL.Consts
+@using ERP.Models.CustomEnums
+@using ERP.Tools.EnumHelper
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title></title>
+</head>
+<body>
+    <div>
+        @{
+
+            ERP.Models.Purchase.VMPurchaseProduct vm_product = new ERP.Models.Purchase.VMPurchaseProduct();
+
+            vm_product.Desc = "(RR)15.75IN GLITTER MIRRORWG HOST GLITTER MIRRORWG";//产品品名
+            vm_product.OuterBoxRate = 6;//外箱率
+            vm_product.InnerBoxRate = 12;//内核率
+            vm_product.WeightLBS = 5;//产品重量
+            vm_product.LengthIN = 12.99m;//产品长
+            vm_product.WidthIN = 8.86m;//产品宽
+            vm_product.HeightIN = 7.09m;//产品高
+            vm_product.SkuNumber = "123456";//产品SKU
+            vm_product.OuterPKUPC = "9999999999999";//产品外箱UPC
+            vm_product.InnerPKUPC = "8888888888888";//产品内核UPC
+            vm_product.UPC = "7777777777777";//产品UPC
+            vm_product.InnerGrossWeightLBS = 8.04m;//产品内核毛重
+            vm_product.InnerNetWeightLBS = 7.80m;//产品内核净重
+
+            vm_product.POID = "571117";//customer po
+            vm_product.Qty = 200;//下单数量
+            vm_product.No = "JK29272FR";//产品货号
+            vm_product.OuterWeightNet = 200;//外箱净重KGS
+            vm_product.OuterWeightGross = 300;//外箱毛重KGS
+            vm_product.OuterWeightNetLBS = 234;//外箱净重LBS
+            vm_product.OuterWeightGrossLBS = 459;//外箱毛重LBS
+            vm_product.SeasonName = "Christmas";//季节名称
+            vm_product.DestinationPortName = "Eau Claire, Wisconsin";//订单目的港
+            vm_product.CaseOrderQty = 331;//订单箱数
+            vm_product.OuterLengthIN = 8.45m;//外箱长
+            vm_product.OuterWidthIN = 6.23m;//外箱宽
+            vm_product.OuterHeightIN = 9.23m;//外箱高
+            
+            //预设的变量，如果需要有其他变量，可以在此预先定义
+
+
+            string templatePath = Utils.GetMapPath("/data/ShippingMark/S164/外箱正唛.jpg");
+            Bitmap bmp = new Bitmap(templatePath);
+            Graphics g = Graphics.FromImage(bmp);
+            Font font = new Font("Arial", 20, FontStyle.Regular);//字体
+            SolidBrush sb = new SolidBrush(Color.Black);
+            Image image1 = null;
+            Image image2 = null;
+            Image image3 = null;
+            string Desc_Start = vm_product.Desc;
+            
+            int x = 16;//初始X坐标的值
+            int y = 25;//初始Y坐标的值
+            int i = 33;//Y坐标每次增加的值，行间距
+            int y2 = y + 25;//字符换行后，更新后的y2的坐标的值
+            
+        #region 外箱正唛
+
+            templatePath = Utils.GetMapPath("/data/ShippingMark/S164/外箱正唛.jpg");
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+            //更换背景图
+
+            x = 20;
+            y = 118;
+            i = 33;
+            y2 = y + 25;
+            
+            font = new Font("Arial Regular", 14, FontStyle.Regular);//字体            
+            g.DrawString(vm_product.DestinationPortName, font, sb, x, y);//写港口
+            g.DrawString("P.O.#: " + vm_product.POID, font, sb, x, y + i);//写po
+            g.DrawString("Made In:  China", font, sb, x, y + 2 * i);//写固定值
+
+            g.Save();
+
+            string img1 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S164);
+
+        #endregion 外箱正唛
+
+        #region 外箱侧唛
+
+            templatePath = Utils.GetMapPath("/data/ShippingMark/S164/外箱侧唛.jpg");
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+            //更换背景图
+
+            x = 5;
+            y = 7;
+            i = 30;
+            y2 = y + 20;
+
+            font = new Font("Arial Regular", 12, FontStyle.Regular);//字体            
+            if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > 40)
+            {
+                Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, 40);
+                g.DrawString("Description of Product: " + Desc_Start, font, sb, x, y );//写第一行item description的值
+                g.DrawString(vm_product.Desc.Substring(Desc_Start.Length, vm_product.Desc.Length - Desc_Start.Length), font, sb, x + 162, y2);//写第二行item description的值
+                y = y2;
+            }
+            else
+            {
+                g.DrawString("Description of Product: " + Desc_Start, font, sb, x, y);//写item description的值
+            }
+            
+            g.DrawString("Menard SKU #: " + vm_product.SkuNumber, font, sb, x, y + i);//写sku
+            g.DrawString("Quantity: " + vm_product.OuterBoxRate, font, sb, x, y + 2 * i);//写外箱率
+            g.DrawString("Net Weight: " + vm_product.OuterWeightNetLBS + "  LBS", font, sb, x, y + 3 * i);//写外箱净重
+            g.DrawString("Gross Weight: " + vm_product.OuterWeightGrossLBS + "  LBS", font, sb, x, y + 4 * i);//写外箱毛重
+            g.DrawString("Carton _____ of: " + vm_product.CaseOrderQty, font, sb, x, y + 5 * i);//写总箱数
+
+            g.Save();
+
+            string img2 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S164);
+
+         #endregion 外箱侧唛
+
+        #region 内核正唛
+
+            templatePath = Utils.GetMapPath("/data/ShippingMark/S164/内核正唛.jpg");
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+            //更换背景图
+
+            x = 10;
+            y = 118;
+            i = 33;
+            y2 = y + 25;
+            
+            font = new Font("Arial Regular", 12, FontStyle.Regular);//字体            
+            g.DrawString(vm_product.DestinationPortName, font, sb, x, y);//写港口
+            g.DrawString("P.O.#: " + vm_product.POID, font, sb, x, y + i);//写po
+            g.DrawString("Made In:  China", font, sb, x, y + 2 * i);//写固定值
+
+            g.Save();
+
+            string img3 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S164);
+
+        #endregion 内核正唛
+
+        #region 内核侧唛
+
+            templatePath = Utils.GetMapPath("/data/ShippingMark/S164/内核侧唛.jpg");
+            bmp = new Bitmap(templatePath);
+            g = Graphics.FromImage(bmp);
+            //更换背景图
+
+            x = 5;
+            y = 7;
+            i = 20;
+            y2 = y + 15;
+
+            font = new Font("Arial Regular", 10, FontStyle.Regular);//字体            
+            if (!string.IsNullOrEmpty(vm_product.Desc) && vm_product.Desc.Length > 40)
+            {
+                Desc_Start = CommonCode.GetSumbstring_NotWord(vm_product.Desc, 40);
+                g.DrawString("Description of Product: " + Desc_Start, font, sb, x, y );//写第一行item description的值
+                g.DrawString(vm_product.Desc.Substring(Desc_Start.Length, vm_product.Desc.Length - Desc_Start.Length), font, sb, x + 140, y2);//写第二行item description的值
+                y = y2;
+            }
+            else
+            {
+                g.DrawString("Description of Product: " + Desc_Start, font, sb, x, y);//写item description的值
+            }
+            
+            g.DrawString("Menard SKU #: " + vm_product.SkuNumber, font, sb, x, y + i);//写sku
+            g.DrawString("Quantity: " + vm_product.InnerBoxRate, font, sb, x, y + 2 * i);//写外箱率
+            g.DrawString("Net Weight: " + vm_product.InnerNetWeightLBS + "  LBS", font, sb, x, y + 3 * i);//写外箱净重
+            g.DrawString("Gross Weight: " + vm_product.InnerGrossWeightLBS + "  LBS", font, sb, x, y + 4 * i);//写外箱毛重
+            g.DrawString("Carton _____ of: " + vm_product.CaseOrderQty, font, sb, x, y + 5 * i);//写总箱数
+
+            g.Save();
+
+            string img4 = MakerExcel_ShippingMark.CreateShippingMark(bmp, ShippingMarkEnum.S164);
+
+         #endregion 内核侧唛
+        
+
+
+            
+
+        }
+
+        外箱正唛<br />
+        <img src="@(img1)" /><br />
+        外箱侧唛<br />
+        <img src="@(img2)" /><br />
+
+        内核正唛<br />
+        <img src="@(img3)" /><br />
+        内核侧唛<br />
+        <img src="@(img4)" />
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,368 @@
+﻿@{
+    ViewBag.Title = "发送代购合同";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+@model ERP.Models.OutSourcing.DTOOutsourcing
+@using ERP.Models.CustomEnums
+
+@{
+    ViewBag.SendEmail_type = UploadFileType.OutContract;
+    ViewBag.SendEmail_ID = Model.ID;
+}
+@{
+    List<string> list_SeasonZhName = new List<string>();
+
+    string title = Model.CustomerCode + " " + Model.OutContracNo + ERP.Tools.CommonCode.ListToString(list_SeasonZhName) + "代购合同——" + Model.FactoryAbbreviation;
+}
+
+<form id="frmEdit" class="form-horizontal bv-form">
+    <!-- ko with: SendEmail -->
+    <h3 class="popTitle">
+        发送邮件信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent" style="overflow: inherit;">
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">发送人：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" name="FromAddress" data-bind="value:FromAddress()" disabled="disabled" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label text-danger">收件人：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" name="ToAddress" data-bind="value:ToAddress()" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">抄送：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" name="CcAddress" data-bind="value:CcAddress()" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="stree col-sm-4 control-label">密送：</label>
+            <div class="col-sm-8 control-label">
+                <input type="text" class="form-control" name="BccAddress" data-bind="value:BccAddress()" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-12">
+            <label class="col-sm-2 control-label text-danger" style="width: 16.2%;">主题：</label>
+            <div class="col-sm-10 control-label" style="width: 81.1%;">
+                <input type="text" class="form-control" name="Subject" data-bind="value:Subject()" />
+            </div>
+        </div>
+
+        <div class="form-group col-sm-12">
+            <label class="col-sm-2 control-label" style="width: 16.2%;">内容：</label>
+            <div class="col-sm-10 control-label" style="width: 81.1%;">
+                <textarea class="form-control" name="BodyContent" data-bind="value:BodyContent()" rows="16"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group col-sm-6">
+            <label class="col-sm-4 control-label">附件：</label>
+            <div class="col-sm-8 control-label" style="padding-left: 0;">
+                <div class="col-sm-8">
+                    <div class="uploadify">
+                        <input type="file" name="uploadify" id="uploadify" />
+                        <a class="a_upload" onclick="UpLoadFile()">上传</a>
+                        <div class="fileQueue">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /ko -->
+
+    <h3 class="popTitle">
+        邮件的附件信息
+        <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+    </h3>
+    <div class="row popContent">
+        <div class="history_box">
+            <table id="fileListTable_Email" class="table table-bordered">
+                <thead>
+                    <tr class="t_bg">
+                        <td width="50%">附件名称</td>
+                        <td width="20%">上传时间</td>
+                        <td width="30%">操作</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="trMakerExcel" style="display:none;">
+                        <td>@(Model.OutContracNo).pdf</td>
+                        <td></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" onclick="MakerExcel('pdf')">下载</button>
+                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'')">删除</button>
+                        </td>
+                    </tr>
+
+                    <tr id="trMakerExcel2" style="display:none;">
+                        <td>@(Model.OutContracNo).xls</td>
+                        <td></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" onclick="MakerExcel('xls')">下载</button>
+                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'')">删除</button>
+                        </td>
+                    </tr>
+
+                    <tr id="trMakerExcel3" style="display:none;">
+                        <td>标签图片.zip</td>
+                        <td></td>
+                        <td>
+                            <button type="button" class="btn btn-primary" onclick="MakerExcel('jpg')">下载</button>
+                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'')">删除</button>
+                        </td>
+                    </tr>
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="EmailSign" style="display:none;">@(Model.EmailSign)</div>
+
+    <div class="form-group text-right tijiao">
+        <button id="bntSave" type="button" class="btn btn-danger" data-loading-text="Loading..." data-bind="click: $root.save.bind($data, @((int)OutContractStatusEnum.ContractSent))">保存并发送</button>
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">取消</button>
+    </div>
+
+    <div class="beizhu red">
+        <strong>PS：</strong><span>字体颜色为红色是必填项。@*@ERP.Tools.Keys.Tip_Email*@</span>
+    </div>
+</form>
+
+<script src="~/Content/Knockout/knockout-3.3.0.js"></script>
+
+@section scripts{
+    <script>
+
+        $(function () {
+            $("#frmEdit").attr("disabled", "disabled");
+            $("#trMakerExcel").show();
+            $("#trMakerExcel2").show();
+            $("#trMakerExcel3").show();
+        });
+
+        $('#frmEdit').bootstrapValidator({
+            message: '信息不能为空值',
+            container: 'popover',
+            feedbackIcons: {
+                valid: 'glyphicon glyphicon-ok',
+                invalid: 'glyphicon glyphicon-remove',
+                validating: 'glyphicon glyphicon-repeat fa-spin'
+            },
+            fields: {
+                FromAddress: {
+                    validators: {
+                        notEmpty: { message: '发件人不能为空' },
+                        regexp: jav.emailValid,
+                    }
+                },
+                ToAddress: {
+                    validators: {
+                        notEmpty: { message: '收件人不能为空' },
+                        regexp: jav.emailValid,
+                    }
+                },
+                Subject: {
+                    validators: {
+                        notEmpty: { message: '主题不能为空' },
+                    }
+                },
+                CcAddress: {
+                    validators: {
+                        regexp: jav.emailValid,
+                    }
+                },
+                BccAddress: {
+                    validators: {
+                        regexp: jav.emailValid,
+                    }
+                },
+            }
+        });
+
+        function SendEmailModel() {
+            this.FromAddress = ko.observable("@ViewBag.FromAddress");
+            //this.FromAddress = ko.observable("nancycheng@javinc.com");
+            //this.ToAddress = ko.observable("tom@javinc.com");
+            this.ToAddress = ko.observable("@(Model.list_ToEmailAddress)");
+            this.CcAddress = ko.observable();
+            this.BccAddress = ko.observable();
+            this.Subject = ko.observable("@(title)（内部系统测试）");
+            this.BodyContent = ko.observable("@(Model.list_CallName)：\r\n\r\n附件是@(Model.CustomerCode)客户代购合同，烦请工厂仔细核对并在3日内回签至我司。谢谢！\r\n\r\n如有疑问，烦请及时告知。\r\n" + $("#EmailSign").html().replace(new RegExp("&amp;", "g"), "&"));
+            this.Attachs = ko.observable();
+            this.IsContainMakerExcel = ko.observable();
+            this.IsContainMakerExcel_pdf = ko.observable();
+            this.IsContainMakerExcel_jpg = ko.observable();
+            this.StatusID = ko.observable();
+            this.UpLoadFileList = ko.observableArray();
+        }
+
+        function UpLoadFileList_Model(ID, DisplayFileName, ServerFileName, DT_CREATEDATE, IsDelete) {
+            this.ID = ko.observable(ID);
+            this.DisplayFileName = ko.observable(DisplayFileName);
+            this.ServerFileName = ko.observable(ServerFileName);
+            this.DT_CREATEDATE = ko.observable(DT_CREATEDATE);
+            this.IsDelete = ko.observable(IsDelete);
+        }
+
+        function SendEmailViewModel() {
+            var self = this;
+
+            self.SendEmail = ko.observableArray();
+            self.SendEmail(new SendEmailModel());
+
+            self.save = function (status) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+
+                if (bootstrapValidator.isValid()) {
+
+                    self.SendEmail().FromAddress($("input[name=FromAddress]").val());
+                    self.SendEmail().ToAddress($("input[name=ToAddress]").val());
+                    self.SendEmail().CcAddress($("input[name=CcAddress]").val());
+                    self.SendEmail().BccAddress($("input[name=BccAddress]").val());
+                    self.SendEmail().Subject($("input[name=Subject]").val());
+                    self.SendEmail().BodyContent($("textarea[name=BodyContent]").val());
+
+                    self.SendEmail().IsContainMakerExcel($("#trMakerExcel").is(":visible"));
+                    self.SendEmail().IsContainMakerExcel_pdf($("#trMakerExcel2").is(":visible"));
+                    self.SendEmail().IsContainMakerExcel_jpg($("#trMakerExcel3").is(":visible"));
+
+                    var UpLoadFileList = [];
+                    if ($("#fileListTable_Email tbody tr .ServerFileName").length > 0) {
+                        $("#fileListTable_Email tbody tr").each(function () {
+                            var UpLoadFileListID = "";
+                            var DisplayFileName = $(this).find(".DisplayFileName").val();
+                            var ServerFileName = $(this).find(".ServerFileName").val();
+                            var DT_CREATEDATE = $(this).find(".DT_CREATEDATE").val();
+                            var IsDelete = $(this).find(".IsDelete").val();
+                            console.log(ServerFileName);
+                            if (ServerFileName != undefined) {
+                                UpLoadFileList.push(new UpLoadFileList_Model(UpLoadFileListID, DisplayFileName, ServerFileName, DT_CREATEDATE, IsDelete));
+                            }
+                        });
+                        self.SendEmail().UpLoadFileList(UpLoadFileList);
+                    }
+
+                    $("#bntSave").removeAttr("disabled");
+                    loading();
+                    $.ajax({
+                        type: 'post',
+                        contentType: 'application/json',
+                        url: "@(Url.Content("~/Outsourcing/SendContractt/" + Model.ID))",
+                        data: ko.toJSON(self.SendEmail())
+                    }).done(function (data) {
+                        completeLoading();
+                        if (!data.IsSuccess) {
+                            $.messager.alert("出错了", "出错了，错误信息 = " + data.Msg);
+                        }
+                        else {
+                            $.messager.alert("成功", "发送成功！", "info", function () {
+                                parent.$('#MyGrid').datagrid('reload');
+                                OA.CloseMe(true);
+                            });
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    });
+                }
+                else {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            };
+        };
+        ko.applyBindings(new SendEmailViewModel());
+        
+
+        //生成文件
+        function MakerExcel(extension) {
+            loading();
+            $.ajax({
+                type: 'post',
+                contentType: 'application/json',
+                url: "@(Url.Content("~/Outsourcing/MakeExcel/" + Model.ID))?extension=" + extension,
+                data: {}
+            }).done(function (data) {
+                completeLoading();
+                if (data == "") {
+                    if (extension == "jpg") {
+                        $.messager.alert("出错了", "出错了，没有标签图片！");
+                    } else {
+                        $.messager.alert("出错了", "出错了，待印合同生成失败。");
+                    }
+                }
+                else {
+                    window.open(data);
+                }
+            });
+        }
+
+
+        uploadifyInitial();
+        function uploadifyInitial() {
+            $("#uploadify").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@(ViewBag.SendEmail_type)&id=@(ViewBag.SendEmail_ID)', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+                fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                //uploadLimit: 10, //同时上传多小个文件
+                sizeLimit: 100000000, //限制上传大小10M
+                //queueSizeLimit: 10, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) { }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) { }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    var count = $("#fileListTable_Email tr:not(:first)").length;
+                    var serverFileName = $.parseJSON(response).data.NewFilePath;
+                    var displayFileName = $.parseJSON(response).data.OldFileName;
+                    var fileListStr = '<tr>';
+                    fileListStr += '<td class="hide"><input class="DisplayFileName" name="list_EmailFile[' + count + '].DisplayFileName" type="hidden" value="' + displayFileName + '" /><input class="ServerFileName" name="list_EmailFile[' + count + '].ServerFileName" type="hidden" value="' + serverFileName + '" /><input name="list_EmailFile[' + count + '].DT_CREATEDATE" type="hidden" value="' + formateDate2(new Date()) + '" /><input class="IsDelete" name="list_EmailFile[' + count + '].IsDelete" type="hidden" /></td>';
+                    fileListStr += '<td>' + displayFileName + '</td>';
+                    fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                    fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button><button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+                    fileListStr += '</tr>';
+                    $("#fileListTable_Email").prepend(fileListStr);
+                }  //当单个文件上传成功后激发的事件
+            });
+        }
+
+        //上传
+        function UpLoadFile() {
+            $('#uploadify').uploadifyUpload('*');
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+
+        //删除
+        function DeleteFile(e, path) {
+            $(e).closest("tr").find(".IsDelete").val(true);
+            $(e).closest("tr").hide();
+        }
+    </script>
+}

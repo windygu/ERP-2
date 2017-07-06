@@ -1,0 +1,112 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@model ERP.Models.Order.VMOrderSearch
+
+@{
+    ViewBag.Title = "已审批销售订单";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function OrderRate_EnFormatter(val, row, index) {
+        return val+"%";
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)OrderElementPrivileges.View);
+
+        var ops = "";
+
+        if (showView > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Order/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+        var IsShow_BuyingConfirmation=@(Model.IsShow_BuyingConfirmation?"true":"false") ;
+        if(row.SelectCustomer=="S188" && IsShow_BuyingConfirmation)
+        {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='UpLoad_BC(this," + val + ");return OA.i(this)' href='#' style='margin: 0 5px;'>上传</a>";
+
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='DownLoadBC(" + val + ")' href='#' style='margin: 0 5px;'>下载</a>";
+        }
+
+        var IsShowSC=@(Model.IsShowSC ? "true":"false") ;
+        if (IsShowSC) {
+            if (row.SelectCustomer=="S13" || row.SelectCustomer=="S56") {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='DownLoadSC(" + val + ")' href='#' style='margin: 0 5px;'>下载SC</a>";
+            }
+        }
+
+        ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Order/UpLoad_Order/"))" + val + "' style='margin: 0 5px;'>上传销售合同</a>";
+
+        return ops;
+    }
+
+    function Create_BuyingConfirmation() {
+
+        var idArray = getSelections(tableName, "OrderID");
+        if (idArray.length <= 0) {
+            $.messager.alert("提示", "请选中销售订单！");
+            return;
+        }
+
+        loading();
+        $.post("@(Url.Content("~/Order/Create_BuyingConfirmation"))",{
+            idList: idArray.join(','),
+        },function (data) {
+            completeLoading();
+            if (data.length>0) {
+                $.messager.alert("提示", "生成成功！");
+            }else {
+                $.messager.alert("提示", "生成失败！");
+            }
+        });
+    }
+
+    function UpLoad_BC(e,id) {
+        $.post("@(Url.Content("~/Order/UpLoad_BC"))",{
+            id:id
+        },function (data) {
+            if (data.ID==-1) {
+                $.messager.alert("提示","该订单未生成BUYING CONFIRMATION！请先生成BUYING CONFIRMATION，才能上传。");
+                return;
+            }else {
+                $(e).attr("href","@(Url.Content("~/Order/UpLoad/"))" + id);
+                OA.i(e);
+                return;
+            }
+        });
+    }
+
+    function DownLoadBC(id) {
+
+        loading();
+        $.post("@(Url.Content("~/Order/DownLoadBC"))",{
+            id:id
+        },function (data) {
+            completeLoading();
+            for (var i = 0; i < data.length; i++) {
+                window.open(data[i]);
+            }
+        });
+    }
+
+    function DownLoadSC(id) {
+
+        loading();
+        $.post("@(Url.Content("~/Order/DownLoadSC"))",{
+            id:id
+        },function (data) {
+            completeLoading();
+            for (var i = 0; i < data.length; i++) {
+                window.open(data[i]);
+            }
+        });
+    }
+</script>

@@ -1,0 +1,128 @@
+﻿@model ERP.Models.Sample.VMFilterSample
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@{
+    ViewBag.Title = "待打样列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialListSample", Model)
+
+@section scripts{
+    <script type="text/javascript">
+        var ManufacturingDataList = "#tblManufacturingDataList";
+        var IsReadOnly = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.ReadOnly);
+        var IsAcceptedOrders = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.AcceptedOrders);//确认接单
+        var IsSchedule = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.Schedule);//安排生产
+        var Edit = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.Edit);//编辑样品单
+        var controllerURL = '@(Url.Content("~/Sample/"))';
+
+        function operationFormatter(val, row, index) {
+
+            var createWay = row.CreateWay;//创建方式
+            var url = "href='@(Url.Content("~/Sample/GetCreateWayData"))?SSID=" + val + "&CreateWay=" + createWay;
+            var status = row.SampleStatusID;
+            var ops = "";
+
+            if(IsReadOnly>0){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + " &PageType=2' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if (Edit >0 && status == 1) {
+                //ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + " &PageType=5' style='margin: 0 5px;'>编辑</a>";
+            }
+
+            if(IsAcceptedOrders>0 && status == 1){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='UpdateSampleStatus(" + val + "," + status + "," + 2 + ")' &pageType=3' style='margin: 0 5px;'>确认接单</a>";
+            }
+            if(IsSchedule>0&&status == 2){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + " &pageType=4' style='margin: 0 5px;'>安排生产</a>";
+            }
+
+            return ops;
+        }
+
+        //当某个条件满足时，设置数据行的表现样式
+        function SetRowStyler(index,row){
+            if(row.IsDelayFinsh==1){
+                return 'color:red;';
+            }
+
+        }
+
+        //按钮：确认工厂接受工单、安排生产样品：更新样品状态=2 已接单、3 正在生产
+        //参数：a=寄样信息自编号；b=当前数据的样品状态值；c=更新的目标状态
+        function UpdateSampleStatus(a, b, c) {
+            var v = "";
+            if (b == c) {
+                $.messager.alert('提示', '不需要重复更新样品状态'); return;
+
+            } else {
+                var d = "";
+                if (c == "2") {
+                    d = "确定更新为【已接单】？";
+                }
+                if (c == "3") {
+                    d = "确定更新为【正在生产】？";
+                }
+
+                $.messager.confirm('提示', d, function (r) {
+                    if (r) {
+                        var controllerURL = '@(Url.Content("~/Sample/UpdateSampleStatus"))';
+
+                        $.post(controllerURL, { SSID: a, SampleStatus: c }, function (data) {
+                            if (data == 0) {
+                                $.messager.alert('提示', '提交失败'); return;
+
+                            } else if (data == 1) {
+                                $(ManufacturingDataList).datagrid("reload");
+
+                            } else {
+                                $.messager.alert('提示', '没有更新任何数据'); return;
+
+                            }
+
+                        }, "json");
+                    }
+                });
+
+            }
+
+        };
+
+        //删除选中的数据
+        function DeleteSelected() {
+            var idArray = getSelections(ManufacturingDataList, "SSID");
+            if (idArray.length == 0) {
+                $.messager.alert('提示', '请选择要删除的数据'); return;
+
+            } else {
+                $.messager.confirm('提示', '确定要删除选中的数据', function (r) {
+                    if (r) {
+                        $.post(controllerURL + "DeleteData", { ID: idArray.toString() }, function (data) {
+                            if (data == 0) {
+                                $.messager.alert('提示', '提交出错', 'info'); return;
+
+                            } else if (data == 1) {
+                                $(ManufacturingDataList).datagrid("reload");
+
+                            } else {
+                                $.messager.alert('提示', '没有更新任何数据', 'info'); return;
+
+                            }
+
+                        });
+                    }
+                });
+
+            }
+        }
+
+        //列表数据加载成功时，使单元格鼠标移动呈现title
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["SSID"]);
+        }
+    </script>
+}

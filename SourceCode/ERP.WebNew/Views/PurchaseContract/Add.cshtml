@@ -1,0 +1,908 @@
+﻿@{
+    ViewBag.Title = "新建采购合同";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+@model ERP.Models.Purchase.VMPurchase
+@using ERP.Models.CustomEnums
+
+<link href="@Url.Content("~/Content/Quotation.css")" rel="stylesheet" />
+
+<style>
+    label.control-label, .control-label, label {
+        margin-top: 2px;
+        text-align: right;
+        font-weight: normal;
+    }
+
+    .form-control-feedback {
+        right: 10px;
+    }
+</style>
+
+@using (Ajax.BeginForm("Add", "PurchaseContract", null, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit" }))
+{
+    <div id="inline">
+
+        <div class="FactoryTitle">
+        </div>
+
+        <h3 class="popTitle">
+            采购合同信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            <div class="Container_nb" style="display:none;">
+                <div class="FactoryList">
+                </div>
+            </div>
+        </div>
+
+        <h3 class="popTitle">
+            产品信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            <div id="Factory_ProductList">
+            </div>
+        </div>
+
+        <h3 class="popTitle">
+            合同条款
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            <div class="ContractTermsList">
+            </div>
+        </div>
+
+        <div class="popBtns">
+            <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)PurchaseStatusEnum.OutLine))">保存为草稿</button>
+            <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)PurchaseStatusEnum.PendingCheck))">保存并提交审核</button>
+            <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+        </div>
+
+        @Html.Partial("_PartialContractTerms")
+        @Html.Partial("_PartialSelectOrder")
+    </div>
+
+}
+@section scripts{
+
+    <script src="@Url.Content("~/Scripts/ckeditor/ckeditor.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+    <script src="@Url.Content("~/Scripts/jquery.easyui.datagrid-detailview.js")"></script>
+
+    <script>
+        $(function () {
+            $('#myModal3').modal();
+        });
+
+        $(".modal-header .close").click(function () {
+            OA.CloseMe(true);
+        });
+
+        //付款方式修改时
+        function PaymentTypeChange(e){
+            var $this=$(e);
+            if ($this.val()=="6") {
+                $this.closest(".divPaymentType").find("input[name=AfterDate]").val(0);
+                $this.closest(".divPaymentType").find(".divAfterDate").hide();
+            }else {
+                $this.closest(".divPaymentType").find(".divAfterDate").show();
+            }
+
+            var index = $this.closest(".row_Factory").index();
+            ContractTermsChange(index);
+        }
+
+        function AfterDateChange(e){
+            var $this=$(e);
+            var index = $this.closest(".row_Factory").index();
+            ContractTermsChange(index);
+        }
+
+        //替换本合同付款方式为XXXX天左右
+        function ContractTermsChange(index){
+            var $row_Factory = $(".FactoryList .row_Factory:eq(" + index + ")");
+
+            var PaymentType = $row_Factory.find("select[name=PaymentType] option:selected").text();
+            var AfterDate = $row_Factory.find("input[name=AfterDate]").val();
+
+            var ContractTerms = GetCKEditorValue(index);
+            var index1 = ContractTerms.indexOf("付款方式为");
+            var index2 = ContractTerms.indexOf("天左右");
+            if (index2==-1) {
+                index2 = ContractTerms.indexOf("天内");
+            }
+            if (index1>0 && index2>0) {
+                var temp= ContractTerms.substring(index1,index2);
+                ContractTerms = ContractTerms.replace(temp,"付款方式为" + PaymentType + AfterDate);
+
+                SetCKEditorValue(index,ContractTerms);
+            }
+
+
+        }
+
+        //额外费用修改时
+        function OtherFeeChange(e){
+            var $this = $(e);
+            var OtherFee = $this.val();
+            if (parseFloat(OtherFee) != OtherFee || parseFloat(OtherFee)<0) {
+                $.messager.alert("提示", "额外费用必须为大于0的数字！", "info", function () {
+                    $this.focus();
+                });
+                $this.val(0);
+                OtherFee = 0;
+            }
+            var $thisFactory=$this.closest(".row_Factory");
+            var AllAmount = parseFloat($thisFactory.find("input[name=hiddenAllAmount]").val()) + parseFloat(OtherFee);
+            AllAmount = NumberToRound(AllAmount,2);
+            $thisFactory.find("input[name=AllAmount]").val(AllAmount);
+            $thisFactory.find(".divAllAmount").html($thisFactory.find("input[name=CurrentSign]").val() + AllAmount);
+        }
+
+        function KOModel() {
+            this.ID = ko.observable();
+            this.Port = ko.observable();
+            this.PaymentType = ko.observable();
+            this.IsImmediatelySend = ko.observable();
+            this.IsThirdVerification = ko.observable();
+            this.IsThirdAudits = ko.observable();
+            this.IsThirdTest = ko.observable();
+            this.IsThirdSampling = ko.observable();
+            this.ContractTerms = ko.observable();
+            this.Comment = ko.observable();
+            this.AfterDate = ko.observable();
+            this.OtherFee = ko.observable();
+            this.AllAmount = ko.observable();
+            this.AllQty = ko.observable();
+            this.PurchaseStatus = ko.observable();
+
+            this.list_batch = ko.observableArray();
+        }
+
+        function KOViewModel() {
+            var self = this;
+
+            var checkSubmit = false;//防止重复提交
+            //提交
+            self.submit = function (PurchaseStatus) {
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (!bootstrapValidator.isValid()) {
+                    $(".glyphicon-remove:first").prev().focus();
+                    return false;
+                }
+                if (editIndex != undefined) {
+                    $.messager.confirm("提示", "发现您有正在编辑状态的产品，是否保存？", function(r){
+                        if(r){
+                            endEditingInfo();
+                        }
+                    });
+                    return false;
+                }
+
+                self.MyModel = ko.observableArray();
+                for (var i = 0; i < $(".FactoryList .row_Factory").length; i++) {
+                    var $thisFactory = $(".FactoryList .row_Factory:eq(" + i + ")");
+                    var thisModel = new KOModel();
+
+                    var AllAmount = $.trim($thisFactory.find("input[name=AllAmount]").val());
+                    var DateStart = $thisFactory.find("input[name=DateStartFormatter]").val();
+                    var DateEnd = $thisFactory.find("input[name=DateEndFormatter]").val();
+                    var AfterDate = $thisFactory.find("input[name=AfterDate]").val();
+                    var Port = $thisFactory.find("input[name=Port]").val();
+                    var PaymentType = $thisFactory.find("select[name=PaymentType]").val();
+
+                    if (Port == "") {
+                        $.messager.alert("提示", "请选择交货地！");
+                        FactoryTab(i);
+                        return;
+                    }
+                    if (PaymentType == "") {
+                        $.messager.alert("提示", "付款方式下拉框不能为空！");
+                        FactoryTab(i);
+                        return;
+                    }
+                    if (AfterDate == "" || AfterDate != parseInt(AfterDate)) {
+                        $.messager.alert("提示", "付款方式的天数必须为整数！");
+                        FactoryTab(i);
+                        return;
+                    }
+
+                    thisModel.Port= Port;
+                    thisModel.DateStart= DateStart;
+                    thisModel.DateEnd= DateEnd;
+                    thisModel.PaymentType= PaymentType;
+                    thisModel.AfterDate= AfterDate;
+                    thisModel.OtherFee= $thisFactory.find("input[name=OtherFee]").val();
+                    thisModel.IsImmediatelySend= $thisFactory.find("input[name=IsImmediatelySend]").is(":checked");
+                    thisModel.IsThirdVerification= $thisFactory.find("input[name=IsThirdVerification]").is(":checked");
+                    thisModel.IsThirdAudits= $thisFactory.find("input[name=IsThirdAudits]").is(":checked");
+                    thisModel.IsThirdTest= $thisFactory.find("input[name=IsThirdTest]").is(":checked");
+                    thisModel.IsThirdSampling= $thisFactory.find("input[name=IsThirdSampling]").is(":checked");
+
+                    thisModel.ContractTerms = GetCKEditorValue(i);
+                    thisModel.FactoryID= $thisFactory.find("input[name=FactoryID]").val();
+                    thisModel.CustomerID= $("#myModal3 #CustomerID").val();
+                    thisModel.OrderID= $thisFactory.find("input[name=OrderID]").val();
+                    thisModel.PurchaseNumber= $thisFactory.find("input[name=PurchaseNumber]").val();
+                    thisModel.AllAmount= AllAmount;
+                    thisModel.AllQty= $thisFactory.find("input[name=AllQty]").val();
+                    thisModel.PurchaseStatus= PurchaseStatus;
+                    thisModel.ContractType= $thisFactory.find("input[name=ContractType]").val();
+
+                    if (thisModel.ContractType==0) {
+                        var listProduct = $("#templateSubProduct" + i).datagrid("getRows");
+                    }else {
+                        var listProductFitting = $("#templateSubProduct" + i).datagrid("getRows");
+                    }
+                    thisModel.list_batch([{
+                        BatchAmount:AllAmount,
+                        Times:1,
+                        DateStart:DateStart,
+                        DateEnd:DateEnd,
+                        listProduct:listProduct,
+                        listProductFitting:listProductFitting,
+                    }]);
+
+                    self.MyModel.push(thisModel);
+
+                }
+
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/PurchaseContract/Add")',
+                    data: ko.toJSON(self.MyModel)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    completeLoading();
+                    if (!data.IsSuccess) {
+                        $.messager.alert("提示", "失败了！");
+                        return;
+                    } else {
+                        parentGridReload();
+                        OA.CloseMe(true);
+                    }
+                });
+            }
+        }
+
+        var KOViewModel = new KOViewModel();
+        ko.applyBindings(KOViewModel);
+
+        //确认
+        function confirmOrder() {
+            var idArray = getSelections("#modalGrid3", "OrderID");
+            if (idArray.length <= 0) {
+                $.messager.alert("提示", "请选中销售订单！");
+                return;
+            }
+            loading();
+            $.post('@Url.Content("~/PurchaseContract/GetALL_Add")', { OrderID: idArray[0] },
+                function (result) {
+                    for (var i = 0; i < result.length; i++) {
+                        var row = result[i];
+                        $(".FactoryTitle").append('<a href="javascript:void(0);" onclick="FactoryTab(' + i + ')">' + row.FactoryAbbreviation + '</a>');//工厂列表
+
+                        var ContractTerms_TextArea = "";
+                        if (parseInt(row.AllQty) >= 5) {
+                            $("#ContractTerms_Test4").text(row.AllVolume + "M³，");
+                            ContractTerms_TextArea = $("#ContractTerms_Test1").html() + $("#ContractTerms_Test3").html() + $("#ContractTerms_Test4").html() + $("#ContractTerms_Test5").html();
+                        } else {
+                            ContractTerms_TextArea = $("#ContractTerms_Test1").html() + $("#ContractTerms_Test2").html() + $("#ContractTerms_Test5").html();
+                        }
+
+                        if (row.ContractTerms!="") {//TODO 暂定
+                            ContractTerms_TextArea = row.ContractTerms;
+                        }
+
+                        var ContractTerms_ID = "ContractTerms" + i;
+                        var ContractTerms_Html = "<div class='ContractTerms_Html' style='display:none;'><textarea id='" + ContractTerms_ID + "' class='form-control ContractTerms ckeditor hide'>" + ContractTerms_TextArea + "</textarea></div>";
+                        $(".ContractTermsList").append(ContractTerms_Html);//合同条款
+
+                        CKEDITOR.inline(ContractTerms_ID,
+                            {
+                                enterMode: CKEDITOR.ENTER_BR ,
+                                title: "编辑框",
+                                toolbar : [
+                                    { name: 'basicstyles', items: ['Bold'] },
+                                ]
+                            });
+
+                        $("#Factory_ProductList").append("<div id='templateProduct" + i + "'><div id='templateSubProduct" + i + "'></div></div>");//批次和产品列表
+
+                        //获取采购合同信息
+                        $.ajax({
+                            async: false,
+                            url: "@Url.Content("~/PurchaseContract/FactoryTemplate")",
+                            type: 'post',
+                            data: {
+                                OrderID: row.OrderID,
+                                OrderNumber: row.OrderNumber,
+                                PurchaseNumber: row.PurchaseNumber,
+                                AllAmount: row.AllAmount,
+                                AllQty:row.AllQty,
+                                OtherFee:0,
+                                FactoryAbbreviation: row.FactoryAbbreviation,
+                                FactoryName: row.FactoryName,
+                                FactoryID: row.FactoryID,
+                                CallPeople: row.CallPeople,
+                                Telephone: row.Telephone,
+                                Fax: row.Fax,
+                                CustomerCode: row.CustomerCode,
+                                IsThirdVerification: row.IsThirdVerification,
+                                IsThirdAudits: row.IsThirdAudits,
+                                IsThirdTest: row.IsThirdTest,
+                                IsThirdSampling: row.IsThirdSampling,
+                                CurrentSign: row.CurrentSign,
+                                DateStartFormatter: row.DateStartFormatter,
+                                DateEndFormatter: row.DateEndFormatter,
+                                ContractType:row.ContractType,
+                            }
+                        }).success(function (partialView) {
+                            $(".FactoryList").append(partialView);
+                        });
+                        var Default=@((int)ContractTypeEnum.Default);
+                        if (row.ContractType==Default) {
+                            BindGrid(i, row.list_batch[0].listProduct);
+                            BindSubDatagrid(i, row.list_batch[0].listProduct);
+                        }else {
+                            BindGrid_ProductFitting(i, row.list_batch[0].listProductFitting);
+                        }
+                    }
+
+                    InitPopover();
+                    $('#myModal3').modal('hide');
+                    $(".Container_nb").show();
+                    $(".FactoryTitle a:eq(0)").addClass("Onclick");
+                    $(".FactoryList .row_Factory:eq(0)").show();
+
+                    $("#Factory_ProductList").children(":gt(0)").each(function() {
+                        var $this=$(this);
+                        $this.hide();
+                    });
+
+                    $(".ContractTermsList .ContractTerms_Html:eq(0)").show();
+                    completeLoading();
+                    bootstrapValidator();
+
+                }, "json");
+        }
+
+        //绑定产品信息
+        function BindGrid(thisIndex, data) {
+            $("#templateSubProduct" + thisIndex).datagrid({
+                collapsible: true,
+                showFooter: false,
+                data: data,
+                frozenColumns: [[
+                    { field: 'No', title: '产品货号', width: 100, align: 'center', formatter: productNoFormatter },
+                    { field: 'Name', title: '品名', width: 150, align: 'center' },
+                ]],
+                columns: [[
+                    { field: 'PackageName', title: '包装方式', width: 100, align: 'center',editor:{type:'validatebox'} },
+                    { field: 'PriceFactoryFormatter', title: '工厂价格', width: 60, align: 'center' },
+                    { field: 'Qty', title: '数量', width: 60, align: 'center' },
+                    { field: 'UnitName', title: '单位', width: 60, align: 'center' },
+                    { field: 'ProductAmountFormatter', title: '金额', width: 60, align: 'center' },
+                    { field: 'InnerBoxRate', title: '内盒率', width: 60, align: 'center' },
+                    { field: 'OuterBoxRate', title: '外箱率', width: 60, align: 'center' },
+                    { field: 'PDQPackRate', title: 'PDQ装箱率', width: 60, align: 'center' },
+                    { field: 'StyleName', title: '款式', width: 60, align: 'center' },
+                    { field: 'MixedMode', title: '混装方式', width: 100, align: 'center',editor:{type:'validatebox'} },
+                    { field: 'OtherComment', title: '产品其他要求', width: 100, align: 'center',editor:{type:'validatebox'} },
+                    { field: 'IsFragile', title: '是否易碎品', width: 100, align: 'center',editor:{
+                        type:'combobox',
+                        options:{
+                            valueField:'Value',
+                            textField:'Text',
+                            data:[{'Selected':false,'Text':'&nbsp;','Value':'0'},{'Selected':false,'Text':'是','Value':'1'},{'Selected':false,'Text':'否','Value':'2'}],
+                            editable:false,
+                        }
+                    },formatter:formatStatus},
+
+                    { field: 'ID', hidden: true },
+                    { field: 'ProductID', hidden: true },
+                    { field: 'Image', hidden: true },
+                    { field: 'PriceFactory', hidden: true },
+                    { field: 'ProductAmount', hidden: true },
+                    { field: 'IsProductMixed', hidden: true },
+                ]],
+                checkOnSelect:true,
+                onBeforeEdit:onBeforeEdit,
+                onAfterEdit:onAfterEdit,
+                onCancelEdit:onCancelEdit,
+                onLoadSuccess:onLoadSuccess,
+                onClickCell: @(Model.PageType == ERP.Models.CustomEnums.PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+                showFooter: false,
+                onBeginEdit:onBeginEdit,
+            });
+
+        }
+
+
+        //绑定产品配件信息
+        function BindGrid_ProductFitting(thisIndex, data) {
+            $("#templateSubProduct" + thisIndex).datagrid({
+                collapsible: true,
+                showFooter: false,
+                data: data,
+                frozenColumns: [[
+                    { field: 'No', title: '配件产品货号', width: 100, align: 'center', formatter: productFittingNoFormatter },
+                    { field: 'Name', title: '品名', width: 150, align: 'center' },
+                    { field: 'FactoryName', title: '工厂', width: 150, align: 'center' },
+                ]],
+                columns: [[
+                    { field: 'PriceFactoryFormatter', title: '工厂价格', width: 80, align: 'center' },
+                    { field: 'Qty', title: '数量', width: 80, align: 'center',editor:{type:'numberbox',options:{required:true,precision:0}} },
+                    { field: 'PackageName', title: '包装', width: 150, align: 'center',editor:{type:'validatebox'} },
+                    { field: 'Comment', title: '备注', width: 150, align: 'center',editor:{type:'validatebox'} },
+
+                    { field: 'ID', hidden: true },
+                    { field: 'ProductID', hidden: true },
+                    { field: 'Image', hidden: true },
+                    { field: 'PriceFactory', hidden: true },
+                    { field: 'ProductAmount', hidden: true },
+                ]],
+                checkOnSelect:true,
+                onBeforeEdit:onBeforeEdit,
+                onAfterEdit:onAfterEdit,
+                onCancelEdit:onCancelEdit,
+                onLoadSuccess:onLoadSuccess,
+                onClickCell: @(Model.PageType == ERP.Models.CustomEnums.PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+                showFooter: false,
+                onBeginEdit:onBeginEdit,
+            });
+
+        }
+
+        function productNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+        }
+
+        function productFittingNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/ProductFitting/Edit/"))' + row.RootID + "?Type=Detail", row.No);
+        }
+
+        function formatStatus(value,row,index){
+
+            var temp = @((int)CommonStatusEnum.Yes);
+            if (value==0) {
+                return "&nbsp;";
+            }
+            else if (value==temp) {
+                return "是";
+            }
+            else {
+                return "否";
+            }
+        }
+
+        //工厂的切换栏
+        function FactoryTab(i) {
+            if (editIndex != undefined) {
+                $.messager.confirm("提示", "发现您有正在编辑状态的产品，是否保存？", function(r){
+                    if(r){
+                        endEditingInfo();
+                    }
+                });
+                return false;
+            }
+
+            $(".FactoryTitle a").removeClass("Onclick");
+            $(".FactoryTitle a:eq(" + i + ")").addClass("Onclick");
+
+            $(".FactoryList .row_Factory").hide();
+            $(".FactoryList .row_Factory:eq(" + i + ")").show();
+
+            $("#Factory_ProductList").children().each(function() {
+                $(this).hide();
+            });
+
+            $("#templateProduct" + i).fadeIn();
+
+            $(".ContractTermsList .ContractTerms_Html").hide();
+            $(".ContractTermsList .ContractTerms_Html:eq(" + i + ")").show();
+        }
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndex = undefined;
+        var editGrid = "";
+
+        function onBeforeEdit(index, row) {
+            row.editing = true;
+            updateActionsInfo(index);
+            
+            UpdateExpander($(".FactoryTitle .Onclick").index());
+        }
+
+        function onAfterEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+
+            GetTotal();            
+            UpdateExpander($(".FactoryTitle .Onclick").index());
+        }
+        function onCancelEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function endEditingInfo() {
+            if (editIndex == undefined) { return true }
+            if ($(editGrid).datagrid('validateRow', editIndex)) {
+                $(editGrid).datagrid('endEdit', editIndex);
+                editIndex = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function updateActionsInfo(index) {
+            $(editGrid).datagrid('refreshRow', index);
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+
+        }
+
+        function acceptInfo(target) {
+            editIndex = getRowIndex(target);
+            if (endEditingInfo()) {
+                $(editGrid).datagrid('acceptChanges');
+            }
+        }
+
+        function onClickCell(index, field,a,b,c) {
+            editGrid = "#" + $(this)[0].id;
+            if (editIndex != index) {
+                if (endEditingInfo()) {
+                    $(editGrid).datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $(editGrid).datagrid('getEditor', { index: index, field: field });
+                    if (ed) {
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndex = index;
+                } else {
+                    setTimeout(function () {
+                        $(editGrid).datagrid('selectRow', editIndex);
+                    }, 0);
+                }
+            }
+            RemovePopover();
+        }
+
+        function productNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+        }
+        
+        var number2="";
+
+        function onBeginEdit(index, row) {
+            $(".datagrid-editable-input,.validatebox-text").on("keypress",function(e){
+                if(e.keyCode == 13){
+                    acceptInfo(row);
+                    UpdateSubDatagrid(number2, index, row);
+                    UpdateExpander($(".FactoryTitle .Onclick").index());
+                }
+            });
+        }
+
+        function emptyFunc() {
+
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+        }
+
+        function bootstrapValidator() {
+            // 表单验证
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+
+                fields: {
+                    Port: {
+                        validators: {
+                            notEmpty: { message: '交货地不能为空' },
+                        }
+                    },
+                    DateStartFormatter: {
+                        validators: {
+                            notEmpty: { message: '交货日期不能为空' },
+                        }
+                    },
+                    //DateEndFormatter: {
+                    //    validators: {
+                    //        notEmpty: { message: '交货日期不能为空' },
+                    //    }
+                    //},
+                    PaymentType: {
+                        validators: {
+                            notEmpty: { message: '付款方式不能为空' },
+                        }
+                    },
+                    AfterDate: {
+                        validators: {
+                            notEmpty: { message: '付款方式不能为空' },
+                        }
+                    },
+                }
+            });
+        }
+
+        function GetCKEditorValue(index) {
+            var value = "";
+            switch (index) {
+                case 0:
+                    value = CKEDITOR.instances.ContractTerms0.getData();
+                    break;
+                case 1:
+                    value = CKEDITOR.instances.ContractTerms1.getData();
+                    break;
+                case 2:
+                    value = CKEDITOR.instances.ContractTerms2.getData();
+                    break;
+                case 3:
+                    value = CKEDITOR.instances.ContractTerms3.getData();
+                    break;
+                case 4:
+                    value = CKEDITOR.instances.ContractTerms4.getData();
+                    break;
+                case 5:
+                    value = CKEDITOR.instances.ContractTerms5.getData();
+                    break;
+                case 6:
+                    value = CKEDITOR.instances.ContractTerms6.getData();
+                    break;
+                case 7:
+                    value = CKEDITOR.instances.ContractTerms7.getData();
+                    break;
+                case 8:
+                    value = CKEDITOR.instances.ContractTerms8.getData();
+                    break;
+                case 9:
+                    value = CKEDITOR.instances.ContractTerms9.getData();
+                    break;
+                case 10:
+                    value = CKEDITOR.instances.ContractTerms10.getData();
+                    break;
+                case 11:
+                    value = CKEDITOR.instances.ContractTerms11.getData();
+                    break;
+                case 12:
+                    value = CKEDITOR.instances.ContractTerms12.getData();
+                    break;
+                case 13:
+                    value = CKEDITOR.instances.ContractTerms13.getData();
+                    break;
+                case 14:
+                    value = CKEDITOR.instances.ContractTerms14.getData();
+                    break;
+                case 15:
+                    value = CKEDITOR.instances.ContractTerms15.getData();
+                    break;
+                default:
+
+            }
+            return value;
+        }
+
+
+        function SetCKEditorValue(index,value) {
+            switch (index) {
+                case 0:
+                    CKEDITOR.instances.ContractTerms0.setData(value);
+                    break;
+                case 1:
+                    CKEDITOR.instances.ContractTerms1.setData(value);
+                    break;
+                case 2:
+                    CKEDITOR.instances.ContractTerms2.setData(value);
+                    break;
+                case 3:
+                    CKEDITOR.instances.ContractTerms3.setData(value);
+                    break;
+                case 4:
+                    CKEDITOR.instances.ContractTerms4.setData(value);
+                    break;
+                case 5:
+                    CKEDITOR.instances.ContractTerms5.setData(value);
+                    break;
+                case 6:
+                    CKEDITOR.instances.ContractTerms6.setData(value);
+                    break;
+                case 7:
+                    CKEDITOR.instances.ContractTerms7.setData(value);
+                    break;
+                case 8:
+                    CKEDITOR.instances.ContractTerms8.setData(value);
+                    break;
+                case 9:
+                    CKEDITOR.instances.ContractTerms9.setData(value);
+                    break;
+                case 10:
+                    CKEDITOR.instances.ContractTerms10.setData(value);
+                    break;
+                case 11:
+                    CKEDITOR.instances.ContractTerms11.setData(value);
+                    break;
+                case 12:
+                    CKEDITOR.instances.ContractTerms12.setData(value);
+                    break;
+                case 13:
+                    CKEDITOR.instances.ContractTerms13.setData(value);
+                    break;
+                case 14:
+                    CKEDITOR.instances.ContractTerms14.setData(value);
+                    break;
+                case 15:
+                    CKEDITOR.instances.ContractTerms15.setData(value);
+                    break;
+                default:
+
+            }
+            return value;
+        }
+
+
+        function GetTotal() {
+
+            var AllQty=0;
+            var AllAmount=0;
+            var rows = $(editGrid).datagrid('getRows');
+            for (var i = 0; i < rows.length; i++) {
+                var thisRow = rows[i];
+
+                AllQty += NumberToRound(thisRow.Qty,0);
+                AllAmount += NumberToRound(thisRow.Qty,0) * NumberToRound(thisRow.PriceFactory,2);
+            }
+
+            var $thisFactory=$(".row_Factory:visible");
+            $thisFactory.find("input[name=AllAmount]").val(AllAmount);
+            $thisFactory.find(".divAllAmount").html($thisFactory.find("input[name=CurrentSign]").val() + AllAmount);
+
+            $thisFactory.find("input[name=AllQty]").val(AllQty);
+            $thisFactory.find(".divAllQty").html(AllQty);
+
+        }
+
+        function UpdateSubDatagrid(number,index,row){
+            number2=number;
+            var $thisDatagrid = $("#ddv-" + number + "-" + index);
+            var rows = $thisDatagrid.datagrid("getRows");
+            if (rows && rows.length > 0) {
+                for (var i = 0; i < rows.length; i++) {
+                    
+                    rows[i].Qty = parseInt(row.Qty) * parseInt(rows[i].Qty2);
+                    if (rows[i].InnerBoxRate!=null && rows[i].InnerBoxRate!="") {
+                        rows[i].Qty = parseInt(row.Qty) * parseInt(rows[i].Qty2) * parseInt(row.OuterBoxRate) / parseInt(row.InnerBoxRate);
+                    }
+                    rows[i].ProductAmount = rows[i].PriceFactory*rows[i].Qty;
+                    rows[i].ProductAmountFormatter =rows[i].CurrencySign + rows[i].PriceFactory*rows[i].Qty;
+
+                    rows[i].PackageName= row.PackageName ;
+                    rows[i].MixedMode = row.MixedMode;
+                    rows[i].OtherComment = row.OtherComment;
+                    rows[i].IsFragile = row.IsFragile;
+
+                    $thisDatagrid.datagrid('acceptChanges');
+                    $thisDatagrid.datagrid('refreshRow', i);
+                }
+            }
+
+            InitPopover();
+        }
+
+        function BindSubDatagrid(number,row){
+            var $thisSubDatagrid=$('#templateSubProduct'+number);
+            $thisSubDatagrid.datagrid({
+                view: detailview,
+                detailFormatter:function(index,row){
+                    if ($("#ddv-" + number + "-" + index).html()!= undefined) {
+                        return;
+                    }
+                    return '<div style="padding:2px"><table id="ddv-' + number + '-' + index + '"></table></div>';
+                },
+                onExpandRow: function(index,row){
+                    if ($("#ddv-" + number + "-" + index).html()!= "") {
+                        return;
+                    }
+                    //console.log("#ddv-" + number + "-" + index);
+                    $("#ddv-" + number + "-" + index).datagrid({
+                        url:'/Order/GetProducts_Mixed/'+row.ID,
+                        method:'get',
+                        fitColumns:false,
+                        singleSelect:true,
+                        rownumbers:false,
+                        loadMsg:'',
+                        height:'auto',
+                        frozenColumns:[[
+                        ]],
+                        columns: [[
+                            { field: 'No', title: '产品货号', width: 100, align: 'center', formatter: productNoFormatter },
+                            { field: 'Name', title: '品名', width: 150, align: 'center' },
+                            { field: 'PackageName', title: '包装方式', width: 100, align: 'center',editor:{type:'validatebox'} },
+                            { field: 'PriceFactoryFormatter', title: '工厂价格', width: 60, align: 'center' },
+                            { field: 'Qty', title: '数量', width: 60, align: 'center' },
+                            { field: 'UnitName', title: '单位', width: 60, align: 'center' },
+                            { field: 'ProductAmountFormatter', title: '金额', width: 60, align: 'center' },
+                            { field: 'InnerBoxRate', title: '内盒率', width: 60, align: 'center' },
+                            { field: 'OuterBoxRate', title: '外箱率', width: 60, align: 'center' },
+                            { field: 'PDQPackRate', title: 'PDQ装箱率', width: 60, align: 'center' },
+                            { field: 'StyleName', title: '款式', width: 60, align: 'center' },
+                            { field: 'MixedMode', title: '混装方式', width: 100, align: 'center',editor:{type:'validatebox'} },
+                            { field: 'OtherComment', title: '产品其他要求', width: 100, align: 'center',editor:{type:'validatebox'} },
+                            { field: 'IsFragile', title: '是否易碎品', width: 100, align: 'center',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:[{'Selected':false,'Text':'&nbsp;','Value':'0'},{'Selected':false,'Text':'是','Value':'1'},{'Selected':false,'Text':'否','Value':'2'}],
+                                    editable:false,
+                                }
+                            },formatter:formatStatus},
+
+                            { field: 'ID', hidden: true },
+                            { field: 'ProductID', hidden: true },
+                            { field: 'Image', hidden: true },
+                            { field: 'PriceFactory', hidden: true },
+                            { field: 'ProductAmount', hidden: true },
+                            { field: 'IsProductMixed', hidden: true },
+                            { field: 'Qty2', hidden:true },
+                            { field: 'CurrencySign', hidden: true },
+                        ]],
+                        onResize:function(){
+                            $thisSubDatagrid.datagrid('fixDetailRowHeight',index);
+                        },
+                        onLoadSuccess:function(){
+                            setTimeout(function(){
+                                $thisSubDatagrid.datagrid('resize');
+                                $thisSubDatagrid.datagrid('fixDetailRowHeight',index);
+                                UpdateSubDatagrid(number,index,row);
+                            },0);
+                        }
+                    });
+                    $thisSubDatagrid.datagrid('fixDetailRowHeight',index);
+
+                }
+            });
+
+            UpdateExpander(number);
+        }
+
+
+        function UpdateExpander(number) {
+            //每次加载
+            var rows = $('#templateSubProduct'+number).datagrid("getRows");
+            if (rows && rows.length > 0) {
+                for (var i = 0; i < rows.length; i++) {
+                    //console.log("1."+rows[i].IsProductMixed);
+                    if (rows[i].IsProductMixed == "False" || rows[i].IsProductMixed == "false" || rows[i].IsProductMixed == false) {
+                        $("#templateSubProduct"+number).parent().find("table.datagrid-btable tr.datagrid-row:eq(" + i + ") .datagrid-row-expander").css("visibility","hidden");
+                    }
+                }
+            }
+        }
+    </script>
+}

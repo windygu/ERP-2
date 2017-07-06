@@ -1,0 +1,62 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@model ERP.Models.Order.VMOrderSearch
+
+@{
+    ViewBag.Title = "财务数据维护";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function OrderRate_EnFormatter(val, row, index) {
+        return val+"%";
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)FinanceElementPrivileges.View);
+        var showMaintenance = @(Model.PageElementPrivileges & (int)FinanceElementPrivileges.Maintenance);
+        var showEdit = @(Model.PageElementPrivileges & (int)FinanceElementPrivileges.Edit);
+
+        var Finance_StatusID = row.Finance_StatusID;
+        var PendingMaintenance = @((short)FinanceStatusEnum.PendingMaintenance);
+        var OutLine = @((short)FinanceStatusEnum.OutLine);
+        var HadMaintenance = @((short)FinanceStatusEnum.HadMaintenance);
+
+        var ops = "";
+
+        if (showView > 0 && Finance_StatusID != PendingMaintenance) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Finance_ProductFitting/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+
+        if ((Finance_StatusID == PendingMaintenance) && showMaintenance>0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Finance_ProductFitting/Edit/"))" + val + "?Type=Add' style='margin: 0 5px;'>维护</a>";
+        }
+        if ((Finance_StatusID == OutLine) && showEdit>0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Finance_ProductFitting/Edit/"))" + val + "' style='margin: 0 5px;'>编辑</a>";
+        }
+
+        return ops;
+    }
+
+    function ActionSelected() {
+        var idArray = getSelections(tableName, "OrderID");
+        if (idArray.length <= 0) {
+            $.messager.alert("提示","请选中信息！");
+            return;
+        }
+        loading();
+        $.post("@Url.Content("~/Finance/ExportExcel")", { idList:  idArray.join(',') },
+            function (result) {
+                completeLoading();
+                window.open(result, "_blank");
+            }, "json");
+    }
+</script>

@@ -1,0 +1,265 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3AC79692-00F7-4F3B-B836-E58CDF4C1F29}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ERP.Models</RootNamespace>
+    <AssemblyName>ERP.Models</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>..\packages\MongoDB.Bson.2.2.0\lib\net45\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Web.Mvc, Version=4.0.0.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.Mvc.5.0.0\lib\net45\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Address\VMCountry.cs" />
+    <Compile Include="Address\VMArea.cs" />
+    <Compile Include="AdminUser\DTOAuthItem.cs" />
+    <Compile Include="AdminUser\DTOAdminUser.cs" />
+    <Compile Include="AdminUser\DTODataPermissions.cs" />
+    <Compile Include="AdminUser\DTOMongoLog.cs" />
+    <Compile Include="AdminUser\DTOUserCustomPageSettings.cs" />
+    <Compile Include="AdminUser\VMChangePassword.cs" />
+    <Compile Include="AdminUser\VMCustomer.cs" />
+    <Compile Include="AdminUser\VMHierarchy.cs" />
+    <Compile Include="AdminUser\VMERPRoles.cs" />
+    <Compile Include="AdminUser\VMLogs.cs" />
+    <Compile Include="AdminUser\VMPrivEdit.cs" />
+    <Compile Include="AdminUser\VMUserPrivileges.cs" />
+    <Compile Include="Common\DTOApprovalLogs.cs" />
+    <Compile Include="Common\DTOQRCode.cs" />
+    <Compile Include="Common\DTOMongo.cs" />
+    <Compile Include="Common\VMComSelect.cs" />
+    <Compile Include="Common\VMSendEmail.cs" />
+    <Compile Include="CustomEnums\MongoCachedTypes.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\DocumentsIndexing_ProductFittingElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\DocumentsIndexingElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\Finance_ProductFittingElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\FinanceElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\InspectionSamplingElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\PortChargesInvoiceElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ProductMixedElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ProductFittingElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\RepElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\InspectionClearanceElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\InspectionCustomsElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\InspectionDetectElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\InspectionExchangeElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\InspectionReceiptElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ShippingMarkElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ThirdPartyVerificationElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ShipmentSampleElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ThreeTimesQCElementPricileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ProducePlanElementPricileges.cs" />
+    <Compile Include="CustomEnums\ShippingMarkEnum.cs" />
+    <Compile Include="CustomEnums\WorkflowConditionOperations.cs" />
+    <Compile Include="CustomEnums\WorkflowPassType.cs" />
+    <Compile Include="CustomEnums\QRCodeType.cs" />
+    <Compile Include="CustomEnums\UploadFileType.cs" />
+    <Compile Include="CustomEnums\WorkflowOwnerTypes.cs" />
+    <Compile Include="Customer\VMFreightRate.cs" />
+    <Compile Include="DocumentIndexing\VMDocumentIndexing.cs" />
+    <Compile Include="DocumentIndexing\VMDocumentIndexingHistory.cs" />
+    <Compile Include="Finance\VMFinanceProduct.cs" />
+    <Compile Include="InspectionClearance\DTOInspectionClearance.cs" />
+    <Compile Include="InspectionClearance\VMInspectionClearance.cs" />
+    <Compile Include="InspectionClearance\VMInspectionClearanceHis.cs" />
+    <Compile Include="InspectionClearance\VMInspectionClearanceSearch.cs" />
+    <Compile Include="InspectionCustoms\VMInspectionCustomsSearch.cs" />
+    <Compile Include="InspectionCustoms\VMInspectionCustoms.cs" />
+    <Compile Include="InspectionCustoms\VMInspectionCustomsHis.cs" />
+    <Compile Include="InspectionCustoms\VMOrderProducts.cs" />
+    <Compile Include="InspectionExchange\DTOInspectionExchange.cs" />
+    <Compile Include="InspectionExchange\VMInspectionExchange.cs" />
+    <Compile Include="InspectionExchange\VMInspectionExchangeHis.cs" />
+    <Compile Include="InspectionExchange\VMInspectionExchangeSearch.cs" />
+    <Compile Include="InspectionReceipt\DTOInspectionReceiptList.cs" />
+    <Compile Include="InspectionReceipt\VMFilterInspectionReceipt.cs" />
+    <Compile Include="InspectionReceipt\VMInspectionReceiptHis.cs" />
+    <Compile Include="ProductFitting\VMProductFittingInfo.cs" />
+    <Compile Include="ProductFitting\VMProductFittingSearchModel.cs" />
+    <Compile Include="Product\VMProductIngredients.cs" />
+    <Compile Include="Purchase\VMContractTerms.cs" />
+    <Compile Include="Rep\VMRep.cs" />
+    <Compile Include="Rep\VMCommission.cs" />
+    <Compile Include="Rep\VMRepSearch.cs" />
+    <Compile Include="Index\VMDashboardStat.cs" />
+    <Compile Include="InspectionCustoms\DTOInspectionCustoms.cs" />
+    <Compile Include="InspectionReceipt\DTOInspectionReceipt.cs" />
+    <Compile Include="Common\VMUpLoad.cs" />
+    <Compile Include="Contacts\DTOContacts.cs" />
+    <Compile Include="Country\ChinseArea.cs" />
+    <Compile Include="Country\ChinseCity.cs" />
+    <Compile Include="Country\ChinseProvince.cs" />
+    <Compile Include="Country\WorldCountry.cs" />
+    <Compile Include="CustomAttribute\PageElementEnumsAttribute.cs" />
+    <Compile Include="CustomAttribute\PageElementImpactOnPagesAttribute.cs" />
+    <Compile Include="CustomAttribute\PageMenuAttribute.cs" />
+    <Compile Include="CustomEnums\AdminUserStatus.cs" />
+    <Compile Include="CustomEnums\DatagridCustomColumnVisibilityModules.cs" />
+    <Compile Include="CustomEnums\DataPermissionModules.cs" />
+    <Compile Include="CustomEnums\DataPermissions.cs" />
+    <Compile Include="CustomEnums\ERPPage.cs" />
+    <Compile Include="CustomEnums\HierachyType.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\CabinetElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\EncasementElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\InspectionAuditElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\OrderElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\CustomerListElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\DictionaryElementPrivilrges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\FactoryElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\HsElementsPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\OutSourcingElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\HSListElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\PacksElementsPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\PurchaseContractElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\QuoteElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\SampleElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ShipmentAgencyElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ShipmentNotificationElementPrivileges.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ShipmentOrderElementPrivileges.cs" />
+    <Compile Include="CustomEnums\TypeEnum.cs" />
+    <Compile Include="CustomEnums\WorkflowTypes.cs" />
+    <Compile Include="CustomEnums\CRUDStatus.cs" />
+    <Compile Include="CustomEnums\DictionaryTableKind.cs" />
+    <Compile Include="CustomEnums\StatusEnum.cs" />
+    <Compile Include="CustomEnums\PageElementsPrivileges\ProductListElementPrivileges.cs" />
+    <Compile Include="CustomEnums\UserRoleStatus.cs" />
+    <Compile Include="AdminUser\DTOAdminUserMenus.cs" />
+    <Compile Include="AdminUser\VMLogOnModel.cs" />
+    <Compile Include="Common\VMAjaxProcessResult.cs" />
+    <Compile Include="Customer\VMAcceptInformation.cs" />
+    <Compile Include="Customer\DTOOrderCustomers.cs" />
+    <Compile Include="Customer\VMContact.cs" />
+    <Compile Include="Customer\VMCustomerSearchModel.cs" />
+    <Compile Include="DataDictionary\DTODataDictionary.cs" />
+    <Compile Include="DataDictionary\VMDataDictionary.cs" />
+    <Compile Include="Dictionary\DTODictionary.cs" />
+    <Compile Include="Common\VMEasyuiPagenationResult.cs" />
+    <Compile Include="AdminUser\VMERPUser.cs" />
+    <Compile Include="Encasement\DTOEncasement.cs" />
+    <Compile Include="Factory\DTOFactory.cs" />
+    <Compile Include="Factory\VMDTOFactory.cs" />
+    <Compile Include="HS\DTOHSContract.cs" />
+    <Compile Include="HS\VMHSContract.cs" />
+    <Compile Include="IndexPageBaseModel.cs" />
+    <Compile Include="Inspection\DTOInspection.cs" />
+    <Compile Include="Inspection\DTOProducePlan.cs" />
+    <Compile Include="Inspection\VMInspectionSearch.cs" />
+    <Compile Include="Inspection\VMInspection.cs" />
+    <Compile Include="Order\DTOOrder.cs" />
+    <Compile Include="Order\VMSelectOrder.cs" />
+    <Compile Include="Order\VMOrderEdit.cs" />
+    <Compile Include="Order\VMOrderHistory.cs" />
+    <Compile Include="Order\VMOrderProduct.cs" />
+    <Compile Include="Order\VMOrderSearch.cs" />
+    <Compile Include="OutSourcing\DTOOutsourcing.cs" />
+    <Compile Include="OutSourcing\DTOoutsourContract.cs" />
+    <Compile Include="OutSourcing\VMoutsourContract.cs" />
+    <Compile Include="Packs\DTOPacks.cs" />
+    <Compile Include="PendingApproveBasePage.cs" />
+    <Compile Include="ProducePlan\DTOProducePlan.cs" />
+    <Compile Include="ProducePlan\DTOProducePlanHistory.cs" />
+    <Compile Include="ProducePlan\VMDTOProduceSearch.cs" />
+    <Compile Include="Product\DTOBatchUploadProduct.cs" />
+    <Compile Include="Product\DTOProductClassificationMoreInfo.cs" />
+    <Compile Include="Product\DTOProductClassifications.cs" />
+    <Compile Include="Product\VMProductInfo.cs" />
+    <Compile Include="Product\VMProductInfoByQuote.cs" />
+    <Compile Include="Product\VMProductSearchModel.cs" />
+    <Compile Include="Product\VMViewLabelList.cs" />
+    <Compile Include="Product\VMViewProductList.cs" />
+    <Compile Include="Purchase\DTOPurchaseContract.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Purchase\VMPurchaseBatch.cs" />
+    <Compile Include="Purchase\VMPurchaseHistory.cs" />
+    <Compile Include="Purchase\VMPurchase.cs" />
+    <Compile Include="Purchase\VMPurchaseProduct.cs" />
+    <Compile Include="Purchase\VMPurchaseSearch.cs" />
+    <Compile Include="Quote\DTOQuote.cs" />
+    <Compile Include="Quote\VMQuoteEdit.cs" />
+    <Compile Include="Quote\VMQuoteHistory.cs" />
+    <Compile Include="Quote\VMQuoteProduct.cs" />
+    <Compile Include="Quote\VMQuoteProductHistory.cs" />
+    <Compile Include="Quote\VMQuoteSearch.cs" />
+    <Compile Include="Quote\VMQuoteSendEmail.cs" />
+    <Compile Include="Quote\VMSelectQuote.cs" />
+    <Compile Include="Sample\DTOSample.cs" />
+    <Compile Include="Cabinet\DTOCabinet.cs" />
+    <Compile Include="Cabinet\VMDTOCabinet.cs" />
+    <Compile Include="ShipmentOrder\VMShipmentOrder.cs" />
+    <Compile Include="ShipmentOrder\VMShipmentOrderProduct.cs" />
+    <Compile Include="ShipmentOrder\VMShipmentOrderCabinet.cs" />
+    <Compile Include="ShipmentOrder\VMShipmentOrderHistory.cs" />
+    <Compile Include="ShipmentOrder\VMShipmentOrderSearch.cs" />
+    <Compile Include="Shipment\DTOShipmentAgentFees.cs" />
+    <Compile Include="Shipment\VMShipmentAgency.cs" />
+    <Compile Include="Shipment\VMShipmentAgencySearchModel.cs" />
+    <Compile Include="ShippingMark\VMShippingMark.cs" />
+    <Compile Include="ThirdPartyVerification\DTOOrder.cs" />
+    <Compile Include="ThirdPartyVerification\VMOrderSearch.cs" />
+    <Compile Include="ThirdPartyVerification\VMThirdPartyVerification.cs" />
+    <Compile Include="ThreeTimesQC\DTOPurchaseContract.cs" />
+    <Compile Include="ThreeTimesQC\VMPurchaseSearch.cs" />
+    <Compile Include="ThreeTimesQC\VMThreeTimesQC.cs" />
+    <Compile Include="Workflow\WorkflowPassFilter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

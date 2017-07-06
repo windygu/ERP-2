@@ -1,0 +1,36 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>下载标签</title>
+
+    <link href="@Url.Content("~/Content/bootstrap/css/bootstrap.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/style.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Quotation.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Scripts/jquery-1.11.3.min.js")"></script>
+
+    <script>
+        function GetPixelBymmAndResolution(mm, resolution) {
+            // 英尺*分辨率=像素
+            return mm * 0.0393701 * resolution;
+        }
+
+        $(function () {
+            var width = GetPixelBymmAndResolution(4.8 * 10, 140);
+            var height = GetPixelBymmAndResolution(3.6 * 10, 130);
+            $(".productList_c").css({ width: width, height: height });
+            $(".c_container").css({ width: width * 4 });
+        });
+    </script>
+</head>
+<body>
+    <div>
+    </div>
+</body>
+</html>

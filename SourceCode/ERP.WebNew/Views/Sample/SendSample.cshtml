@@ -1,0 +1,623 @@
+﻿@model ERP.Models.Sample.DTOSample
+
+@{
+    ViewBag.Title = Model.PageTitle;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@section styles{
+    <style type="text/css">
+        .ColumnsHeight {
+            height: 45px;
+        }
+    </style>
+
+}
+
+<script src="~/Scripts/ckeditor/ckeditor.js"></script>
+
+@using (Ajax.BeginForm("SaveSendSample", "Sample", new { DataStatus = (int)@ERP.Models.CustomEnums.SampleStatus.SampleStatus6 }, new AjaxOptions() { HttpMethod = "Post", OnBegin = "return CheckOut()", OnSuccess = "onSuccess" }, new { id = "frmSendSample", @class = "" }))
+{
+
+    if (Model.Manufactures != null)
+    {
+
+        for (int i = 0; i < Model.Manufactures.Count; i++)
+        {
+            @Html.HiddenFor(o => o.PageTypeID, new { })
+            @Html.HiddenFor(o => Model.Manufactures[i].CreateWay, new { })
+            @Html.HiddenFor(o => Model.Manufactures[i].CustomerID, new { })
+            @Html.HiddenFor(o => Model.Manufactures[i].FactureID, new { })
+            @Html.HiddenFor(o => Model.Manufactures[i].SSID, new { })
+            @Html.HiddenFor(o => Model.Manufactures[i].QTID, new { })
+            @Html.HiddenFor(o => Model.Manufactures[i].PHID, new { })
+            @Html.HiddenFor(o => Model.Manufactures[i].IsMod, new { })
+            @Html.HiddenFor(o => Model.Manufactures[i].SampleStatusID, new { })
+
+            <h3 class="popTitle">
+                基本信息<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div style="margin:0" class="popContent search_Condition box_1k p_t0">
+                <ul>
+                    <li><label class="col-xs-2">工厂：</label><div class="col-sm-10">@Model.Manufactures[i].FactoryAbbreviation</div></li>
+                    <li><label class="col-xs-2">客户：</label><div class="col-sm-10">@Model.Manufactures[i].CustomerCode</div></li>
+                    @if (Model.Manufactures[i].SampleStatusID == 5)
+                    {
+                        <li><label class="col-xs-2">联系电话：</label><div class="col-sm-10">@Model.Manufactures[i].Telephone</div></li>
+                        <li><label class="col-xs-2">联系邮箱：</label><div class="col-sm-10">@Model.Manufactures[i].EmailAdress</div></li>
+                        <li><label class="col-xs-2">办事处内勤：</label><div class="col-sm-10">@Model.Manufactures[i].OfficePerson</div></li>
+                        <li><label class="col-xs-2">样品所在办事处：</label><div class="col-sm-10">@Model.Manufactures[i].ProductsOffice</div></li>
+                    }
+
+                    @if (Model.Manufactures[i].SampleStatusID >= 6)
+                    {
+
+                        <li><label class="col-xs-2">工厂样品单号：</label><div class="col-sm-10">@Model.Manufactures[i].FacManufactureID</div></li>
+                        <li><label class="col-xs-2">生产单下发日期：</label><div class="col-sm-10">@Model.Manufactures[i].IssueDate</div></li>
+                        <li><label class="col-xs-2">要求完成日期：</label><div class="col-sm-10">@Model.Manufactures[i].PlanFinishDate</div></li>
+                        <li><label class="col-xs-2">实际完成日期：</label><div class="col-sm-10">@Model.Manufactures[i].ActualFinishDate</div></li>
+                        <li><label class="col-xs-2">样品确认日期：</label><div class="col-sm-10">@Model.Manufactures[i].AffirmDate</div></li>
+
+                    }
+                </ul>
+            </div>
+
+            <h3 class="popTitle">
+                产品信息<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="popContent">
+                <table id="tableDataList" class="table table-bordered" style="width:100%" border="0" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr class="t_bg">
+                            <th style="display:none;">产品所在表自编号</th>
+
+                            <th>货号</th>
+                            <th>工厂货号</th>
+                            <th>数量</th>
+                            <th>款式</th>
+                            <th>内盒率</th>
+                            <th>外箱率</th>
+                            @if (Model.Manufactures[i].SampleStatusID == 4)
+                            {
+                                <th>是否修改</th>
+                                <th>修改意见</th>
+                            }
+
+                            <th>备注</th>
+                        </tr>
+                    </thead>
+
+                    @if (Model.Manufactures[i].Products != null)
+                    {
+                        for (var j = 0; j < Model.Manufactures[i].Products.Count; j++)
+                        {
+
+                            <tr>
+                                <td style="display:none;">
+                                    @Html.TextBoxFor(q => q.Manufactures[i].Products[j].PDID, new { })
+                                </td>
+                                <td><a wintype='idialog' class='data-content' winsize='900,800,yes' data-toggle='popover' data-content='<div class=&quot;popoverDiv&quot;><img class=&quot;popoverImg&quot; src=&quot;@(Model.Manufactures[i].Products[j].ProductImage)&quot; /></div>' onclick='return OA.i(this)' href='@Url.Content("~/Product/Details/")@Model.Manufactures[i].Products[j].ProductID'>@Model.Manufactures[i].Products[j].ProductNo</td>
+
+                                <td>@Model.Manufactures[i].Products[j].FactoryNo</td>
+                                <td>@Model.Manufactures[i].Products[j].ProductNum</td>
+                                <td>@Model.Manufactures[i].Products[j].StyleName</td>
+                                <td>@Model.Manufactures[i].Products[j].InnerBoxRate</td>
+                                <td>@Model.Manufactures[i].Products[j].OuterBoxRate</td>
+
+                                @if (Model.Manufactures[i].SampleStatusID == 4)
+                                {
+                                    <td>@Html.DropDownListFor(q => q.Manufactures[i].Products[j].IsMod, new SelectList(new List<SelectListItem> { new SelectListItem() { Value = "0", Text = "否" }, new SelectListItem() { Value = "1", Text = "是" } }, "Value", "Text", ""), new { @style = "width:60px;" })</td>
+                                    <td>@Html.TextBoxFor(q => q.Manufactures[i].Products[j].ModIdea, new { @class = "form-control" })</td>
+                                }
+
+                                <td>@Model.Manufactures[i].Products[j].SampleProductNote</td>
+                            </tr>
+
+                        }
+
+                    }
+                </table>
+            </div>
+
+            <h3 class="popTitle">
+                寄样资料<a class="table_toggle fa fa-2 fa-chevron-down"></a>
+            </h3>
+            <div class="popContent search_Cs">
+
+                <!--寄样标签、寄样发票-->
+                @if (Model.Manufactures[i].SampleStatusID == 5)
+                {
+                    <ul>
+                        <li>
+                            <label class="col-xs-2 text-danger">寄样箱唛：</label>
+                            <div class="col-sm-10">
+                                <button id="btnHandleA" type="button" data-target="#RichEditerText" data-toggle="modal" class="button  button-flat-primary">编辑</button>
+
+                                <button id="btnHandleB" type="button" onclick="GetBoxMark(@Model.Manufactures[i].SSID,1);" class="btn btn-info">预览</button>
+                            </div>
+                        </li>
+
+                        <li><label class="col-xs-2 text-danger">最迟寄样日期：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].PlanSendDate, new { @class = "form-control Wdate" })</div></li>
+
+                        <li><label class="col-xs-2 text-danger">付款方式：</label><div class="col-sm-10">@Html.DropDownListFor(q => q.Manufactures[i].PaymentWayID, new SelectList(new List<SelectListItem> { new SelectListItem() { Value = "1", Text = "到付" }, new SelectListItem() { Value = "2", Text = "预付" } }, "Value", "Text", ""), new { @class = "form-control" })</div></li>
+
+                        <li id="htmlExpressToLTD"><label class="col-xs-2 text-danger">客户快递公司：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].ExpressToLTD, new { @class = "form-control" })</div></li>
+                        <li id="htmlToAcount"><label class="col-xs-2 text-danger">客户账号：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].ToAcount, new { @class = "form-control" })</div></li>
+
+                        <li><label class="col-xs-2">收件方式：</label><div class="col-sm-10">@Html.DropDownListFor(p => p.Manufactures[i].AcceptedID, ViewData["AcceptedList"] as SelectList, new { @class = "form-control" })</div></li>
+                        <li style="display:none;"><label class="col-xs-2">地址明细：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].AcceptedDetail, new { @class = "form-control" })</div></li>
+                    </ul>
+                }
+                else
+                {
+
+                    <ul>
+                        <li><label class="col-xs-2 text-danger">寄样箱唛：</label><div class="col-sm-10"><button id="btnHandleB" type="button" onclick="GetBoxMark(@Model.Manufactures[i].SSID,2);" class="btn btn-info">预览</button></div></li>
+
+                        <li><label class="col-xs-2 text-danger">最迟寄样日期：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].PlanSendDate, new { @disabled = "disabled", @class = "form-control Wdate" })</div></li>
+
+                        <li><label class="col-xs-2 text-danger">付款方式：</label><div class="col-sm-10">@Html.DropDownListFor(q => q.Manufactures[i].PaymentWayID, new SelectList(new List<SelectListItem> { new SelectListItem() { Value = "1", Text = "到付" }, new SelectListItem() { Value = "2", Text = "预付" } }, "Value", "Text", ""), new { @class = "form-control" })</div></li>
+
+                        @if (Model.Manufactures[i].PaymentWayID == 1)
+                        {
+                            <li id="htmlExpressToLTD"><label class="col-xs-2 text-danger">客户快递公司：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].ExpressToLTD, new { @disabled = "disabled", @class = "form-control" })</div></li>
+                            <li id="htmlToAcount"><label class="col-xs-2 text-danger">客户账号：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].ToAcount, new { @disabled = "disabled", @class = "form-control" })</div></li>
+                        }
+
+                        <li><label class="col-xs-2">收件方式：</label><div class="col-sm-10">@Html.DropDownListFor(p => p.Manufactures[i].AcceptedID, ViewData["AcceptedList"] as SelectList, new { @disabled = "disabled", @class = "form-control" })</div></li>
+
+                        <li style="display:none;"><label class="col-xs-2">地址明细：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].AcceptedDetail, new { @disabled = "disabled", @class = "form-control" })</div></li>
+                    </ul>
+
+                }
+
+                <!--赋下拉框选中值-->
+                <script type="text/javascript">
+
+                    if(@Model.Manufactures[i].SampleStatusID >5){
+                        $("#Manufactures_"+@i+"__"+"PaymentWayID").val(@Model.Manufactures[i].PaymentWayID);
+                        $("#Manufactures_" +@i +"__" + "AcceptedID").val(@Model.Manufactures[i].AcceptedID);
+                        $("#Manufactures_"+@i+"__"+"PaymentWayID").prop("disabled",true);
+                        $("#Manufactures_" +@i +"__" + "AcceptedID").prop("disabled",true);
+                    }
+                </script>
+            </div>
+
+            <div class="row">
+
+                <div id="RichEditerText" data-backdrop="static" class="modal adjoined-bottom">
+                    <div class="modal-dialog modal-lg">
+                        <div style="height:500px;" class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title">编辑寄样箱唛</h4>
+                            </div>
+
+                            <div class="grid-container">
+                                <div class="grid-width-100">
+                                    <div id="editor">
+                                        @Html.TextAreaFor(o => o.Manufactures[i].SampleBoxMark, new { @rows = "6", @class = "ckeditor" })
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="col-sm-2"><label style="margin: 15px 0px 0px 15px;" class="text-danger">选择输入项：</label></div>
+                                    <div class="col-sm-3">
+                                        <select id="selDataA" name="selDataA" style="margin: 15px 0px 0px 15px;" class="form-control" onchange="SelectSetValueA(this,'btnCKEInsertHTML')">
+                                            <option value=""></option>
+                                            <option value="1">Description</option>
+                                            <option value="2">UPC# </option>
+                                            <option value="3">INNER PACK</option>
+                                            <option value="4">CASE PACK</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-sm-3"><button id="btnCKEInsertHTML" type="button" disabled="disabled" style="margin: 15px 0px 0px 15px;" class="btn btn-info col-sm-2" onclick="InsertHTML('selDataA');" value="Insert HTML">插入光标位置</button></div>
+
+                                    <div class="col-sm-3"><button type="button" id="bntCloseB" onclick="CloseDialog('.modal-header .close')" class="btn btn-default col-sm-2" style="margin: 15px 0px 0px 15px;">关闭</button></div>
+                                </div>
+                            </div>
+
+                            <script type="text/javascript">
+                                CKEDITOR.replace('Manufactures_0__SampleBoxMark', { enterMode: CKEDITOR.ENTER_BR });
+                            </script>
+                            <!--产品管理对应表和字段：[Product].[Product]-[Desc],[UPCID],[InnerBoxRate],[OuterBoxRate]-->
+                            <!--产品管理对应表和字段：[Quot].[QuotProduct]-[Desc],[UPCID],[InnerBoxRate],[OuterBoxRate]-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            if (Model.Manufactures[i].SampleStatusID == 6 && Model.PageTypeID == 1)
+            {
+
+            }
+            else if (Model.Manufactures[i].SampleStatusID >= 6)
+            {
+                <h3 class="popTitle">
+                    寄件信息<a class="table_toggle fa fa-2 fa-chevron-down"></a>
+                </h3>
+                <div class="popContent search_Cs">
+                    <ul>
+
+                        <li><label class="col-xs-2 text-danger">快递公司：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].ExpressFromLTD, new { @class = "form-control" })</div></li>
+                        <li><label class="col-xs-2 text-danger">快递单号：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].ExpressID, new { @class = "form-control" })</div></li>
+                        <li><label class="col-xs-2 text-danger">箱数：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].SendPieceNum, new { @class = "form-control" })</div></li>
+                        <li><label class="col-xs-2">快递费用：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].ExpressCost, new { @class = "form-control" })</div></li>
+
+                        <li><label class="col-xs-2 text-danger">寄出日期：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].ActualSendDate, new { @class = "form-control Wdate" })</div></li>
+                        <li><label class="col-xs-2 text-danger">预计到达日期：</label><div class="col-sm-10">@Html.TextBoxFor(o => o.Manufactures[i].ExpectedArrivalDate, new { @class = "form-control Wdate" })</div></li>
+
+                        <li><label class="col-xs-2">箱规毛重及其他：</label><div class="col-sm-10">@Html.TextAreaFor(o => o.Manufactures[i].SendRemark, new { @rows = "1", @class = "form-control" })</div></li>
+                    </ul>
+                </div>
+            }
+
+            if (Model.Manufactures[i].SampleStatusID == 8 && Model.PageTypeID == 1)
+            {
+
+            }
+
+            else if (Model.Manufactures[i].SampleStatusID >= 8)
+            {
+                <h3 class="popTitle">
+                    签收信息<a class="table_toggle fa fa-2 fa-chevron-down"></a>
+                </h3>
+                <div class="popContent search_Cs">
+                    <ul id="htmlAffirmInfo">
+                        <li style="display:none;">
+                            <label class="col-xs-2 text-danger">签收状态<：</label><div class="col-sm-10">
+                                @if (Model.PageTypeID == 1)
+                                {
+                                    @Html.DropDownListFor(q => q.Manufactures[i].SignStatusID, new SelectList(new List<SelectListItem> { new SelectListItem() { Value = "2", Text = "已签收" } }, "Value", "Text", ""), new { @disabled = "disabled" })
+
+                                }
+                                else
+                                {
+                                    @Html.DropDownListFor(q => q.Manufactures[i].SignStatusID, new SelectList(new List<SelectListItem> { new SelectListItem() { Value = "2", Text = "已签收" } }, "Value", "Text", ""), new { })
+                                }
+                            </div>
+                        </li>
+                        <!--new SelectListItem() { Value = "1", Text = "未签收" }, -->
+                        <li>
+                            <label class="col-xs-2 text-danger">收货日期：</label>
+                            <div class="col-sm-10">
+                                @if (Model.PageTypeID == 1)
+                                {
+
+                                    @Html.TextBoxFor(o => o.Manufactures[i].ActualAcceptedDate, new { @class = "form-control Wdate", @disabled = "disabled" })
+
+                                }
+                                else
+                                {
+                                    @Html.TextBoxFor(o => o.Manufactures[i].ActualAcceptedDate, new { @class = "form-control Wdate" })
+
+                                }
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+            }
+
+            if (Model.Manufactures[i].SampleStatusID >= 8)
+            {
+                <script type="text/javascript">
+                    //寄样信息状态为“已寄出”时，寄件信息为只读
+                    $("#Manufactures_0__ExpressFromLTD").prop("disabled", true);
+                    $("#Manufactures_0__ExpressID").prop("disabled", true);
+                    $("#Manufactures_0__SendPieceNum").prop("disabled", true);
+                    $("#Manufactures_0__ExpressCost").prop("disabled", true);
+                    $("#Manufactures_0__ActualSendDate").prop("disabled", true);
+                    $("#Manufactures_0__ExpressFromLTD").prop("disabled", true);
+                    $("#Manufactures_0__ExpectedArrivalDate").prop("disabled", true);
+                    $("#Manufactures_0__SendRemark").prop("disabled", true);
+                </script>
+            }
+
+            if (Model.Manufactures[i].SampleStatusID == 10)
+            {
+                <script type="text/javascript">
+                    $("#Manufactures_0__SignStatusID").prop("disabled", true);
+                    $("#Manufactures_0__ActualAcceptedDate").prop("disabled", true);
+                </script>
+            }
+
+    <!--操作按钮-->
+            <div id="dvButton" class="form-group text-right tijiao">
+                @switch (Model.PageTypeID)
+                {
+                    case 2:
+                    case 3:
+                    case 4:
+                        <button type="submit" id="bntSaveB" name="SaveSendSample" class="btn btn-danger">提交</button>
+                        break;
+
+                    default:
+                        break;
+                }
+
+                <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+            </div>
+
+        }
+
+    }
+
+    <!--历史记录-->
+    <h3 class="popTitle">
+        历史记录
+        <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+    </h3>
+    <div style="display:none;" class="popContent">
+        <div class="history_box">
+            <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                <thead>
+                    <tr class="TH">
+                        <th width="20%">更新日期</th>
+                        <th width="20%">更新者</th>
+                        <th width="20%">状态</th>
+                        <th width="30%">修改描述</th>
+                    </tr>
+                </thead>
+
+                @foreach (var item in Model.SendSampleHis.OrderByDescending(d => d.AuditCreateDate))
+                {
+                    <tr>
+                        <td>@item.AuditCreateDate</td>
+                        <td>@item.AuditUserName</td>
+                        <td>@item.SampleStatus</td>
+                        <td>@item.AuditIdea</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    </div>
+}
+
+@section scripts{
+
+    <script type="text/javascript">
+        var ManufacturingDataList = "#tblManufacturingDataList";
+
+        var PageDiv = "#dvManufactureInfo";
+        var TableID = "#tableDataList";
+        var SelPaymentWayID = "#Manufactures_0__PaymentWayID";
+
+        $(function () {
+            InitPopover();
+
+            $("#bntCloseB").click(function(){
+                //var editor = CKEDITOR.instances.Manufactures_0__SampleBoxMark;
+                //editor = editor.getData();
+
+                //把富文本编写区插入的变量标识替换为数字，便于后台处理
+                //editor = editor.replace(/Description/gi, 1).replace(/UPC#/gi, 2).replace(/INNERPACK/gi, 3).replace(/INNER PACK/gi,3).replace(/CASEPACK/gi, 4).replace(/CASE PACK/gi, 4);
+
+            });
+
+            //寄件信息输入数据格式验证
+            //箱数
+            //$('#Manufactures_0__SendPieceNum').numberbox({
+            //    min: 0,
+            //    precision: 0
+
+            //});
+            ////快递费用
+            //$('#Manufactures_0__ExpressCost').numberbox({
+            //    min: 0,
+            //    precision: 2
+
+            //收件信息->付款方式绑定事件：选择到付时，显示客户快递公司、客户账号
+            $(SelPaymentWayID).on("change", function () {
+                if ($(SelPaymentWayID).val() == "1") {
+                    $("#htmlExpressToLTD").show();
+                    $("#htmlToAcount").show();
+                } else {
+                    $("#htmlExpressToLTD").hide();
+                    $("#htmlToAcount").hide();
+                }
+            });
+
+            //绑定寄件箱数的输入数据格式验证
+            $("#Manufactures_0__SendPieceNum").on("keyup",function(e){
+                CheckInputNum("#Manufactures_0__SendPieceNum");
+            });
+
+            //绑定寄件快递费用的输入数据格式验证
+            $("#Manufactures_0__ExpressCost").on("keyup",function(e){
+                CheckInputNum("#Manufactures_0__ExpressCost");
+            });
+        });
+
+        function CloseDialog(a) {
+            $(a).click();
+        }
+
+        function SelectSetValueA(a, b) {
+            if (a.value == "") {
+                $("#" + b).prop("disabled", true);
+
+            } else {
+                $("#" + b).prop("disabled", false);
+
+            }
+
+        }
+
+        // Insert HTML code.
+        function InsertHTML(a) {
+            var editor = CKEDITOR.instances.Manufactures_0__SampleBoxMark;
+
+            // Check the active editing mode.
+            if (editor.mode != 'wysiwyg') {
+                //You must be in WYSIWYG mode!
+                $.messager.alert('提示', '只能在非编码模式下插入', 'info'); return;
+
+            }
+
+            var value = $("#" + a)[0].selectedIndex;
+            value = $("#" + a)[0].options[value].text;
+
+            if (value == "") {
+                $.messager.alert('提示', '请选择输入项', 'info'); return;
+            }
+
+            value = "<code id=" + value.replace(" ","") + " >" + value + "</code>";//把下拉框的显示值中的空格去掉后作为id
+            editor.insertHtml(value);
+
+        }
+
+        //弹出新页面，获取并显示寄样箱唛预览数据
+        //ssid:寄样信息自编号；flag:不同操作场景区分（1=编辑页面中的预览；2=查看页面中的预览）
+        function GetBoxMark(ssid,flag) {
+            var htmlCode="";
+            if(flag==1){
+                var editor = CKEDITOR.instances.Manufactures_0__SampleBoxMark;
+                editor = editor.getData();
+
+                if (editor == "") {
+                    $.messager.alert('提示','没有数据可供预览','info');return;
+                }else{
+                    editor=editor.replace(/\n/gi, "");
+                    htmlCode=encodeURIComponent(escape(editor));
+                    //$("#Manufactures_0__SampleBoxMark").val(escape(editor));
+                }
+            }else{
+                htmlCode="";
+
+            }
+
+            var controllerUrl="/Sample/DetailBoxMark?SSID=" + ssid+"&HTMLCODE="+htmlCode;
+            window.open(controllerUrl);
+
+        }
+
+        //提交前的验证
+        var checkSubmit = false;//防止重复提交
+        function CheckOut() {
+
+            var sampleStatus = $("#Manufactures_0__SampleStatusID").val();
+            //当状态为待寄出，验证收件信息必填项
+            var iMessage = "";
+            if (sampleStatus == 5) {
+
+                if ($("#Manufactures_0__PlanSendDate").val() == "") {
+                    iMessage += "最迟寄样日期 ";
+                }
+                if ($(SelPaymentWayID).val() == "1") {
+                    if ($("#Manufactures_0__ExpressToLTD").val() == "") {
+                        iMessage += "客户快递公司 ";
+                    }
+                    if ($("#Manufactures_0__ToAcount").val() == "") {
+                        iMessage += "客户账号";
+                    }
+                }
+
+                var editor = CKEDITOR.instances.Manufactures_0__SampleBoxMark;
+                editor = editor.getData();
+
+                if (editor == "") {
+                    iMessage += "箱唛 ";
+
+                }else{
+                    var f = new Array();
+                    f = editor.split("<br />");
+                    editor=editor.replace(/\n/gi, "");
+                    $("#Manufactures_0__SampleBoxMark").val(escape(editor));
+                }
+
+            }
+
+            //当状态为已寄出，验证收件信息必填项
+            if (sampleStatus == 6) {
+                if ($("#Manufactures_0__ExpressFromLTD").val().trim() == "") {
+                    iMessage += "快递公司 ";
+                }
+                if ($("#Manufactures_0__ExpressID").val().trim() == "") {
+                    iMessage += "快递单号 ";
+                }
+                if ($("#Manufactures_0__SendPieceNum").val().trim() == "") {
+                    iMessage += "箱数 ";
+                }
+                if ($("#Manufactures_0__ActualSendDate").val() == "") {
+                    iMessage += "寄出日期 ";
+                }
+                if ($("#Manufactures_0__ExpectedArrivalDate").val() == "") {
+                    iMessage += "预计到达日期 ";
+                }
+
+            }
+
+            if (sampleStatus == 8) {
+                if ($("#Manufactures_0__ActualAcceptedDate").val() == "") {
+                    iMessage += "收货日期 ";
+                }
+
+            }
+
+            if (iMessage != "") {
+                $.messager.alert('提示', iMessage + "必填", 'info'); return false;
+            }
+
+            if (checkSubmit) {
+                $.messager.alert("提示", "请勿重复提交！");
+                return false;
+            }
+            checkSubmit = true;
+            loading();
+        }
+
+        $(TableID).find("select").on("change", function (a) {
+
+            if (GetSelectValue()) {
+                $("#dvIsMod").show();
+            } else {
+                $("#dvIsMod").hide();
+
+            }
+
+        })
+
+        function GetSelectValue() {
+            var result = false;
+
+            $(TableID).find("select").each(function (i, j) {
+                if (j.value == 1) {
+                    result = true;
+                }
+            });
+            return result;
+        }
+
+        function onSuccess(data) {
+            checkSubmit = false;
+            completeLoading();
+
+            if (data == 0) {
+                $.messager.alert('提示', '提交出错', 'info'); return;
+
+            } else if (data == 1) {
+                OA.CloseMe(true);
+                parent.$(ManufacturingDataList).datagrid("reload");//刷新寄样信息列表数据
+
+            } else {
+                $.messager.alert('提示', '没有更新任何数据', 'info'); return;
+
+            }
+        }
+
+        //绑定寄件的输入数据格式验证
+        function CheckInputNum(id) {
+            var inputValue=$(id).val();
+
+            if (!jav.IsFigure(inputValue)) {
+                $(id).val("");
+                $.messager.alert('提示', '必须输入数字', 'info');
+                return false;
+            }
+
+        }
+    </script>
+}

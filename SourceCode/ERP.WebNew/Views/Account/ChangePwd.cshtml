@@ -1,0 +1,131 @@
+﻿@model ERP.Models.AdminUser.VMChangePassword
+
+@{
+    ViewBag.Title = "修改密码";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using (Ajax.BeginForm("ChangePwd", "Account", null, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit", @class = "form-horizontal bv-form" }))
+{
+    <div class="content-wrapper">
+        <br />
+        <br />
+        <div class="row col-sm-3">
+            <div class="form-group col-sm-12">
+                <label class="col-sm-5 control-label text-danger">旧密码</label>
+                <div class="col-sm-7">
+                    @Html.PasswordFor(u => u.OldPassword, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group col-sm-12">
+                <label class="col-sm-5 control-label text-danger">新密码</label>
+                <div class="col-sm-7">
+                    @Html.PasswordFor(u => u.NewPassword, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group col-sm-12">
+                <label class="col-sm-5 control-label text-danger">再次输入新密码</label>
+                <div class="col-sm-7">
+                    <input type="password" id="pwdAgain" name="pwdAgain" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group col-sm-12">
+                <div class="popBtns">
+                    <button type="button" class="btn btn-danger" id="btnConfirm">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section scripts{
+    <script type="text/javascript">
+        $(function () {
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+                fields: {
+                    OldPassword: {
+                        validators: {
+                            notEmpty: { message: '旧密码不能为空' },
+                            stringLength: {
+                                min: 6,
+                                max: 50,
+                                message: '长度在1-50之间'
+                            },
+                        }
+                    },
+                    NewPassword: {
+                        validators: {
+                            notEmpty: { message: '新密码不能为空' },
+                            stringLength: {
+                                min: 6,
+                                max: 50,
+                                message: '长度在1-50之间'
+                            },
+                        }
+                    },
+                    pwdAgain: {
+                        validators: {
+                            notEmpty: { message: '再次输入新密码不能为空' },
+                            stringLength: {
+                                min: 6,
+                                max: 50,
+                                message: '长度在1-50之间'
+                            },
+                        }
+                    }
+                }
+            }).on('success.form.bv', function (e) {
+                e.preventDefault();
+
+                var $form = $(e.target);
+                $("#btnConfirm").removeAttr("disabled");
+
+                $.post($form.attr('action'), $form.serialize(),
+                    function (result) {
+                        if (result == "1") {
+                            $.messager.alert("旧密码不正确", "您输入的旧密码不正确！", null, function () {
+                                $("#OldPassword").focus();
+                            });
+                        }
+                        else if (result == "0") {
+                            $.messager.alert("成功", "修改成功！您需要重新登录后可继续使用系统！", null, function () {
+                                window.location.href = "/Account/Logout";
+                            });
+                        }
+                        else if (result == "-1") {
+                            $.messager.alert("失败", "修改失败！");
+                        }
+                        $("#bntSave").removeAttr("disabled");
+                    }, "text");
+            });
+
+            $("#btnConfirm").click(function () {
+                var pwdOld = $("#OldPassword").val();
+                var pwd1 = $("#NewPassword").val();
+                var pwd2 = $("#pwdAgain").val();
+                if (pwd1 != pwd2) {
+                    $.messager.alert("提示", "您两次输入的新密码不一致！");
+                    return;
+                }
+                if (pwdOld == pwd1) {
+                    $.messager.alert("提示", "您的新密码与旧密码是一样的！");
+                    return;
+                }
+
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (!bootstrapValidator.isValid()) {
+                    $(".has-error:first input").focus();
+                    return;
+                }
+            });
+        });    </script>
+}
+

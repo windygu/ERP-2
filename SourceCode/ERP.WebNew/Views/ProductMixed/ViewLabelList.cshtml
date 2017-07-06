@@ -1,0 +1,192 @@
+﻿@{
+    Layout = null;
+}
+@using ERP.Tools
+@model List<ERP.Models.Product.VMViewLabelList>
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>查看标签目录</title>
+
+    <link href="@Url.Content("~/Content/bootstrap/css/bootstrap.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/style.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Quotation.css")" rel="stylesheet" />
+    <script src="@Url.Content("~/Scripts/jquery-1.11.3.min.js")"></script>
+
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.42857143;
+            color: #333;
+            background-color: #fff;
+        }
+
+        .productList {
+            margin: 0;
+            padding: 0;
+            font-weight: bold;
+            float: left;
+        }
+
+        .productList_c {
+            width: 253.543444px;
+            height: 220px;
+            border-radius: 0;
+            margin: 0;
+            display: block;
+            padding: 10px;
+            /*margin-bottom: 20px;*/
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .productList_l {
+            width: 60px;
+            float: left;
+            padding-top: 10px;
+            font-size: 15px;
+            font-family: Arial;    
+            font-weight: normal;
+        }
+
+        .productList_r {
+            border-bottom: 1px solid #000;
+            width: 157px;
+            float: left;
+            padding-top: 10px;
+            font-size: 15px;
+            font-family: Arial;
+            font-weight: normal;
+            height: 29px;
+        }
+
+        .clear {
+            clear: both;
+        }
+
+        .productList_a {
+            line-height: 1.65em;
+        }
+
+        .productWebsite {
+            font-weight: normal;
+            float: left;
+            margin-top: 13px;
+            font-size: 15px;
+            font-family: arial;
+        }
+
+        .space_div {
+            height: 45px;
+            clear: both;
+        }
+
+        .shortContent {
+            width: 76px;
+        }
+
+        .qrCode {
+            float: right;
+            width: 95px;
+        }
+
+        .sample {
+            font-size: 25px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .productList_split{
+            width: 100%;
+            clear: both;
+            height: 130px;
+        }
+    </style>
+
+    <script>
+        function GetPixelBymmAndResolution(mm, resolution) {
+            // 英尺*分辨率=像素
+            return mm * 0.0393701 * resolution;
+        }
+
+        $(function () {
+            //4.8cm * 3.6cm
+            var width = GetPixelBymmAndResolution(4.6 * 10, 140);
+            var height = GetPixelBymmAndResolution(3.8 * 10, 130);
+            $(".productList_c").css({ width: width, height: height });
+            $(".c_container").css({ width: width * 4 });
+        });
+    </script>
+</head>
+<body>
+
+    <div class="c_container" style="margin: auto; width: 1014.173776px;">
+        @{
+            int index = 1;
+        }
+        @foreach (var item in Model)
+        {
+            string itemNo = item.No + " " + item.StyleName;
+            string itemNo_sub = Utils.SubString(itemNo, 17);
+
+            string Packing = item.InnerBoxRate + "/" + item.OuterBoxRate + "/" + item.OuterVolume + "'";
+            string Size = item.LengthIN + "*" + item.WidthIN + "*" + item.HeightIN + "''";
+            string Cost = item.CurrencySign + CommonCode.GetPriceCode(item.PriceFactory.ToString());
+
+            string path = "/images/productLabel/" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            for (int j = 0; j < item.StyleNumber; j++)
+            {
+                Gma.QrCodeNet.Encoding.QrEncoder encoder = new Gma.QrCodeNet.Encoding.QrEncoder(Gma.QrCodeNet.Encoding.ErrorCorrectionLevel.H);
+                Gma.QrCodeNet.Encoding.QrCode qrCode = encoder.Encode(Newtonsoft.Json.JsonConvert.SerializeObject(new ERP.Models.Common.DTOQRCode() { Type = ERP.Models.CustomEnums.QRCodeType.ProductID, Value = item.ProductID }));
+                MemoryStream ms = new ERP.Tools.QRCode.QRRenderer(5, System.Drawing.Brushes.Black, System.Drawing.Brushes.White).CreateImageFile(qrCode.Matrix, System.Drawing.Imaging.ImageFormat.Png);
+                var img = "data:image/png;base64," + Convert.ToBase64String(ms.ToArray(), 0, ms.ToArray().Length);
+                ViewData["img_" + item.ProductID.ToString() + j] = img;
+
+                <div class="productList">
+                    <div class="productList_c">
+                        <div class="productList_a clear" style="text-align:center;">
+                            <span class="sample"></span>
+                        </div>
+                        <div class="productList_a clear">
+                            <div class="productList_l">Item No.: </div>
+                            <div class="productList_r" title="@itemNo">@itemNo_sub</div>
+                        </div>
+                        <div class="productList_a clear">
+                            <div class="productList_l">Size: </div>
+                            <div class="productList_r" title="@Size">@Size </div>
+                        </div>
+                        <div id="div_left" style="clear: both; float: left;">
+                            <div class="productList_a" style="float: left;">
+                                <div class="productList_l">Packing: </div>
+                                <div class="productList_r shortContent" title="@Packing">@Packing </div>
+                            </div>
+                            <div class="productList_a">
+                                <div class="productList_l">Cost: </div>
+                                <div class="productList_r shortContent" title="@Cost">@Cost </div>
+                            </div>
+                            <div class="productWebsite">
+                                www.javinc.com
+                            </div>
+                        </div>
+                        <div id="div_right" style="float: left;padding-top: 3px;">
+                            <img class="qrCode" id="img" src='@ViewData["img_" + item.ProductID.ToString() + j]' />
+                        </div>
+                    </div>
+                </div>
+
+                if (index % 28 == 0)
+                {
+                    <div class="productList_split"></div>
+                }
+                index++;
+            }
+        }
+    </div>
+</body>
+</html>

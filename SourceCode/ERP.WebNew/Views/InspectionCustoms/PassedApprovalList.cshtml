@@ -1,0 +1,51 @@
+﻿@model ERP.Models.InspectionCustoms.VMInspectionCustomsSearch
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@{
+    ViewBag.Title = "已审核报关单据列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var showWatch = @(Model.PageElementPrivileges & (int)InspectionCustomsElementPrivileges.Watch);
+        var showDownLoad = @(Model.PageElementPrivileges & (int)InspectionCustomsElementPrivileges.DownLoad);
+
+        function operationFormatter(val, row, index) {
+            var ops="";
+
+            if(showWatch>0){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionCustoms/Edit/"))" + row.ID + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showDownLoad>0){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='DownLoad_PDFAndExcel(\"" + row.ID + "\")' style='margin: 0 5px;'>下载</a>";
+            }
+
+            return ops;
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","ID"]);
+        }
+
+        function DownLoad_PDFAndExcel(id) {
+            loading();
+            $.post("@(Url.Content("~/InspectionCustoms/DownLoad_PDFAndExcel/"))" + id, { }, function (data) {
+                completeLoading();
+                if (data.length>0) {
+                    for (var i = 0; i < data.length; i++) {
+                        if (data[i]!="") {
+                            window.open(data[i]);
+                        }
+                    }
+                }else {
+                    $.messager.alert("出错了", "暂时还没有该客人的模板！");
+                }
+            });
+        }
+    </script>
+}

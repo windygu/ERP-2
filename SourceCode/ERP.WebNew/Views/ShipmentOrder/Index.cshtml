@@ -1,0 +1,118 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@model ERP.Models.ShipmentOrder.VMShipmentOrderSearch
+
+@{
+    ViewBag.Title = "待审核的订舱信息";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showAdd = @(Model.PageElementPrivileges & (int)ShipmentOrderElementPrivileges.Add);
+        var showView = @(Model.PageElementPrivileges & (int)ShipmentOrderElementPrivileges.View);
+        var showEdit = @(Model.PageElementPrivileges & (int)ShipmentOrderElementPrivileges.Edit);
+        var showApproval = @(Model.PageElementPrivileges & (int)ShipmentOrderElementPrivileges.Approval);
+
+        var StatusID = row.StatusID;
+        var PendingMaintenance= @((short)ShipmentOrderStatusEnum.PendingMaintenance);
+        var OutLine= @((short)ShipmentOrderStatusEnum.OutLine);
+        var PendingCheck= @((short)ShipmentOrderStatusEnum.PendingCheck);
+        var NotPassCheck= @((short)ShipmentOrderStatusEnum.NotPassCheck);
+
+        var ops = "";
+
+        if ((StatusID != PendingMaintenance) && showView > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentOrder/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+
+        if ((StatusID == PendingMaintenance) && showAdd > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentOrder/Edit/"))" + val + "?Type=Add' style='margin: 0 5px;'>订舱</a>";
+        }
+
+        if ((StatusID == OutLine || StatusID == NotPassCheck) && showEdit > 0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentOrder/Edit/"))" + val + "' style='margin: 0 5px;'>编辑</a>";
+        }
+
+        var IsHasApprovalPermission=row.IsHasApprovalPermission;
+        if ((StatusID == PendingCheck) && showApproval > 0 && IsHasApprovalPermission) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShipmentOrder/Edit/"))" + val + "' style='margin: 0 5px;'>审核</a>";
+        }
+
+        return ops;
+    }
+
+    function ActionSelected() {
+        var idArray = getSelections(tableName, "ID");
+        if (idArray.length <= 0) {
+            $.messager.alert("提示","请选中一个销售订单！");
+            return false;
+        }
+
+        var PendingMaintenance= @((short)ShipmentOrderStatusEnum.PendingMaintenance);
+
+        var rows = $(tableName).datagrid('getSelections');
+
+        var SelectCustomer = rows[0].SelectCustomer;
+        var PortID = rows[0].PortID;
+        var DestinationPortID = rows[0].DestinationPortID;
+        var OrderDateStartFormatter = rows[0].OrderDateStartFormatter;
+        var OrderDateEndFormatter = rows[0].OrderDateEndFormatter;
+
+        var isRepeatCustomerID = true;
+        var isPendingMaintenance = true;
+        var isPortID = true;
+        var isDestinationPortID = true;
+        var isBatchShipped = true;
+
+        for (var i = 0; i < rows.length; i++) {
+            if (rows[i].StatusID != PendingMaintenance) {
+                isPendingMaintenance = false;
+            }
+            if (SelectCustomer != rows[i].SelectCustomer) {
+                isRepeatCustomerID = false;
+            }
+            if (PortID != rows[i].PortID) {
+                isPortID = false;
+            }
+            if (DestinationPortID != rows[i].DestinationPortID) {
+                isDestinationPortID = false;
+            }
+            if (rows[i].IsBatchShipped) {
+                isBatchShipped = false;
+            }
+        }
+
+        if (!isPendingMaintenance) {
+            $.messager.alert("提示","所选择的销售订单状态必须为待订舱！");
+            return false;
+        }
+        if (!isRepeatCustomerID) {
+            $.messager.alert("提示","客户信息的选择的客户必须相同！");
+            return false;
+        }
+        if (!isPortID) {
+            $.messager.alert("提示","请选择相同的出运港！");
+            return false;
+        }
+        if (!isDestinationPortID) {
+            $.messager.alert("提示","请选择相同的DESTINATION！");
+            return false;
+        }
+        if (!isBatchShipped) {
+            $.messager.alert("提示","分批订舱的不能合并订舱！");
+            return false;
+        }
+
+        $("#btn_Merge").attr("href", "@Url.Content("~/ShipmentOrder/Edit/")" + idArray.join(',')+"?Type=Add");
+        return true;
+    }
+</script>

@@ -1,0 +1,173 @@
+﻿@model List<ERP.Models.InspectionCustoms.VMInspectionCustoms>
+@using ERP.Models.CustomEnums
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+    var ThisModel = Model;
+}
+<!--销售合同选项卡-->
+<div id="dvTab_SaleContractList" title="销售合同">
+    <h3 class="popTitle">销售合同信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+    <div class="popContent">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var item2 = Model[i];
+            <div class="Factory">
+                <div style="margin-bottom:0px;" class="modal-title">
+                    <span class="txt_SCNo_@(i) text-center" style="width: 98%;">
+                        @item2.SCNo
+                    </span>
+                    <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+                </div>
+
+                <div class="history_box">
+                    <!--静态显示-->
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">TO:</label>
+                        <div class="col-sm-8 control-label">@item2.CustomerName</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">S/C NO:</label>
+                        <div class="col-sm-8 control-label">
+                            @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                            {
+                                <div class="col-sm-7" style="padding:0;">
+                                    @InlineHelpers.GetSelection(ViewData["list_SCNo" + i.ToString()] as SelectList, "ThisModel[" + i + "].SCNo", true, ThisModel[i].SCNo.Substring(0, 9), "txt_SCNo_" + i, "txt_SCNo")
+                                </div>
+                                <div class="col-sm-5">
+                                    @InlineHelpers.GetSelection(ViewData["list_Letter"] as SelectList, "ThisModel[" + i + "].Letter_ForSCNo", true, ThisModel[i].Letter_ForSCNo, "txt_Letter_ForSCNo_" + i, "txt_Letter_ForSCNo")
+                                </div>
+                            }
+                            else
+                            {
+                                @item2.SCNo
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">地址:</label>
+                        <div class="col-sm-8 control-label">@item2.CustomerStreet <br />@item2.CustomerReg</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">DATE:</label>
+                        <div class="col-sm-8 control-label">@item2.CustomerDateFormatter</div>
+                    </div>
+                    
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Terms of Sale:</label>
+                        <div class="col-sm-8 control-label" style="padding: 0;">
+
+                            @if (item2.SelectCustomer == SelectCustomerEnum.S188.ToString() || item2.SelectCustomer == SelectCustomerEnum.S220.ToString() || item2.SelectCustomer == SelectCustomerEnum.S235.ToString() || item2.SelectCustomer == SelectCustomerEnum.S135.ToString())
+                            {
+                                <div class="col-sm-6 control-label">FOB @item2.PortName</div>
+                            }
+                            else
+                            {
+                                <div class="col-sm-6 control-label">
+                                    @if (ViewBag.PageTypeID == PageTypeEnum.Details)
+                                    {
+                                        @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.TradeType, "ThisModel[" + i + "].TradeType", false, item2.TradeType, "", "TradeType")
+                                    }
+                                    else
+                                    {
+                                        @InlineHelpers.GetSelectionForDictionaryInfosForSpecial(ViewBag.TradeType, "ThisModel[" + i + "].TradeType", true, item2.TradeType, "", "TradeType")
+                                    }
+                                </div>
+                                    <div class="col-sm-6 control-label">
+                                        @item2.PortName
+                                    </div>
+                            }
+                        </div>
+                    </div>
+
+                    
+                    <table id="MyPopGrid_Order_@(i)" class="easyui-datagrid" style="width:100%">
+                        <thead data-options="frozen:true">
+                            <tr>
+                                <th data-options="field:'No',width:100,sortable:true">OUR ITEM #</th>
+                                <th data-options="field:'HsName',width:150,sortable:true,align:'center',editor:{type:'validatebox'}">报关品名</th>
+                                <th data-options="field:'HsEngName',width:150,sortable:true,align:'center',editor:{type:'validatebox'}">报关英文品名</th>
+                            </tr>
+                        </thead>
+                        <thead>
+                            <tr>
+                                <th data-options="field: 'HSCodeName', width: 100, align: 'center'">报关编码</th>
+                                <th data-options="field: 'OuterBoxRate', width: 100, align: 'center'@(item2.SelectCustomer == SelectCustomerEnum.S288.ToString()?",hidden:true":"")">CS PK</th><!--是S288就不显示-->
+                                <th data-options="field: 'ProductPrice', width: 100, align: 'center',editor:{type:'numberbox',options:{precision:4}}">产品单价($)</th>
+                                <th data-options="field: 'ProductsQuauity', width: 100, align: 'center'">产品数量</th>
+                                <th data-options="field: 'ProductAmount', width: 100, align: 'center'">总金额($)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                         
+                           @for (var j = 0; j < Model[i].list_OrdersProducts.Count; j++)
+                            {
+                                var item = Model[i].list_OrdersProducts[j];
+                                <tr>
+                                    <td style="width:100px;"></td>
+                                    <td style="width:100px;">@item.HsName</td>
+                                    <td style="width:100px;">@item.HsEngName</td>
+                                    <td style="width:100px;">@item.HsCode</td>
+                                    <td style="width:100px;">@item.OuterBoxRate</td>
+                                    <td style="width:100px;">@item.ProductPrice</td>
+                                    <td style="width:100px;">@item.Qty</td>
+                                    <td style="width:100px;">@item.Amount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                    <br />
+                    
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">SHIPPING MARK:</label>
+                        <div class="col-sm-8 control-label">
+                            @if (item2.SelectCustomer == SelectCustomerEnum.S288.ToString())
+                            {
+                                <a href="javascript:void(0)" class="btn btn-primary" disabled="disabled">预览</a>
+
+                            }
+                            else
+                            {
+                                <a href="javascript:void(0)" target="_blank" class="btn btn-primary btnPreview" data-info="@(item2.InspectionCustomsDetailID)">预览</a>
+
+                            }
+                        </div>
+                    </div>
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">SHIP DATE:</label>
+                        <div class="col-sm-8 control-label">@item2.OrderSaleDate</div>
+                    </div>
+
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">备注:</label>
+                        <div style="margin-bottom:15px;" class="col-sm-10 control-label">
+                            @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                            {
+                                @Html.TextAreaFor(d => ThisModel[i].SaleContractContent, new { rows = "10", @class = "form-control" })
+                            }
+                            else
+                            {
+                                @Html.TextAreaFor(d => ThisModel[i].SaleContractContent, new { rows = "10", @disabled = "disabled", @class = "form-control" })
+
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">THE  SELLER:</label>
+                        <div class="col-sm-8 control-label">tom</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">THE BUYER:</label>
+                        <div class="col-sm-8 control-label">@item2.TheBuyer</div>
+                    </div>
+                </div>
+            </div>
+
+        }
+    </div>
+</div>

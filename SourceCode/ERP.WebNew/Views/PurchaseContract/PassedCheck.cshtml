@@ -1,0 +1,75 @@
+﻿@{
+    ViewBag.Title = "已审核的采购合同";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@model ERP.Models.Purchase.VMPurchaseSearch
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function operationFormatter_AllAmount(val,row,index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        return row.CurrentSign+ row.AllAmount;
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)PurchaseContractElementPrivileges.View);
+        var showUpLoad = @(Model.PageElementPrivileges & (int)PurchaseContractElementPrivileges.UpLoad);
+        var showSendContract = @(Model.PageElementPrivileges & (int)PurchaseContractElementPrivileges.SendContract);
+
+        var ops = "";
+        if (showView>0) {
+            ops+="<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/PurchaseContract/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+        if (showSendContract>0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/PurchaseContract/SendContract/"))" + val + "' style='margin: 0 5px;'>发送合同</a>";
+        }
+        if (showUpLoad>0) {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/PurchaseContract/UpLoad/"))" + val + "' style='margin: 0 5px;'>上传回签合同</a>";
+        }
+
+        var IsShowUpload2=@(Model.IsShowUpload2 ? "true":"false") ;
+        if (row.SelectCustomer=="S60" && IsShowUpload2 && row.CurrentSign=="$") {//S60只有美金需要提交请款合同
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/PurchaseContract/UpLoad_MakeMoney/"))" + val + "' style='margin: 0 5px;'>上传请款合同</a>";
+        }
+
+        
+        var str = "上传请款合同";
+        if (row.SelectCustomer=="S288")
+        {
+            str = "上传付款明细";
+        }
+
+
+        var IsShowUpload3=@(Model.IsShowUpload3 ? "true":"false") ;
+        if (row.SelectCustomer!="S60" && IsShowUpload3 && row.CurrentSign=="$") {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/PurchaseContract/UpLoad_MakeMoney/"))" + val + "' style='margin: 0 5px;'>"+str+"</a>";
+        }
+        return ops;
+    }
+
+    function SendContract(id) {
+        $.messager.confirm("提示","是否发送合同？",function(r){
+            if (r){
+                $.post("@Url.Content("~/PurchaseContract/SendContract")", { id: id },
+                    function (result) {
+                        if (result==1) {
+                            $.messager.alert("成功", "操作成功！", "info", function () {
+                                $(tableName).datagrid('reload');
+                            });
+                        }else {
+                            $.messager.alert("提示","失败了！","error");
+                        }
+                    }, "json");
+            }
+        });
+    }
+</script>

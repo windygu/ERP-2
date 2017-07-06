@@ -1,0 +1,65 @@
+﻿@model ERP.Models.InspectionClearance.VMInspectionClearanceSearch
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@{
+    ViewBag.Title = "已审核清关单据列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var showWatch = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.Watch);
+        var showUpLoadFCR = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.UpLoadFCR);
+        var showDownLoad = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.DownLoad);
+        var showUpLoadModify = @(Model.PageElementPrivileges & (int)InspectionClearanceElementPrivileges.UpLoadModify);
+
+        function operationFormatter(val, row, index) {
+            var ops="";
+
+            if(showWatch>0){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionClearance/Edit/"))" + row.InspectionClearanceID + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if(showUpLoadFCR>0){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionClearance/UploadFCR/"))" + row.InspectionClearanceID + "' style='margin: 0 5px;'>上传FCR</a>";
+            }
+
+            if(showDownLoad>0 ){
+                if (row.SelectCustomer!="S188"&&
+                    row.SelectCustomer!="S60" &&
+                    row.SelectCustomer!="S13" &&
+                    row.SelectCustomer!="F20" &&
+                    row.SelectCustomer!="S52" ) {
+                    ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='DownLoad_PDFAndExcel("+row.InspectionClearanceID+")' style='margin: 0 5px;'>下载</a>";
+                }
+            }
+
+            if(showUpLoadModify>0){
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/InspectionClearance/UploadModify/"))" + row.InspectionClearanceID + "' style='margin: 0 5px;'>上传</a>";
+            }
+            return ops;
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","ID"]);
+        }
+
+        function DownLoad_PDFAndExcel(id) {
+            loading();
+            $.post("@(Url.Content("~/InspectionClearance/DownLoad_PDFAndExcel"))", { "id": id }, function (data) {
+                completeLoading();
+
+                if (data.length>0) {
+                    for (var i = 0; i < data.length; i++) {
+                        window.open(data[i]);
+                    }
+                }else {
+                    $.messager.alert("出错了", "暂时还没有该客人的模板！");
+                }
+            });
+        }
+    </script>
+}

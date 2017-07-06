@@ -1,0 +1,56 @@
+﻿@{
+    ViewBag.Title = "第三方检测";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model ERP.Models.Inspection.VMInspectionSearch
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using ERP.Models.CustomEnums
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts
+{
+    <script type="text/javascript">
+        var tableName = "#MyGrid";
+
+        function operationFormatter(val, row, index) {
+            var rows = $(tableName).datagrid('getRows');
+            var row = rows[index];
+
+            var showEdit = @(Model.PageElementPrivileges & (int)InspectionDetectElementPrivileges.Edit);
+            var showInputResult = @(Model.PageElementPrivileges & (int)InspectionDetectElementPrivileges.InputResult);
+            var showSendNotice = @(Model.PageElementPrivileges & (int)InspectionDetectElementPrivileges.SendNotice);
+            var showView = @(Model.PageElementPrivileges & (int)InspectionDetectElementPrivileges.View);
+            var showInputFees = @(Model.PageElementPrivileges & (int)InspectionDetectElementPrivileges.InputFees);
+
+            var StatusID = row.StatusID;
+            var PendingInput= @((short)InspectionStatusEnum.PendingInput);
+            var PendingSent= @((short)InspectionStatusEnum.PendingSent);
+            var AlreadySent= @((short)InspectionStatusEnum.AlreadySent);
+            var NotPass= @((short)InspectionStatusEnum.NotPass);
+            var Passed= @((short)InspectionStatusEnum.Passed);
+
+            var ops = "";
+            if (showView>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputDetectResult/"))" + row.ID + "?Type=Detail&status="+row.StatusName+"'>查看</a>";
+            }
+
+            if ((StatusID== PendingInput ) && showInputResult>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputDetectNotice/"))" + row.ID + "'>录入检测通知</a>";
+            }
+            if ((StatusID== PendingSent ) && showInputResult>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputDetectNotice/"))" + row.ID + "'>编辑</a>";
+            }
+
+            if ((StatusID== AlreadySent||StatusID==NotPass ) && showInputResult>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputDetectResult/"))" + row.ID + "'>录入检测结果</a>";
+            }
+
+            if ((StatusID== AlreadySent||StatusID==Passed ) && showInputFees>0) {
+                ops += "<a winType='idialog' winSize='1200,800,yes' style='margin-right:10px' class='btn btn-info btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Inspection/InputDetectFees/"))" + row.ID + "'>录入检测费用</a>";
+            }
+            return ops;
+
+        }    //删除产品
+    </script>
+}

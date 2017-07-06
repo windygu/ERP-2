@@ -1,0 +1,100 @@
+﻿@{
+    ViewBag.Title = "已审核的唛头资料";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@using ERP.Models.CustomEnums
+@model ERP.Models.Purchase.VMPurchaseSearch
+
+@Html.Partial("_PartialList", Model)
+
+<script>
+    var tableName = "#MyGrid";
+
+    function operationFormatter_AllAmount(val,row,index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        return row.CurrentSign+ row.AllAmount;
+    }
+
+    function operationFormatter(val, row, index) {
+        var rows = $(tableName).datagrid('getRows');
+        var row = rows[index];
+
+        var showView = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.View);
+        var showSendToCustomer = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.SendToCustomer);
+        var showCustomerConfirm = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.CustomerConfirm);
+        var showNotificationFactory = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.NotificationFactory);
+        var showOurConfirm = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.OurConfirm);
+        var showNotificationPrinted = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.NotificationPrinted);
+        var showUpLoad = @(Model.PageElementPrivileges & (int)ShippingMarkElementPrivileges.UpLoad);
+
+        var ops = "";
+        if (showView>0) {
+            ops+="<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShippingMark/Edit/"))" + val + "?Type=Detail' style='margin: 0 5px;'>查看</a>";
+        }
+
+        var ShippingMark_StatusID = row.ShippingMark_StatusID;
+        var PassedCheck = @((int)ShippingMarkStatusEnum.PassedCheck);
+        var SendToCustomer = @((int)ShippingMarkStatusEnum.SendToCustomer);
+        var CustomerConfirm = @((int)ShippingMarkStatusEnum.CustomerConfirm);
+        var NotificationFactory = @((int)ShippingMarkStatusEnum.NotificationFactory);
+        var OurConfirm = @((int)ShippingMarkStatusEnum.OurConfirm);
+        var NotificationPrinted = @((int)ShippingMarkStatusEnum.NotificationPrinted);
+        var UpLoaded = @((int)ShippingMarkStatusEnum.UpLoaded);
+
+        var isShowBtn=false;
+        var btnText="";
+        switch (ShippingMark_StatusID) {
+            case PassedCheck:
+                isShowBtn = (showSendToCustomer > 0);
+                btnText="发给客户确认";
+                break;
+            case SendToCustomer:
+                isShowBtn = (showCustomerConfirm > 0);
+                btnText="客户确认排版";
+                break;
+            case CustomerConfirm:
+                isShowBtn = (showNotificationFactory > 0);
+                btnText="通知工厂排版";
+                break;
+            case NotificationFactory:
+                isShowBtn = (showOurConfirm > 0);
+                btnText="我司确认排版";
+                break;
+            case OurConfirm:
+                isShowBtn = (showNotificationPrinted > 0);
+                btnText="通知大货印刷";
+                break;
+            case NotificationPrinted:
+            case UpLoaded:
+                isShowBtn = (showUpLoad > 0);
+                btnText="上传";
+                break;
+
+            default:
+
+        }
+
+        if (btnText=="上传") {
+            ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/ShippingMark/UpLoad/"))" + val + "' style='margin: 0 5px;'>上传</a>";
+    
+        }else if (isShowBtn) {
+            ops += "<a class='btn btn-default btn-xs w_auto' href='#' onclick='Confirm(" + val + ",\"" + btnText + "\")' style='margin:0 10px;'>" + btnText + "</a>";
+        }
+        return ops;
+    }
+
+    function Confirm(id,btnText) {
+        $.messager.confirm('提示',btnText + '吗?',function(r){
+            if (r){
+                $.post('@Url.Content("~/ShippingMark/ChangeStatus")', { id: id })
+                .done(function () {
+                    $(tableName).datagrid('reload');
+                })
+            }
+        });
+    }
+
+</script>

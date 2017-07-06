@@ -1,0 +1,382 @@
+﻿@{
+    ViewBag.Title = "产品批量导入";
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+<style type="text/css">
+    .upload_progress {
+        display: none;
+        padding: 5px;
+        border-radius: 10px;
+        color: #fff;
+        background-color: rgba(0,0,0,.6);
+        position: absolute;
+        left: 80px;
+        top: 90px;
+    }
+
+    #container {
+        min-width: 320px;
+        margin: 0px auto 0 auto;
+        background: white;
+        border-radius: 0px;
+        padding: 0px;
+        overflow: hidden;
+    }
+
+    #tree {
+        float: left;
+        width: 280px;
+        border-right: 1px solid silver;
+        overflow: auto;
+        padding: 0px 0;
+    }
+
+    #data {
+        margin-left: 300px;
+        margin-right: 10px;
+        margin-top: -25px;
+    }
+
+    .b {
+        font-weight: bolder;
+    }
+
+    #iconList ul {
+        margin: 10px;
+        padding: 0px;
+        border: 0px;
+    }
+
+        #iconList ul li {
+            display: block;
+            width: 20px;
+            height: 20px;
+            float: left;
+            overflow: hidden;
+            text-align: center;
+            line-height: 20px;
+        }
+
+            #iconList ul li i {
+                color: gray;
+                font-size: 16px;
+            }
+
+            #iconList ul li a:hover i,
+            #iconList ul li a:hover i.no {
+                color: red !important;
+                font-size: 22px;
+            }
+
+            #iconList ul li i.no {
+                color: #f0f0f0 !important;
+            }
+
+    div.row > div.control-label {
+        margin: 0px 0px 0px 0px !important;
+        padding: 5px 0px 0px 0px !important;
+        text-align: right;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+    }
+
+    form > div.row {
+        margin: 5px 0px 0px 0px !important;
+        padding: 5px 0px 0px 0px !important;
+    }
+
+    .right {
+        text-align: right !important;
+    }
+
+    .nowrap {
+        white-space: nowrap;
+    }
+
+    #frmEdit .row {
+        border: 0;
+    }
+</style>
+<div id="container">
+    <div id="tree" class="jstree jstree-1 jstree-default" role="tree" style="height:182px;"></div>
+    <div id="data">
+        <div class="content bs-docs-section " style="overflow: auto">
+            <div class="page-header">
+
+                <h3 id="type"></h3>
+            </div>
+            <div class="page">
+                <form id="uploadForm" action="@Url.Content("~/ProductUpload/Update")" method="post">
+                    <input type="hidden" id="id" name="ID" />
+                    <div class="row">
+                        <div class='control-label col-sm-2 b'>
+                            分类名称：
+                        </div>
+                        <div class='control col-sm-8' style="margin-left: 10px;">
+                            <input id='parentid' type="hidden" class="form-control" readonly />
+                            <input id='name' class="form-control" type="text" readonly />
+                        </div>
+                    </div>
+                    <div id="uploadifyDiv" class='row' style="display:none;">
+                        <div class='control-label col-sm-2 b'>
+                            产品信息及图片：
+                        </div>
+                        <div class='control col-sm-8' style="margin-left: 10px;">
+                            <div class="uploadify">
+                                <input type="file" name="uploadify" id="uploadify" multiple="multiple" />
+                                <a class="a_upload" onclick="UpLoadFile()">上传</a>
+                                <div class="fileQueue">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="text-align: center;">
+                        <hr>
+                        @*<button type="button" onclick="window.open('/data/Template/ProductBatchImport.xls')" class="btn btn-danger">下载模板文件</button>*@
+                        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭窗口</button>
+                    </div>
+                    <div class="row">
+                        <div class="form-group" style="padding-right: 72px;">
+                            <strong>操作步骤：</strong>
+                            <ul>
+                                <li>1.选择一个没有子类的分类（如果选择的分类有子类，浏览和上传按钮不显示）。</li>
+                                <li>2.点击[浏览]按钮，选中要上传的Excel和产品图片（Excel只能选一个，产品图片可以选中多个）。</li>
+                                <li>3.点击[上传]按钮。</li>
+                                <li>4.上传成功后会有一个反馈的弹窗，点击OK按钮将下载含有导入失败的产品信息的Excel文件。（下载的Excel文件中有一个Sheet名为“导入失败的产品”。表格中红色部分是有问题的数据。）</li>
+                            </ul>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var uploaded = [];
+
+        function Random() {
+            return Math.random() * Math.random() * Math.random();
+        }
+
+        function getRef() {
+            return $('#tree').jstree(true)
+        }
+        $(function () {
+            $(window).resize(function () {
+                var size = OA.getWinSize();
+                var h = Math.max($(window).height() - 0, 420);
+                $('#container, #data, #tree, #data .content').height(h);
+                $('#data').outerWidth(size.width - $('#tree').outerWidth() - 20);
+            });
+
+            $('#tree')
+                .jstree({
+                    'core': {
+                        lang: { loading: "加载中…" },
+                        'data': {
+                            'url': '@Url.Content("~/ProductClassification/Get")',
+                            'data': function (node) {
+                                return {
+                                    pid: node.id,
+                                    _: Random(),
+                                };
+                            },
+                        },
+                        //'check_callback': true,
+                        'themes': {
+                            'responsive': false,
+                            'icon': true
+                        }
+                    },
+                    'plugins': ['state', 'dnd', 'wholerow', 'hotkeys'],
+                    //"contextmenu": {
+                    //    "items": {
+
+                    //    }
+                    //}
+                })
+                .on('changed.jstree', function (e, data) {
+                    if (data && data.selected && data.selected.length == 1) {
+                        var id = data.selected.join(':');
+                        $("#id").val(id);
+                        var disabled = (id == "#" || id <= 0);
+                        if (disabled) {
+                            $("#frmEdit").attr("disabled", true);
+                            $("#frmEdit input,select,textarea,button").attr("disabled", true);
+                        }
+                        else {
+                            $("#frmEdit").removeAttr("disabled");
+                            $("#frmEdit input,select,textarea,button").removeAttr("disabled");//,disabled);
+                        }
+
+                        $("#bntClose").removeAttr("disabled");
+
+                        if (!disabled)
+                            More(id);
+                    }
+                    else {
+                    }
+                });
+        });
+
+        function More(id) {
+            if (typeof (id) == "undefined") id = $("#id").val();
+            if (id < 1)
+                $.messager.alert("提示", "没有记录可供选取");
+            $("#id").val(id);
+
+            if ($("#" + id).find(".jstree-icon").hasClass("fa-folder")) {
+                $("#uploadifyDiv").hide();
+            } else {
+                $("#uploadifyDiv").show();
+            }
+
+            $(window).resize();
+            $.getJSON('@Url.Content("~/ProductClassification/MoreInfo/")' + id + '?_=' + Random(),
+                        function (data) {
+                            for (var id in data) {
+                                var val = data[id];
+                                if (val == null) val = "";
+                                switch (id) {
+                                    case "image":
+                                        $("#" + id).attr("src", val);
+                                        break;
+                                    case "show":
+                                        //setCheckBoxValue("show", val);
+                                        break;
+                                    default:
+                                        $("#" + id).val(val);
+                                        break;
+                                }
+                            }
+                        });
+        }
+
+        function Save() {
+            var file = $("#File").val();
+            if (file != null) {
+                alert(file);
+                return;
+            }
+            var d = {
+                id: $("#id").val(),
+                name: $("#name").val(),
+                image: $("#image").attr('src'),
+                show: getCheckBoxValue("show"),
+            };
+            if ($.trim(d.name) == "") {
+                $.messager.alert("提示", "分类名称不能为空值");
+                $("#name").focus();
+                return false;
+            }
+        }
+
+        (function uploadifyInitial() {
+            var uploadExcelQty = 0;
+
+            $("#uploadify").uploadify({
+                swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+                uploader: '@Url.Content("~/FileUploader/ProductByBatchImg")', //Post文件到指定的处理文件
+                postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+                auto: false,
+                buttonClass: 'JQButton', //浏览按钮的class
+                buttonText: '浏览', //浏览按钮的Text
+                cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+                fileTypeDesc: '*.jpg;*.jpeg;*.png;*.xls;*.xlsx;', //需过滤文件类型
+                fileTypeExts: '*.jpg;*.jpeg;*.png;*.xls;*.xlsx;', //需过滤文件类型的提示
+                height: 40, //浏览按钮高
+                width: 50, //浏览按钮宽
+                multi: true, //是否允许多文件上传
+                uploadLimit: 100, //同时上传多少个文件
+                sizeLimit: 300000000, //限制上传大小30M
+                queueSizeLimit: 10000, //队列允许的文件总数
+                removeCompleted: true, //当上传成功后是否将该Item删除
+                onSelect: function (file) {
+                    // 初始化当前上传的列表
+                    uploaded = [];
+                }, //选择文件时触发事件
+                onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+                onUploadComplete: function (file) { }, //上传成功触发事件
+                onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+                onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+                onUploadStart: function (file) {
+                    if (file.type == ".xlsx" || file.type == ".xls") {
+                        ++uploadExcelQty;
+                    }
+                    if (uploadExcelQty <= 0) {
+                        //$.messager.alert("提示", "请上传Excel文件！请重试。");
+                        return;
+                    }
+                    if (uploadExcelQty != 1) {
+                        $.messager.alert("提示", "只能上传一个Excel文件！请重试。");
+                        return;
+                    }
+                }, //上传开始触发事件
+                onUploadSuccess: function (event, response, status) {
+                    uploaded.push($.parseJSON(response).data);
+                },
+                onQueueComplete: function (queueData) {
+                    if (uploadExcelQty != 1) {
+                        uploadExcelQty = 0;
+                        return;
+                    }
+                    uploadExcelQty = 0;
+
+                    var id = $("#id").val();
+                    $.ajax({
+                        url: "@Url.Content("~/ProductUpload/Classify")?id=" + id + "",
+                        data: JSON.stringify(uploaded),
+                        type: 'post',
+                        dataType: 'json',
+                        contentType: 'application/json',
+                        success: function (data) {
+                            $.messager.confirm('提示', eval(data).Msg + "" + "是否需要下载文件，查看上传之后的详细结果？", function (r) {
+                                if (r) {
+                                    window.open(eval(data).Data);
+                                }
+                            })
+                        },
+                        error: function () {
+                            $.messager.alert("提示", "上传失败");
+                        }
+                    });
+                }
+            });
+        })();
+
+        //上传
+        function UpLoadFile() {
+            $('#uploadify').uploadifyUpload('*');
+        }
+
+        $(function () {
+            $("#iconClass").keyup(function () {
+                var s = $.trim($(this).val());
+                if (s == "")
+                    $("#iconList li i").removeClass("no");
+                else {
+                    s = s.split(' ');
+                    $("#iconList li").each(function () {
+                        var ts = $(this).find("a").attr("title");
+                        var b = false;
+                        for (var ti = 0; ti < s.length; ti++) {
+                            if (ts.indexOf($.trim(s[ti])) >= 0)
+                            { b = true; break; }
+                        }
+
+                        if (b)
+                            $(this).find("a i").removeClass("no");
+                        else
+                            $(this).find("a i").addClass("no");
+                    });
+                }
+            });
+
+        });
+    </script>
+}

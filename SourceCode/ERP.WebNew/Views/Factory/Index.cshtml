@@ -1,0 +1,113 @@
+﻿@{
+    ViewBag.Title = "工厂管理";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model ERP.Models.Factory.VMDTOFactory
+<div class="content-wrapper">
+    <div align="right">
+        <form class="form-inline frmFind" role="form" runat="server" method="get">
+
+            <div class="search_Condition box_1k">
+                <ul>
+                    <li>
+                        <label class="col-xs-2">联系人：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(n => n.CallPeople, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">工厂简称：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(n => n.Name, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">工厂类别：</label>
+                        <div class="col-sm-10">
+                            @Html.DropDownListFor(n => n.DataFlag, ViewData["Da"] as SelectList, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li class="search">
+                        <button type="submit" onclick="return OA.s(this)" class="btn btn-info">查询</button>
+                        <button type="button" class="btn btn-info" onclick="clearAll(this)">清空所有</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+    @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.FactoryElementPrivileges.FactoryAdd) > 0)
+    {
+        <button id='bntUpdate' wintype='idialog' type='button' winsize='1200,800,yes' onclick='return OA.i(this);' href='@(Url.Content("~/Factory/Add/"))' class="btn btn-danger">新建工厂信息</button>
+    }
+    @if ((Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.FactoryElementPrivileges.FactoryDelete) > 0)
+    {
+        <button id="bntDelete" type="button" onclick="deleteSelected()" class="btn btn-default">批量删除</button>
+    }
+    <div class="box_1k" style="width:100%;overflow:auto">
+        <table id="MyGrid" class="easyui-datagrid" data-options="singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("/Factory/GetAll")?@Request.QueryString',method:'get',onLoadSuccess:onLoadSuccess,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+            <thead>
+                <tr>
+                    @**@
+                    <!--基本信息-->
+                    <th data-options="field:'ID',checkbox:true,width:40"></th>
+                    <th data-options="field:'Name',align:'center',width:200,sortable:true">工厂名称</th>
+                    <th data-options="field:'Abbreviation',align:'center',width:150,sortable:true">简称</th>
+                    <th data-options="field:'City',align:'center',width:60,sortable:true">工厂区域</th>
+                    <th data-options="field:'CallPeople',align:'center',width:60,sortable:true">联系人</th>
+                    <th data-options="field:'Cellphone',align:'center',width:120,sortable:true">手机</th>
+                    <th data-options="field:'Telephone',align:'center',width:110,sortable:true">电话</th>
+                    <th data-options="field:'Fax',align:'center',width:150,sortable:true">传真</th>
+                    <th data-options="field:'AllAdress',align:'center',width:200,sortable:true">工厂地址</th>
+                    <th data-options="field:'EmailAdress',align:'center',width:140,sortable:true">邮箱地址</th>
+                    <th data-options="field:'Duty',align:'center',width:60,sortable:true">职位</th>
+                    <th data-options="field:'CurrencyName',sortable:true,align:'center',width:100">结算币种</th>
+                    <th data-options="field:'IDD',align:'center',formatter:operationFormatter">操作</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+@section scripts
+{
+    <script>
+
+     
+        var tableName = "#MyGrid";
+        //删除选中
+        function deleteSelected() {
+            var idArray = getSelections(tableName, "ID");
+            if (idArray.length <= 0) {
+                alert("请选中要删除的工厂！");
+                return;
+            }
+            if (!confirm("是否删除选中的工厂？")) {
+                return;
+            }
+            $.post("@Url.Content("~/Factory/Delete")", { idList: idArray.join(',') }, function (result) {
+
+                if (result == 1) {
+                    alert("删除成功！");
+                    parent.location.reload();
+                }
+            }, "json");
+        }
+        function onLoadSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["ck","PriceInputDate","ValidDate","DT_MODIFYDATE","IDD"]);
+        }
+        var showEdit = @(Model.PageElementPrivileges & (int)ERP.Models.CustomEnums.PageElementsPrivileges.FactoryElementPrivileges.FactoryEdit);
+        function operationFormatter(val, row, index) {
+            var rows = $(tableName).datagrid('getRows');
+            var row = rows[index];
+            if (showEdit>0) {
+            var ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Factory/Edit/"))" + row.ID + "' style='margin: 0 5px;'>编辑</a>";
+            }
+            //ops += "<button id='bntUpdate' wintype='idialog' type='button' winsize='1200,800,yes' onclick='deleteData(" + row.ID + ")'  class='btn btn-default btn-xs w_auto '>删除</button>";
+
+            return ops;
+
+        }    //删除产品
+    </script>
+}

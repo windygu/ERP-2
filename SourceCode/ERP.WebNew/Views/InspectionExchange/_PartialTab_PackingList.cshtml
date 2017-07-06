@@ -1,0 +1,164 @@
+﻿@model ERP.Models.InspectionExchange.VMInspectionExchange
+@using ERP.Models.CustomEnums
+
+<!--装箱单选项卡-->
+<div id="dvTab_PackingList" title="装箱单">
+    <h3 class="popTitle">装箱单信息<a class="table_toggle fa fa-2 fa-chevron-up"></a></h3>
+    <div class="popContent">
+        @{
+            var ThisModel = Model;
+        }
+
+        <div class="Factory">
+            <div style="margin-bottom:0px;" class="modal-title">
+                <span class="txt_InvoiceNO text-center" style="width: 98%;">
+                    @ThisModel.InvoiceNO
+                </span>
+                <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </div>
+
+            <div class="history_box">
+                @if (ThisModel.SelectCustomer == SelectCustomerEnum.S60.ToString())
+                {
+                    @Html.Partial("_PartialTab_PackingList_Title_S60", Model)
+                }
+                else
+                {
+                    if (ThisModel.SelectCustomer == SelectCustomerEnum.S05.ToString() || ThisModel.SelectCustomer == SelectCustomerEnum.S288.ToString() || ThisModel.SelectCustomer == SelectCustomerEnum.S10.ToString())
+                    {
+                        <div class="form-group col-sm-6 has-feedback">
+                            <label class="col-sm-4 control-label">Ship To：</label>
+                            <div class="col-sm-8 control-label">
+
+                                @if (ViewBag.PageTypeID == PageTypeEnum.Details)
+                                {
+                                    @Html.DropDownListFor(n => n.ShipTo, ViewBag.AcceptInformations as SelectList, new { @class = "form-control btn dropdown-toggle border_color easyui-combobox ShipTo", multiline = "true", style = "width:100%;height:60px;", disabled = "disabled" })
+                                }
+                                else
+                                {
+                                    @Html.DropDownListFor(n => n.ShipTo, ViewBag.AcceptInformations as SelectList, new { @class = "form-control btn dropdown-toggle border_color easyui-combobox ShipTo", multiline = "true", style = "width:100%;height:60px;" })
+                                }
+
+                            </div>
+                        </div>
+
+                        <div class="form-group col-sm-6 has-feedback" style="height: 70px;">
+                            <label class="col-sm-4 control-label">&nbsp;</label>
+                            <div class="col-sm-8 control-label">&nbsp;</div>
+                        </div>
+                    }
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">TO:</label>
+                        <div class="col-sm-8 control-label">@ThisModel.CustomerName</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Inv. No：</label>
+                        <div class="col-sm-8 control-label">
+                            @if (ViewBag.PageTypeID != PageTypeEnum.Details)
+                            {
+                                <div class="col-sm-2" style="padding:0;">
+                                    @ThisModel.InvoiceNO.Substring(0, 7)
+                                </div>
+                                <div class="col-sm-5">
+                                    @InlineHelpers.GetSelection(ViewData["list_Letter"] as SelectList, "Letter", true, ThisModel.Letter, "txt_Letter", "txt_Letter")
+                                </div>
+                            }
+                            else
+                            {
+                                @ThisModel.InvoiceNO
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">地址:</label>
+                        <div class="col-sm-8 control-label">@ThisModel.CustomerStreet</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">DATE:</label>
+                        <div class="col-sm-8 control-label">@ThisModel.CreateDateForamtter</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label"></label>
+                        <div class="col-sm-8 control-label">@ThisModel.CustomerReg</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">PO.NO:</label>
+                        <div class="col-sm-8 control-label">@ThisModel.POID</div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Loading port:</label>
+                        <div class="col-sm-8 control-label">
+                            @ThisModel.PortName
+                        </div>
+                    </div>
+
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label">Destination:</label>
+                        <div class="col-sm-8 control-label">
+                            @ThisModel.DestinationPortName
+                        </div>
+                    </div>
+                
+                if (ThisModel.SelectCustomer == SelectCustomerEnum.S235.ToString())
+                {
+                    <div class="form-group col-sm-6 has-feedback">
+                        <label class="col-sm-4 control-label text-danger">Ocean Vessel / Voy No.:</label>
+                        <div class="col-sm-8 control-label">
+                            @ThisModel.OceanVessel
+                        </div>
+                    </div>
+                    }
+                }
+                
+                <table id="MyPopGrid_PackingList" class="easyui-datagrid" style="width:100%">
+                    <thead data-options="frozen:true">
+                        <tr>
+                            <th data-options="field:'POID',width:100,sortable:true, align: 'center'@(ThisModel.SelectCustomer == SelectCustomerEnum.S60.ToString() || ThisModel.SelectCustomer == SelectCustomerEnum.S56.ToString()?"":",hidden:true")">AC MOORE(PO#)</th>
+                            <th data-options="field:'SkuNumber',width:100,sortable:true, align: 'center'@(ThisModel.SelectCustomer == SelectCustomerEnum.S60.ToString() || ThisModel.SelectCustomer == SelectCustomerEnum.S56.ToString()?"":",hidden:true")">AC MOORE Item#</th>
+                            <th data-options="field:'No',width:150,sortable:true,align:'center'">Manufacturer Item#</th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr>
+                            <th data-options="field: 'Desc',width:200,align:'center'">Description of Goods</th>
+                            <th data-options="field: 'Qty',width:100,sortable:true,align:'center'">Qty(PCS)</th>
+                            <th data-options="field: 'BoxQty', width: 100, align: 'center'">Ctns</th>
+                            <th data-options="field: 'SumOuterWeightGross', width: 100, align: 'center'">G.w.(KGS)</th>
+                            <th data-options="field: 'SumOuterWeightNet', width: 100, align: 'center'">N.w.(KGS)</th>
+                            <th data-options="field: 'SumOuterVolume', width: 100, align: 'center',editor:{type:'numberbox',options:{precision:2}}">Cbm(M³)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ThisModel.list_OrderProduct_PackingList != null)
+                        {
+                            for (var j = 0; j < ThisModel.list_OrderProduct_PackingList.Count; j++)
+                            {
+                                var item = ThisModel.list_OrderProduct_PackingList[j];
+                                <tr>
+                                    <td>@item.POID</td>
+                                    <td>@item.SkuNumber</td>
+                                    <td>@InlineHelpers.GetProductHtml(item.Image, Url.Content("~/Product/Details/") + item.ProductID, item.No)</td>
+
+                                    <td>@item.Desc</td>
+                                    <td>@item.Qty</td>
+                                    <td>@item.BoxQty</td>
+                                    <td>@item.SumOuterWeightGross</td>
+                                    <td>@item.SumOuterWeightNet</td>
+                                    <td>@item.SumOuterVolume</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+                
+            </div>
+        </div>
+    </div>
+</div>

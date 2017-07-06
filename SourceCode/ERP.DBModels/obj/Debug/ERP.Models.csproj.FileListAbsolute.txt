@@ -1,0 +1,11 @@
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\bin\Debug\ERP.Models.dll
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\bin\Debug\ERP.Models.pdb
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\bin\Debug\MongoDB.Bson.dll
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\bin\Debug\Newtonsoft.Json.dll
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\bin\Debug\System.Web.Mvc.dll
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\bin\Debug\MongoDB.Bson.xml
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\bin\Debug\Newtonsoft.Json.xml
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\bin\Debug\System.Web.Mvc.xml
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\bin\Debug\zh-Hans\System.Web.Mvc.resources.dll
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\obj\Debug\ERP.Models.dll
+E:\MyWeb\ERP\SourceCode\ERP.DBModels\obj\Debug\ERP.Models.pdb

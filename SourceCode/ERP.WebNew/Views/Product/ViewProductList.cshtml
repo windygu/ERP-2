@@ -1,0 +1,15 @@
+﻿@{
+    Layout = null;
+}
+@model List<ERP.Models.Product.VMViewProductList>
+
+@Html.Partial("_PartialViewProductImageList", Model)
+
+<script type="text/javascript">
+    function href1() {
+        window.location.href = "/Product/ViewProductList?type=1&idList=@ViewBag.idList";
+    }
+    function href2() {
+        window.location.href = "/Product/ViewProductList?type=2&idList=@ViewBag.idList";
+    }
+</script>

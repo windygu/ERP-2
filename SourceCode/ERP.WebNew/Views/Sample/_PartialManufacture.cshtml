@@ -1,0 +1,297 @@
+﻿@model ERP.Models.Sample.DTOSample
+@using ERP.Models.CustomEnums
+
+<!--针对独占一行的标签重定向其所占宽度-->
+<style type="text/css">
+    .has-feedback .col-sm-2 {
+        width: 16.2%;
+    }
+</style>
+
+@using (Html.BeginForm("SaveManufactureInfo", "Sample", new { id = "frmEdit", DataStatus = (int)@ERP.Models.CustomEnums.SampleStatus.SampleStatus1 }, FormMethod.Post, new { id = "frm" }))
+//, new AjaxOptions() { HttpMethod = "Post", OnBegin = "return CheckOut()", OnSuccess = "onSuccess" }
+{
+
+    if (Model != null && Model.Manufactures != null)
+    {
+        @Html.HiddenFor(o => o.CreateWay, new { })
+        @Html.HiddenFor(o => o.PageTypeID, new { })
+        @Html.HiddenFor(o => o.SSID, new { })
+        @Html.HiddenFor(o => o.QTID, new { })
+        @Html.HiddenFor(o => o.PHID, new { })
+
+        @Html.HiddenFor(o => o.CustomerID, new { })
+        @Html.HiddenFor(o => o.SampleStatusID, new { })
+
+        <h3 class="popTitle AttSpreadShrink">
+            样品单信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent search_Cs">
+            @for (var i = 0; i < Model.Manufactures.Count; i++)
+            {
+                @Html.HiddenFor(p => p.Manufactures[i].FactureID, new { })
+                <div class="Factory">
+                    <div class="modal-title AttSpreadShrink" style="margin-bottom:0px;">
+                        <span>工厂：@Model.Manufactures[i].FactoryAbbreviation</span>
+                        <span>联系电话：@Model.Manufactures[i].Telephone</span>
+                        <span>联系邮箱：@Model.Manufactures[i].EmailAdress</span>
+                        @*<span>办事处内勤：@Model.Manufactures[i].OfficePerson</span>*@
+
+                        <a class="table_toggle fa fa-2 fa-chevron-up" style="float:right;"></a>
+                    </div>
+
+                    <div class="history_box">
+                        <table class="table table-bordered" style="width:100%" border="0" cellspacing="0" cellpadding="0">
+                            <thead>
+                                <tr class="t_bg">
+                                    <th style="display:none;">产品所在表自编号</th>
+
+                                    <th>货号</th>
+                                    <th>工厂货号</th>
+                                    <th>款式</th>
+                                    <th>内盒率</th>
+                                    <th>外箱率</th>
+                                    <th style="width:60px;">数量</th>
+                                    <th style="width:150px;">备注</th>
+                                </tr>
+                            </thead>
+
+                            @if (Model.Manufactures[i].Products != null)
+                            {
+                                for (var j = 0; j < Model.Manufactures[i].Products.Count; j++)
+                                {
+                                    <tr>
+                                        <td style="display:none;">
+                                            @Html.TextBoxFor(q => q.Manufactures[i].Products[j].PDID, new { })
+                                        </td>
+                                        <td>@InlineHelpers.GetProductHtml(Model.Manufactures[i].Products[j].ProductImage, Url.Content("~/Product/Details/") + Model.Manufactures[i].Products[j].ProductID, Model.Manufactures[i].Products[j].ProductNo)</td>
+                                        <td>@Model.Manufactures[i].Products[j].FactoryNo</td>
+                                        <td>@Model.Manufactures[i].Products[j].StyleName</td>
+                                        <td>@Model.Manufactures[i].Products[j].InnerBoxRate</td>
+                                        <td>@Model.Manufactures[i].Products[j].OuterBoxRate</td>
+
+                                        @if (Model.PageTypeID == 1)
+                                        {
+                                            <td>@Html.TextBoxFor(q => q.Manufactures[i].Products[j].ProductNum, new { @class = "form-control ClassSampleProductNum" })</td>
+                                            <td>@Html.TextBoxFor(q => q.Manufactures[i].Products[j].SampleProductNote, new { @class = "form-control" })</td>
+
+                                        }
+                                        else
+                                        {
+                                            <td>@Model.Manufactures[i].Products[j].ProductNum</td>
+                                            <td>@Model.Manufactures[i].Products[j].SampleProductNote</td>
+                                        }
+                                    </tr>
+
+                                }
+
+                            }
+                        </table>
+
+                        <div class="row">
+                            <div class="form-group col-sm-12 has-feedback">
+                                <label class="col-sm-2 control-label">生产备注：</label>
+                                <div style="margin-bottom:15px;" class="col-sm-10 control-label">
+                                    @if (Model.PageTypeID == 1)
+                                    {
+                                        @Html.TextAreaFor(q => q.Manufactures[i].ManufactureNote, new { @class = "form-control StickRemark_1" })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextAreaFor(q => q.Manufactures[i].ManufactureNote, new { @disabled = "disabled", @class = "form-control" })
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="form-group col-sm-6 has-feedback">
+                                <label class="col-sm-4 control-label text-danger">要求完成日期：</label>
+                                <div class="col-sm-8 control-label">
+                                    @if (Model.PageTypeID == 1)
+                                    {
+                                        @Html.TextBoxFor(o => o.Manufactures[i].ClaimFinishDate, new { @class = "form-control Wdate", data_index = i })
+
+                                    }
+                                    else
+                                    {
+                                        @Html.TextBoxFor(o => o.Manufactures[i].ClaimFinishDate, new { @disabled = "disabled", @class = "form-control Wdate", data_index = i })
+
+                                    }
+                                </div>
+                            </div>
+
+                            @if (Model.PageTypeID == 1)
+                            {
+                                <div class="form-group col-sm-6 has-feedback">
+                                    <div class="col-sm-8 control-label">
+                                        <label class="col-xs-4">上传附件：</label>
+                                        <div class="col-sm-8">
+                                            <div class="uploadify">
+                                                <input type="file" name="txtUploadFile_@(i)" id="txtUploadFile_@(i)" />
+                                                <a class="a_upload" onclick="UpLoadFile('#txtUploadFile_@(i)')">上传</a>
+                                                <div class="fileQueue"></div>
+                                            </div>
+                                            <script type="text/javascript">
+
+                                                //上传附件插件初始化代码
+                                                InitialUploadify(@Model.Manufactures[i].SSID,@i,'#txtUploadFile_@(i)','#fileListTable_@(i)');
+                                            </script>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            }
+
+                            @if (Model.Manufactures[i].SampleStatusID == 2 && Model.PageTypeID == 2)
+                            {
+
+                            }
+                            else if (Model.Manufactures[i].SampleStatusID >= 2)
+                            {
+                            <!--安排生产时，可以选填计划完成日期-->
+                                <div class="form-group col-sm-6 has-feedback">
+                                    <label class="col-sm-4 control-label text-danger">计划完成日期：</label>
+                                    <div class="col-sm-8 control-label">
+                                        @if (Model.PageTypeID == 4)
+                                        {
+                                            @Html.TextBoxFor(o => o.Manufactures[i].PlanFinishDate, new { @class = "form-control Wdate", data_index = i })
+
+                                        }
+                                        else
+                                        {
+                                            @Html.TextBoxFor(o => o.Manufactures[i].PlanFinishDate, new { @disabled = "disabled", @class = "form-control Wdate", data_index = i })
+
+                                        }
+                                    </div>
+                                </div>
+
+                            }
+                        </div>
+                    </div>
+
+                    <div class="history_box">
+                        <table id="fileListTable_@(i)" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                            <thead>
+                                <tr class="t_bg">
+                                    <td width="50%">附件名称</td>
+                                    <td width="20%">上传时间</td>
+                                    <td width="30%">操作</td>
+                                </tr>
+                            </thead>
+                            @if (Model.Manufactures[i].UploadFiles != null)
+                            {
+                                for (var k = 0; k < Model.Manufactures[i].UploadFiles.UpLoadFileList.Count; k++)
+                                {
+                                    <tr>
+                                        <td style="display:none;">
+                                            @Html.TextBoxFor(u => u.Manufactures[i].UploadFiles.UpLoadFileList[k].ID, new { })
+                                            @Html.TextBoxFor(u => u.Manufactures[i].UploadFiles.UpLoadFileList[k].IsDelete, new { })
+                                        </td>
+
+                                        <td>@Model.Manufactures[i].UploadFiles.UpLoadFileList[k].DisplayFileName</td>
+
+                                        <td>@ERP.Tools.Utils.DateTimeToStr2(Model.Manufactures[i].UploadFiles.UpLoadFileList[k].DT_CREATEDATE)</td>
+
+                                        <td>
+                                            <button type="button" class="btn btn-primary" onclick="DownLoadFile('@Model.Manufactures[i].UploadFiles.UpLoadFileList[k].ServerFileName')">下载</button>
+
+                                            <!--编辑时才能删除-->
+                                            @if (Model.PageTypeID == 1)
+                                            {
+                                                <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@Model.Manufactures[i].UploadFiles.UpLoadFileList[k].ServerFileName')">删除</button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </table>
+                    </div>
+                </div>
+
+            }
+        </div>
+
+         <!--此项内容为：一处输入，应用于全部生产备注-->
+        if (Model.PageTypeID == 1)
+        {
+            <h3 class="popTitle AttSpreadShrink">
+                通用备注
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="popContent">
+                <textarea id="txtCommonRemark" style="margin-bottom:15px;" class="form-control" rows="3" cols="0"></textarea>
+                <button type="button" id="bntStickAllRemark" class="btn btn-primary" onclick="StickAllRemark('#txtCommonRemark')">应用</button>
+            </div>
+        }
+
+        <!--操作按钮-->
+        <div id="dvButton" class="popBtns">
+            @switch (Model.PageTypeID)
+            {
+                case 1:
+                    <button type="button" id="bntSaveB" name="SaveManufacture" class="btn btn-danger" onclick="SetDataStatus(@((int)SampleStatus.SampleStatus1));">保存</button>
+                    break;
+                case 4:
+                    <button type="button" id="bntSaveB" name="SaveManufacture" class="btn btn-danger" onclick="SetDataStatus(@((int)SampleStatus.SampleStatus3));">保存</button>
+                    break;
+                default:
+                    break;
+            }
+
+            <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+        </div>
+
+        if (Model.SendSampleHis != null)
+        {
+            <!--生产单历史记录-->
+            <h3 class="popTitle AttSpreadShrink">
+                历史记录<a class="table_toggle fa fa-2 fa-chevron-down"></a>
+            </h3>
+            <div style="display:none;" class="popContent">
+                <div class="history_box">
+                    <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                        <thead>
+                            <tr class="TH">
+                                <th width="20%">更新日期</th>
+                                <th width="20%">更新者</th>
+                                <th width="20%">样品状态</th>
+                                <th width="40%">修改描述</th>
+                            </tr>
+                        </thead>
+                        @foreach (var item in Model.SendSampleHis.OrderByDescending(d => d.AuditCreateDate))
+                        {
+                            <tr>
+                                <td>@item.AuditCreateDate</td>
+                                <td>@item.AuditUserName</td>
+                                <td>@item.SampleStatus</td>
+                                <td>@item.AuditIdea</td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+            </div>
+        }
+
+        <script type="text/javascript">
+            //需求来源为非“手工创建”时，给客户下拉框赋选中数据源的客户自编号
+            if (@Model.CreateWay > 1)
+            {
+                var iCustomerID=@Model.CustomerID;
+                $("select[name=selCustomerID] option").removeAttr("selected");
+                $("select[name=selCustomerID] option").each(function () {
+                    if ($(this).val() == iCustomerID) {
+                        $(this).attr({ "selected": "selected" });
+                    }
+                });
+                $("select[name=selCustomerID]").attr({ "disabled": "disabled" });
+                $("select[name=selCustomerID]").selectpicker("refresh");
+            }
+
+            $(HtmlDivManufactureInfo).find("input.ClassSampleProductNum").on("keyup",function(e){
+                CheckInputNum(e)
+            })
+        </script>
+
+    }
+
+}

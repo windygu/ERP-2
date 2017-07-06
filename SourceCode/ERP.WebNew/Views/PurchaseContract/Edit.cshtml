@@ -1,0 +1,744 @@
+﻿
+
+@using ERP.Models.CustomEnums
+@model ERP.Models.Purchase.VMPurchase
+
+@{
+    ViewBag.Title = ViewBag.Title + (Model.ContractType == (int)ContractTypeEnum.ProductFitting ? "(配件合同)" : "");
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+@using (Ajax.BeginForm("Edit", "PurchaseContract", null, new AjaxOptions() { HttpMethod = "Post" }, new { id = "frmEdit" }))
+{
+
+    <link href="@Url.Content("~/Content/Quotation.css")" rel="stylesheet" />
+    <style>
+        label.control-label, .control-label, label {
+            margin-top: 2px;
+            text-align: right;
+            font-weight: normal;
+        }
+
+        .form-control-feedback {
+            right: 10px;
+        }
+
+        .glyphicon {
+            right: 10px;
+        }
+
+        .box_1k {
+            margin-top: 0;
+        }
+
+        .table-advance thead tr th {
+            background: #666;
+            color: #fff;
+        }
+
+        .bg_contact {
+            height: 600px;
+        }
+
+        .bg_fff {
+            height: 850px;
+        }
+
+        #ContactInformation .modal-header {
+            border-bottom: none;
+        }
+
+        .datagrid-row-selected {
+            color: #000;
+        }
+
+        .datagrid-header-check input, .datagrid-cell-check input {
+            margin-bottom: 20px;
+        }
+
+        .validatebox-invalid {
+            border-color: red !important;
+            background-color: #ffa8a8 !important;
+        }
+    </style>
+
+    @Html.HiddenFor(p => p.ID)
+
+    <div id="inline">
+        <h3 class="popTitle">
+            采购合同信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="row popContent">
+            @Html.Partial("_PartialFactory", Model)
+        </div>
+
+        <h3 class="popTitle">
+            产品信息
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            <div class="Factory_ProductList">
+                @if (Model.ContractType == (int)ContractTypeEnum.Default)
+                {
+
+                    <table id="MyPopGrid" class="easyui-datagrid dg" style="width:100%;overflow:auto; display:none;">
+                        <thead data-options="frozen:true">
+                            <tr>
+                                <th data-options="field:'No',width:100,align:'center',formatter:productNoFormatter">产品货号</th>
+                                <th data-options="field:'Name',width:150,align:'center'">品名</th>
+                            </tr>
+                        </thead>
+                        <thead>
+                            <tr class="t_bg">
+                                <th data-options="field:'PackageName',width:100,align:'center',editor:{type:'validatebox'}">包装方式</th>
+                                <th data-options="field:'PriceFactoryFormatter',width:60,align:'center'">工厂价格</th>
+                                <th data-options="field:'Qty',width:60,align:'center'">数量</th>
+                                <th data-options="field:'UnitName',width:60,align:'center'">单位</th>
+                                <th data-options="field:'ProductAmountFormatter',width:60,align:'center'">金额</th>
+                                <th data-options="field:'InnerBoxRate',width:60,align:'center'">内盒率</th>
+                                <th data-options="field:'OuterBoxRate',width:60,align:'center'">外箱率</th>
+                                <th data-options="field:'PDQPackRate',width:60,align:'center'">PDQ装箱率</th>
+                                <th data-options="field:'StyleName',width:60,align:'center'">款式</th>
+                                <th data-options="field:'MixedMode',width:100,align:'center',editor:{type:'validatebox'}">混装方式</th>
+                                <th data-options="field:'OtherComment',width:100,align:'center',editor:{type:'validatebox'}">产品其它要求备注</th>
+                                <th data-options="field:'IsFragile',width:100,align:'center',editor:{
+                                type:'combobox',
+                                options:{
+                                    valueField:'Value',
+                                    textField:'Text',
+                                    data:[{'Selected':false,'Text':'&nbsp;','Value':'0'},{'Selected':false,'Text':'是','Value':'1'},{'Selected':false,'Text':'否','Value':'2'}],
+                                    required:true,
+                                    editable:false,
+                                }
+                            },formatter:formatStatus">是否易碎品</th>
+
+
+                                <th data-options="field:'ID',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'OrderProductID', hidden: true"></th>
+                                <th data-options="field:'ProductID',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'Image',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'PriceFactory',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'ProductAmount',width:80,align:'center',hidden:true"></th>
+                                <th data-options="field:'IsProductMixed',width:80,align:'center',hidden:true"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.list_batch != null)
+                            {
+
+                                foreach (var item_product in Model.list_batch[0].listProduct)
+                                {
+                                    <tr>
+                                        <td>@item_product.No</td>
+                                        <td>@item_product.Name</td>
+                                        <td>@item_product.PackageName</td>
+                                        <td>@item_product.PriceFactoryFormatter</td>
+                                        <td>@item_product.Qty</td>
+                                        <td>@item_product.UnitName</td>
+                                        <td>@item_product.ProductAmountFormatter</td>
+                                        <td>@item_product.InnerBoxRate</td>
+                                        <td>@item_product.OuterBoxRate</td>
+                                        <td>@item_product.PDQPackRate</td>
+                                        <td>@item_product.StyleName</td>
+                                        <td>@item_product.MixedMode</td>
+                                        <td>@item_product.OtherComment</td>
+                                        <td>@item_product.IsFragile</td>
+
+                                        <td>@item_product.ID</td>
+                                        <td>@item_product.OrderProductID</td>
+                                        <td>@item_product.ProductID</td>
+                                        <td>@item_product.Image</td>
+                                        <td>@item_product.PriceFactory</td>
+                                        <td>@item_product.ProductAmount</td>
+                                        <td>@item_product.IsProductMixed</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                }
+                else
+                {
+                    <table id="MyPopGrid" class="easyui-datagrid dg" style="width:100%;overflow:auto; display:none;">
+                        <thead data-options="frozen:true">
+                            <tr>
+                                <th data-options="field:'No',width:100,sortable:true,formatter:productFittingNoFormatter">配件产品货号</th>
+                                <th data-options="field:'Name',width:100,sortable:true,align:'center'">品名</th>
+                                <th data-options="field:'FactoryName',width:100,sortable:true,align:'center'">工厂</th>
+                            </tr>
+                        </thead>
+                        <thead>
+                            <tr>
+                                <th data-options="field: 'PriceFactoryFormatter', width: 80, align: 'center'">工厂价格</th>
+                                <th data-options="field: 'Qty', width: 80, align: 'center',editor:{type:'numberbox',options:{required:true,precision:0}}">数量</th>
+                                <th data-options="field: 'PackageName', width: 150, align: 'center',editor:{type:'validatebox'}">包装</th>
+                                <th data-options="field: 'Comment', width: 150, align: 'center',editor:{type:'validatebox'}">备注</th>
+
+                                <th data-options="field:'ID', hidden: true"></th>
+                                <th data-options="field:'ProductID', hidden: true"></th>
+                                <th data-options="field:'Image', hidden: true"></th>
+                                <th data-options="field:'PriceFactory', hidden: true"></th>
+                                <th data-options="field:'RootID', hidden: true"></th>
+                            </tr>
+                        </thead>
+
+
+                        <tbody>
+                            @if (Model.list_batch != null)
+                            {
+
+                                foreach (var item_product in Model.list_batch[0].listProductFitting)
+                                {
+                                    <tr>
+                                        <td>@item_product.No</td>
+                                        <td>@item_product.Name</td>
+                                        <td>@item_product.FactoryName</td>
+
+                                        <td>@item_product.PriceFactoryFormatter</td>
+                                        <td>@item_product.Qty</td>
+                                        <td>@item_product.PackageName</td>
+                                        <td>@item_product.Comment</td>
+
+                                        <td>@item_product.ID</td>
+                                        <td>@item_product.ProductID</td>
+                                        <td>@item_product.Image</td>
+                                        <td>@item_product.PriceFactory</td>
+                                        <td>@item_product.RootID</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+                }
+            </div>
+        </div>
+        <h3 class="popTitle">
+            合同条款
+            <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+        </h3>
+        <div class="popContent">
+            @{
+                if (!Model.ContractTerms.Contains("<br />"))
+                {
+                    Model.ContractTerms = Model.ContractTerms.Replace("\n", "<br />");//TODO：为了兼容以前的代码
+                }
+            }
+            @if (Model.PageType == PageTypeEnum.Details)
+            {
+                @Html.TextAreaFor(d => d.ContractTerms, new { @class = "form-control ckeditor hide", rows = "10", disabled = "disabled" })
+            }
+            else
+            {
+                @Html.TextAreaFor(d => d.ContractTerms, new { @class = "form-control ckeditor hide", rows = "10" })
+            }
+        </div>
+
+        @if (Model.PageType == PageTypeEnum.Approval || Model.PageType == PageTypeEnum.Details)
+        {
+            <h3 class="popTitle">
+                审核意见
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="popContent">
+                @if (Model.PageType == PageTypeEnum.Details || Model.PurchaseStatus == (int)PurchaseStatusEnum.NotPassCheck)
+                {
+                    @Html.TextAreaFor(d => d.Comment, new { @class = "form-control", disabled = "disabled" })
+                }
+                else
+                {
+                    @Html.TextAreaFor(d => d.Comment, new { @class = "form-control" })
+                }
+            </div>
+        }
+
+        <div class="popBtns">
+            @switch (Model.PageType)
+            {
+                case PageTypeEnum.Add:
+                case PageTypeEnum.Edit:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)PurchaseStatusEnum.OutLine))">保存为草稿</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)PurchaseStatusEnum.PendingCheck))">保存并提交审核</button>
+                    <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                    break;
+                case PageTypeEnum.Details:
+                    <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+                    break;
+                case PageTypeEnum.Approval:
+                    <button type="button" class="btn btn-primary" data-bind="click: $root.submit.bind($data, @((int)PurchaseStatusEnum.PassedCheck))">审核通过</button>
+                    <button type="button" class="btn btn-danger" data-bind="click: $root.submit.bind($data, @((int)PurchaseStatusEnum.NotPassCheck))">驳回重审</button>
+                    <button type="button" class="btn btn-default" onclick="OA.CloseMe()">取消</button>
+                    break;
+                default:
+                    break;
+            }
+        </div>
+        @if (Model.PurchaseStatus == (int)PurchaseStatusEnum.PassedCheck || Model.PurchaseStatus == (int)PurchaseStatusEnum.ContractUploaded || Model.PurchaseStatus == (int)PurchaseStatusEnum.ContractSent)
+        {
+            <h3 class="popTitle">
+                已上传的附件信息
+                <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </h3>
+            <div class="row popContent">
+                <div class="history_box">
+                    <table id="fileListTable" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                        <tbody>
+                            <tr class="t_bg">
+                                <td width="50%">附件名称</td>
+                                <td width="20%">上传时间</td>
+                                <td width="30%">操作</td>
+                            </tr>
+                            @if (Model.list_UpLoadFile != null)
+                            {
+                                foreach (var item in Model.list_UpLoadFile.OrderByDescending(d => d.DT_CREATEDATE))
+                                {
+                                    <tr>
+                                        <td>@item.DisplayFileName</td>
+                                        <td>@ERP.Tools.Utils.DateTimeToStr2(item.DT_CREATEDATE)</td>
+                                        <td>
+                                            <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item.ServerFileName')">下载</button>
+                                        </td>
+                                    </tr>
+
+                                }
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+        @if (Model.PageType != PageTypeEnum.Add)
+        {
+            <h3 class="popTitle">
+                历史记录
+                <a class="table_toggle fa fa-2 fa-chevron-down"></a>
+            </h3>
+            <div class="popContent" style="display:none;">
+                <div class="history_box">
+                    <table class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                        <tbody>
+                            <tr class="t_bg">
+                                <td width="20%">日期</td>
+                                <td width="20%">操作者</td>
+                                <td width="30%">状态</td>
+                                <td width="30%">意见/备注</td>
+                            </tr>
+                            @foreach (var item_history in Model.list_history.OrderByDescending(d => d.DT_CREATEDATE))
+                            {
+                                <tr>
+                                    <td>@ERP.Tools.Utils.DateTimeToStr2(item_history.DT_CREATEDATE)</td>
+                                    <td>@item_history.ST_CREATEUSER</td>
+                                    <td>@item_history.Comment</td>
+                                    <td>@item_history.CheckSuggest</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+
+    <script src="@Url.Content("~/Scripts/ckeditor/ckeditor.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout-3.3.0.js")"></script>
+    <script src="@Url.Content("~/Content/Moment.js-v2.6.0/moment.min.js")"></script>
+    <script src="@Url.Content("~/Content/Knockout/knockout.mapping-latest.js")"></script>
+    <script src="@Url.Content("~/Scripts/PurchaseContract_ProductMixed.js?v=20170306")"></script>
+    <script>
+        $(function () {
+            CKEDITOR.inline( 'ContractTerms',
+                {
+                    enterMode: CKEDITOR.ENTER_BR ,
+                    title: "编辑框",
+                    toolbar : [
+                        { name: 'basicstyles', items: ['Bold'] },
+                    ]
+
+                });
+
+            $(".row_Factory").show();
+
+            $("#MyPopGrid").datagrid({
+                checkOnSelect:true,
+                onBeforeEdit:onBeforeEdit,
+                onAfterEdit:onAfterEdit,
+                onCancelEdit:onCancelEdit,
+                onLoadSuccess:onLoadSuccess,
+                onClickCell: @(Model.PageType == PageTypeEnum.Details ? "emptyFunc" : "onClickCell"),
+                showFooter: true,
+                onBeginEdit:onBeginEdit,
+
+            });
+        });
+
+        function formatStatus(value,row,index){
+
+            var temp = @((int)CommonStatusEnum.Yes);
+            if (value==0) {
+                return "&nbsp;";
+            }
+            else if (value==temp) {
+                return "是";
+            }
+            else {
+                return "否";
+            }
+        }
+
+        $("#frmEdit .Wdate").blur(function () {
+            var time = $(this).val();
+            $(this).attr("value", time);
+            $('#frmEdit').bootstrapValidator('revalidateField', $(this).prop("name"));
+        });
+
+        //付款方式修改时
+        function PaymentTypeChange(e){
+            var $this=$(e);
+            if ($this.val()=="6") {
+                $this.closest(".divPaymentType").find("input[name=AfterDate]").val(0);
+                $this.closest(".divPaymentType").find(".divAfterDate").hide();
+            }else {
+                $this.closest(".divPaymentType").find(".divAfterDate").show();
+            }
+
+            ContractTermsChange();
+        }
+
+        function AfterDateChange(e){
+            ContractTermsChange();
+        }
+
+        //替换本合同付款方式为XXXX天左右
+        function ContractTermsChange(){
+            var $row_Factory = $(".row_Factory:eq(0)");
+
+            var PaymentType = $row_Factory.find("select[name=PaymentType] option:selected").text();
+            var AfterDate = $row_Factory.find("input[name=AfterDate]").val();
+
+            var ContractTerms = CKEDITOR.instances.ContractTerms.getData();
+            var index1 = ContractTerms.indexOf("付款方式为");
+            var index2 = ContractTerms.indexOf("天左右");
+            if (index2==-1) {
+                index2 = ContractTerms.indexOf("天内");
+            }
+            if (index1>0 && index2>0) {
+                var temp= ContractTerms.substring(index1,index2);
+                ContractTerms = ContractTerms.replace(temp,"付款方式为" + PaymentType + AfterDate);
+                CKEDITOR.instances.ContractTerms.setData(ContractTerms);
+            }
+
+
+        }
+
+        //额外费用修改时
+        function OtherFeeChange(e){
+            var $this = $(e);
+            var OtherFee = $this.val();
+            if (parseFloat(OtherFee) != OtherFee || parseFloat(OtherFee)<0) {
+                $.messager.alert("提示", "额外费用必须为大于0的数字！", "info", function () {
+                    $this.focus();
+                });
+                $this.val(0);
+                OtherFee = 0;
+            }
+            var $thisFactory=$this.closest(".row_Factory");
+            var AllAmount = parseFloat($thisFactory.find("input[name=hiddenAllAmount]").val()) + parseFloat(OtherFee);
+            AllAmount = NumberToRound(AllAmount,2);
+            $thisFactory.find("input[name=AllAmount]").val(AllAmount);
+            $thisFactory.find(".divAllAmount").html($thisFactory.find("input[name=CurrentSign]").val() + AllAmount);
+        }
+
+        //下载
+        function DownLoadFile(path) {
+            window.open(path);
+        }
+
+        function KOModel(item) {
+            this.ID = ko.observable(item.ID);
+            this.Port = ko.observable();
+            this.PaymentType = ko.observable();
+            this.IsImmediatelySend = ko.observable();
+            this.IsThirdVerification = ko.observable();
+            this.IsThirdAudits = ko.observable();
+            this.IsThirdTest = ko.observable();
+            this.IsThirdSampling = ko.observable();
+
+            this.ContractTerms = ko.observable();
+            this.Comment = ko.observable();
+            this.AfterDate = ko.observable();
+            this.OtherFee = ko.observable();
+            this.AllQty = ko.observable();
+            this.AllAmount = ko.observable();
+            this.PurchaseStatus = ko.observable();
+            this.DateStart = ko.observable();
+
+            this.list_batch = ko.observableArray();
+        }
+
+        function KOViewModel() {
+            var self = this;
+
+            self.MyModel = ko.observable();
+            self.MyModel(new KOModel(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model)))));
+            self.MyModel().list_batch(@(Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.list_batch))));
+
+            var checkSubmit = false;//防止重复提交
+            //提交
+            self.submit = function (PurchaseStatus) {
+
+                var bootstrapValidator = $("#frmEdit").data('bootstrapValidator');
+                bootstrapValidator.validate();
+                if (!bootstrapValidator.isValid()) {
+                    $(".glyphicon-remove:first").prev().focus();
+                    return false;
+                }
+
+                var NotPassCheck= @((int)PurchaseStatusEnum.NotPassCheck);
+                if (PurchaseStatus == NotPassCheck && $.trim($("#Comment").val()) == "") {
+                    $.messager.alert("提示", "请输入审核意见！", "info", function () {
+                        $("#Comment").focus();
+                    });
+                    return false;
+                }
+
+                if (editIndex != undefined) {
+                    $.messager.confirm("提示", "发现您有正在编辑状态的产品，是否保存？", function(r){
+                        if(r){
+                            endEditingInfo();
+                        }
+                    });
+                    return false;
+                }
+
+                var rows = $("#MyPopGrid").datagrid("getRows");
+                if (rows && rows.length > 0) {
+                    if ($("#ContractType").val()=="0") {
+                        self.MyModel().list_batch()[0].listProduct = ko.observableArray();
+                        self.MyModel().list_batch()[0].listProduct(rows);
+
+                    }else {
+                        self.MyModel().list_batch()[0].listProductFitting = ko.observableArray();
+                        self.MyModel().list_batch()[0].listProductFitting(rows);
+
+                    }
+                }
+
+                self.MyModel().Port($("#Port").val());
+                self.MyModel().PaymentType($("#PaymentType").val());
+                self.MyModel().IsImmediatelySend($("#IsImmediatelySend").is(':checked'));
+                self.MyModel().IsThirdVerification($("#IsThirdVerification").is(':checked'));
+                self.MyModel().IsThirdAudits($("#IsThirdAudits").is(':checked'));
+                self.MyModel().IsThirdTest($("#IsThirdTest").is(':checked'));
+                self.MyModel().IsThirdSampling($("#IsThirdSampling").is(':checked'));
+
+                self.MyModel().ContractTerms(CKEDITOR.instances.ContractTerms.getData());
+                self.MyModel().Comment($("#Comment").val());
+                self.MyModel().AfterDate($("#AfterDate").val());
+                self.MyModel().OtherFee($("#OtherFee").val());
+                self.MyModel().AllQty($("#AllQty").val());
+                self.MyModel().AllAmount($("#AllAmount").val());
+                self.MyModel().PurchaseStatus(PurchaseStatus);
+                self.MyModel().DateStart($("#DateStartFormatter").val());
+
+                if (checkSubmit) {
+                    $.messager.alert("提示", "请勿重复提交！");
+                    return;
+                }
+                checkSubmit = true;
+                loading();
+
+                $.ajax({
+                    type: 'post',
+                    contentType: 'application/json',
+                    url: '@Url.Content("~/PurchaseContract/Edit")',
+                    data: ko.toJSON(self.MyModel)
+                }).done(function (data) {
+                    checkSubmit = false;
+                    if (!data.IsSuccess) {
+                        completeLoading();
+                        $.messager.alert("提示", "失败了！");
+                        return;
+                    } else {
+                        parentGridReload();
+                        OA.CloseMe(true);
+                    }
+                });
+            }
+        }
+
+        var KOViewModel = new KOViewModel();
+        ko.applyBindings(KOViewModel);
+
+        function getRowIndex(target) {
+            var tr = $(target).closest('tr.datagrid-row');
+            return parseInt(tr.attr('datagrid-row-index'));
+        }
+
+        var editIndex = undefined;
+        var editGrid = "";
+
+        function onBeforeEdit(index, row) {
+            row.editing = true;
+            updateActionsInfo(index);
+            UpdateExpander();
+        }
+
+        function onAfterEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+
+            GetTotal();
+            UpdateExpander();
+        }
+        function onCancelEdit(index, row) {
+            row.editing = false;
+            updateActionsInfo(index);
+        }
+        function endEditingInfo() {
+            if (editIndex == undefined) { return true }
+            if ($(editGrid).datagrid('validateRow', editIndex)) {
+                $(editGrid).datagrid('endEdit', editIndex);
+                editIndex = undefined;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        function updateActionsInfo(index) {
+            $(editGrid).datagrid('refreshRow', index);
+            //jav.initGridCellTooltips(["OrderID"]);
+            InitPopover();
+
+        }
+
+        function acceptInfo(target) {
+            editIndex = getRowIndex(target);
+            if (endEditingInfo()) {
+                $(editGrid).datagrid('acceptChanges');
+            }
+        }
+
+        function onClickCell(index, field,a,b,c) {
+            editGrid = "#" + $(this)[0].id;
+            if (editIndex != index) {
+                if (endEditingInfo()) {
+                    $(editGrid).datagrid('selectRow', index).datagrid('beginEdit', index);
+                    var ed = $(editGrid).datagrid('getEditor', { index: index, field: field });
+                    if (ed) {
+                        ($(ed.target).data('textbox') ? $(ed.target).textbox('textbox') : $(ed.target)).focus();
+                    }
+                    editIndex = index;
+                } else {
+                    setTimeout(function () {
+                        $(editGrid).datagrid('selectRow', editIndex);
+                    }, 0);
+                }
+            }
+            RemovePopover();
+        }
+
+        function productNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/Product/Details/"))' + row.ProductID, row.No);
+        }
+
+        function onBeginEdit(index, row) {
+            $(".datagrid-editable-input,.validatebox-text").on("keypress",function(e){
+                if (e.keyCode == 13) {
+                    acceptInfo(row);
+                    UpdateSubDatagrid(index,row);
+                }
+            });
+        }
+
+        function emptyFunc() {
+
+        }
+
+        function onLoadSuccess(){
+            InitPopover();
+        }
+
+        $(function () {
+            //jav.initGridCellTooltips();
+
+            // 表单验证
+            $('#frmEdit').bootstrapValidator({
+                message: '信息不能为空值',
+                container: 'popover',
+                feedbackIcons: {
+                    valid: 'glyphicon glyphicon-ok',
+                    invalid: 'glyphicon glyphicon-remove',
+                    validating: 'glyphicon glyphicon-repeat fa-spin'
+                },
+
+                fields: {
+                    Port: {
+                        validators: {
+                            notEmpty: { message: '交货地不能为空' },
+                        }
+                    },
+                    DateStartFormatter: {
+                        validators: {
+                            notEmpty: { message: '交货日期不能为空' },
+                        }
+                    },
+                    //DateEndFormatter: {
+                    //    validators: {
+                    //        notEmpty: { message: '交货日期不能为空' },
+                    //    }
+                    //},
+                    PaymentType: {
+                        validators: {
+                            notEmpty: { message: '付款方式不能为空' },
+                        }
+                    },
+                    AfterDate: {
+                        validators: {
+                            notEmpty: { message: '付款方式不能为空' },
+                        }
+                    },
+                }
+            });
+        });
+
+
+        function productFittingNoFormatter(val, row, index) {
+            return jav.GetProductHtml(row.Image, '@(Url.Content("~/ProductFitting/Edit/"))' + row.RootID + "?Type=Detail", row.No);
+        }
+
+        function GetTotal() {
+
+            var AllQty=0;
+            var AllAmount=0;
+            var rows = $(editGrid).datagrid('getRows');
+            for (var i = 0; i < rows.length; i++) {
+                var thisRow = rows[i];
+
+                AllQty += NumberToRound(thisRow.Qty,0);
+                AllAmount += NumberToRound(thisRow.Qty,0) * NumberToRound(thisRow.PriceFactory,2);
+            }
+            AllAmount = NumberToRound(AllAmount,2);
+
+            var $thisFactory=$(".row_Factory:visible");
+            $thisFactory.find("input[name=AllAmount]").val(AllAmount);
+            $thisFactory.find(".divAllAmount").html($thisFactory.find("input[name=CurrentSign]").val() + AllAmount);
+
+            $thisFactory.find("input[name=AllQty]").val(AllQty);
+            $thisFactory.find(".divAllQty").html(AllQty);
+
+        }
+
+
+        $(function () {
+            if ($("#ContractType").val()=="0") {
+                BindSubDatagrid();
+                UpdateExpander();
+            }
+
+        });
+
+    </script>
+}

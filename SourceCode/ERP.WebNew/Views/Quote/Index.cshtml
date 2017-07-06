@@ -1,0 +1,184 @@
+﻿@{
+    ViewBag.Title = "报价单列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@model ERP.Models.Quote.VMQuoteSearch
+
+@Html.Partial("_PartialList", Model)
+
+@section scripts{
+    <script>
+        var tableName = "#MyGrid";
+
+        function operationFormatter(val, row, index) {
+            var rows = $(tableName).datagrid('getRows');
+            var row = rows[index];
+
+            var showView = @(Model.PageElementPrivileges & (int)QuoteElementPrivileges.View);
+            var showEdit = @(Model.PageElementPrivileges & (int)QuoteElementPrivileges.Edit);
+            var showCheck = @(Model.PageElementPrivileges & (int)QuoteElementPrivileges.Check);
+            var showDelete = @(Model.PageElementPrivileges & (int)QuoteElementPrivileges.Delete);
+            var showSendEmail=@(Model.PageElementPrivileges & (int)QuoteElementPrivileges.SendEmail);
+            var showConfirmQuote=@(Model.PageElementPrivileges & (int)QuoteElementPrivileges.ConfirmQuote);
+            var showReQuote=@(Model.PageElementPrivileges & (int)QuoteElementPrivileges.ReQuote);
+            var showAbandon=@(Model.PageElementPrivileges & (int)QuoteElementPrivileges.Abandon);
+            var ops = "";
+
+            if (showView > 0) {
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Quote/Edit/"))" + val + "?Type=Detail'>查看</a>";
+            }
+
+            var StatusID = row.StatusID;
+            var OutLine=@((int)QuoteStatusEnum.OutLine);
+            var PendingCheck=@((int)QuoteStatusEnum.PendingCheck);
+            var NotPassCheck=@((int)QuoteStatusEnum.NotPassCheck);
+            var PassedCheck=@((int)QuoteStatusEnum.PassedCheck);
+            var HadSend=@((int)QuoteStatusEnum.HadSend);
+            var ReQutes=@((int)QuoteStatusEnum.ReQutes);
+
+            if ((StatusID == OutLine || StatusID == NotPassCheck) && showEdit > 0) {//草稿或审核不通过
+                if (showEdit>0) {
+                    ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' href='@(Url.Content("~/Quote/Edit/"))" + val + "' style='margin:0 10px;'>编辑</a>";
+                }
+                if (showAbandon>0) {
+                    ops += "<button class='btn btn-danger btn-xs w_auto' onclick='abandon(" + val + ")'>作废</button>";
+                }
+                if (StatusID == OutLine&&showDelete>0) {
+                    ops += "<button class='btn btn-danger btn-xs w_auto' onclick='del(" + val + ")' style='margin:0 10px;'>删除</button>";
+                }
+            }
+            if (StatusID == PassedCheck) {
+                if (showSendEmail>0) {
+                    ops += "<button class='btn btn-default btn-xs w_auto' href='@(Url.Content("~/Quote/SendEmail/"))" + val + "' winsize='1200,800,yes' onclick='return OA.i(this);' winType='idialog' style='margin:0 10px;'>发送邮件给客户</button>";
+                }
+            }
+            if (StatusID == ReQutes) {
+                if (showReQuote>0) {
+                    ops += "<button class='btn btn-default btn-xs w_auto' href='@(Url.Content("~/Quote/Edit/"))" + val + "'  winsize='1200,800,yes' onclick='return OA.i(this);' winType='idialog' style='margin:0 10px;'>重新报价</button>";
+                }
+
+                if (showConfirmQuote>0) {
+                    ops += "<a class='btn btn-default btn-xs w_auto' href='#' onclick='Confirm(" + val + ")' style='margin:0 10px;'>确认</a>";
+                }
+            }
+            if (StatusID == HadSend) {
+                if (showReQuote>0) {
+                    ops += "<button class='btn btn-default btn-xs w_auto' href='@(Url.Content("~/Quote/Edit/"))" + val + "'  winsize='1200,800,yes' onclick='return OA.i(this);' winType='idialog' style='margin:0 10px;'>重新报价</button>";
+                }
+                if (showConfirmQuote>0) {
+                    ops += "<a class='btn btn-default btn-xs w_auto' href='#' onclick='Confirm(" + val + ")'>确认</a>";
+                }
+                if (showAbandon>0) {
+                    ops += "<button class='btn btn-danger btn-xs w_auto' onclick='abandon(" + val + ")' style='margin:0 10px;'>作废</button>";
+                }
+            }
+            return ops;
+        }
+
+        function del(id) {
+            $.messager.confirm('提示','确定要删除吗?',function(r){
+                if (r){
+                    $.post("@Url.Content("~/Quote/Delete")", { idList: id },
+                        function (result) {
+                            switch (result) {
+                                case @((short)ERP.Models.CustomEnums.DBOperationStatus.NoAffect):
+                                    $.messager.alert("提示","没有可以删除的记录");
+                                    break;
+                                case @((short)ERP.Models.CustomEnums.DBOperationStatus.Success):
+                                    $.messager.alert("成功","删除成功");
+                                    $(tableName).datagrid('reload');
+
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }, "json");
+                }
+            });
+        }
+
+        //删除选中
+        function deleteSelected() {
+            var idArray = getSelections(tableName, "ID");
+            if (idArray.length <= 0) {
+                $.messager.alert("提示","请选中要删除的报价单！");
+                return;
+            }
+
+            del(idArray.join(','));
+
+        }
+
+        function abandon(id) {
+            $.messager.confirm('提示','确认要作废该报价吗?',function(r){
+                if (r){
+                    $.post('@Url.Content("~/Quote/Abandon")', { id: id })
+                    .done(function () {
+                        $(tableName).datagrid('reload');
+                    })
+                }
+            });
+        }
+
+        function Confirm(id) {
+            $.messager.confirm('提示','确认要确认该报价吗?',function(r){
+                if (r){
+                    $.post('@Url.Content("~/Quote/Confirm")', { id: id })
+                    .done(function () {
+                        $(tableName).datagrid('reload');
+                    })
+                }
+            });
+        }
+
+        function ActionSelected(type) {
+
+            var idArray = getSelections(tableName, "ID");
+            if (idArray.length <= 0) {
+                $.messager.alert("提示","请选中一个报价单！");
+                return false;
+
+            }
+            if (idArray.length >1) {
+                if (type == "Copy") {
+                    $.messager.alert("提示","只能复制一个报价单！");
+                    return false;
+                }
+                if(type == "SendEmail"){
+                    $.messager.alert("提示","只能选择一个报价单！");
+                    return false;
+                }
+            }
+            else {
+                if(type == "SendEmail"){
+                    var StatusID = getSelections(tableName, "StatusID");
+                    var PassedCheck=@((int)QuoteStatusEnum.PassedCheck);
+                    var HadSend=@((int)QuoteStatusEnum.HadSend);
+
+                    if (StatusID != PassedCheck && StatusID != HadSend) {
+                        $.messager.alert("提示","只有状态为审核已通过和已发送客户时，此按钮才有效！");
+                        return false;
+                    }
+                }
+            }
+
+            switch (type) {
+                case "SendEmail":
+                    $("#btn_SendEmail").attr("href", "@Url.Content("~/Quote/SendEmail/")" + idArray[0]);
+                    break;
+                case "Copy":
+                    $("#btn_Copy").attr("href", "@Url.Content("~/Quote/Edit/")" + idArray[0]+"?Type=Copy");
+                    break;
+                case "ProductList":
+                    window.open("@Url.Content("~/Quote/ViewProductList?id=")" + idArray.join(','), "_blank");
+                    break;
+                default:
+
+            }
+            return true;
+        }
+
+    </script>
+}

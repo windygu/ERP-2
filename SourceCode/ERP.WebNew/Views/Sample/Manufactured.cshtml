@@ -1,0 +1,73 @@
+﻿@model ERP.Models.Sample.VMFilterSample
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@{
+    ViewBag.Title = "已打样列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialListSample", Model)
+
+@section scripts{
+    <script type="text/javascript">
+        var ManufacturingDataList = "#tblManufacturingDataList";
+        var IsReadOnly = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.ReadOnly);
+        var IsTracking = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.Tracking);
+        var IsAffirmSample = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.AffirmSample);
+        var IsSendDemand = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.SendDemand);
+        var ControllerURL="href='@(Url.Content("~/Sample/"))"
+
+        //当某个条件满足时，设置数据行的表现样式
+        function SetRowStyler(index,row){
+            if(row.IsDelayFinsh==1){
+                return 'color:red;';
+            }
+
+        }
+
+        function operationFormatter(val, row, index) {
+            var createWay = row.CreateWay;//创建方式
+            var status = row.SampleStatusID;
+
+            var url = ControllerURL+"ManufactureInfo?SSID=" + val + "&CreateWay=" + createWay + "&DataStatus=" + status;
+            var ops = "";
+            var pageTypeID=1;
+
+            if(IsReadOnly>0){
+                if(status==3){
+                    url = ControllerURL+"GetCreateWayData?SSID=" + val + "&CreateWay=" + createWay;
+                    pageTypeID=2;
+                }else{
+                    pageTypeID=1;
+                    url = ControllerURL+"ManufactureInfo?SSID=" + val + "&CreateWay=" + createWay + "&DataStatus=" + status;
+                }
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + "&PageType="+pageTypeID+"' style='margin: 0 5px;'>查看</a>";
+            }
+
+            if (IsTracking>0&&status == 3) {
+                url = ControllerURL+"ManufactureInfo?SSID=" + val + "&CreateWay=" + createWay + "&DataStatus=" + status;
+                pageTypeID=2;
+
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)'" + url + "&pageType="+pageTypeID+"' style='margin: 0 5px;'>生产跟踪</a>";
+            }
+            if (IsAffirmSample>0&&status == 4) {
+                pageTypeID=3;
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)'" + url + "&pageType="+pageTypeID+"' style='margin: 0 5px;'>样品确认</a>";
+            }
+            if (IsSendDemand>0&&status == 5) {
+                pageTypeID=2;
+                url = ControllerURL+"SendSample?SSID=" + val + "&CreateWay=" + createWay + "&DataStatus=" + status;
+                ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)'" + url + "&pageType="+pageTypeID+"' style='margin: 0 5px;'>寄出需求</a>";
+            }
+
+            return ops;
+        }
+
+        //列表数据加载成功时，使单元格鼠标移动呈现title
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["SSID"]);
+        }
+    </script>
+}

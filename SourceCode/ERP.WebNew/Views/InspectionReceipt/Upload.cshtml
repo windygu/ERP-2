@@ -1,0 +1,221 @@
+﻿@model List<ERP.Models.InspectionReceipt.DTOInspectionReceipt>
+@using ERP.Models.CustomEnums
+
+@{
+    ViewBag.Title = ViewBag.Title;
+    Layout = "~/Views/Shared/_LayoutPop.cshtml";
+}
+
+<script type="text/javascript">
+
+    //上传附件插件初始化代码
+    function InitialUploadify(ssid, inputFileId, objName, tableFileListId) {
+        var postUrl = "@Url.Content("~/FileUploader/UploadFiles?type=InspectionReceiptUploadReceipt")" + "&id=" + ssid;
+
+        $(inputFileId).uploadify({
+            swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+            uploader: postUrl, //Post文件到指定的处理文件
+            postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+            auto: false,
+            buttonClass: 'JQButton', //浏览按钮的class
+            buttonText: '浏览', //浏览按钮的Text
+            cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+            //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+            fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+            height: 40, //浏览按钮高
+            width: 50, //浏览按钮宽
+            multi: true, //是否允许多文件上传
+            //uploadLimit: 10, //同时上传多小个文件
+            sizeLimit: 100000000, //限制上传大小10M
+            //queueSizeLimit: 10, //队列允许的文件总数
+            removeCompleted: true, //当上传成功后是否将该Item删除
+            onSelect: function (file) { }, //选择文件时触发事件
+            onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+            onUploadComplete: function (file) { }, //上传成功触发事件
+            onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+            onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+            onUploadStart: function (file) { }, //上传开始触发事件
+            onUploadSuccess: function (event, response, status) {
+                var count = $(tableFileListId + " tr:not(:first)").length;
+                var fileName = $.parseJSON(response).uploadPath;
+                var serverFileName = $.parseJSON(response).data.NewFilePath;
+                var displayFileName = $.parseJSON(response).data.OldFileName;
+                var fileListStr = '<tr><td  style="display:none;">';
+                
+                fileListStr += '<input name="' + objName + '[' + count + '].DisplayFileName" value="' + displayFileName + '" />';
+                fileListStr += '<input name="' + objName + '[' + count + '].ServerFileName" value="' + serverFileName + '" />';
+                fileListStr += '<input name="' + objName + '[' + count + '].DT_CREATEDATE" value="' + formateDate2(new Date()) + '" />';
+                fileListStr += '<input name="' + objName + '[' + count + '].IsDelete"  class="IsDelete" />';
+                
+                fileListStr += '</td>';
+
+                fileListStr += '<td>' + displayFileName + '</td>';
+
+                fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+
+                fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button>';
+                fileListStr += '<button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+
+                fileListStr += '</tr>';
+
+                $(tableFileListId).prepend(fileListStr);
+
+            }  //当单个文件上传成功后激发的事件
+        });
+    }
+
+    //上传
+    function UpLoadFile(htmlId) {
+        $(htmlId).uploadifyUpload('*');
+    }
+
+    //下载
+    function DownLoadFile(path) {
+        window.open(path);
+    }
+
+    //删除
+    function DeleteFile(e, path) {
+        //$(e).closest("tr").find(".IsDelete").val(true);
+        $(e).closest("tr").find(".IsDelete").attr("value", true);
+        $(e).closest("tr").hide();
+    }
+</script>
+
+@{
+    var FirstModel = Model.FirstOrDefault();
+
+    var ThisModel = Model;
+}
+@using (Ajax.BeginForm("Upload", "InspectionReceipt", new AjaxOptions() { HttpMethod = "Post", OnBegin = "return CheckOut()", OnSuccess = "OnSuccess" }))
+{
+
+    for (int i = 0; i < ThisModel.Count; i++)
+    {
+        @Html.HiddenFor(p => ThisModel[i].InspectionReceiptID)
+        @Html.HiddenFor(p => ThisModel[i].InspectionReceiptListID)
+        @Html.HiddenFor(d => ThisModel[i].InspectionReceiptStatusID, new { @class = "StatusID" })
+        @Html.HiddenFor(p => ThisModel[i].ShipmentOrderID)
+
+        int index = i;
+        var item2 = ThisModel[i];
+
+        <div class="Factory">
+            <div style="margin-bottom:0px;" class="modal-title">
+                @item2.InvNo
+                <a style="float:right;" class="table_toggle fa fa-2 fa-chevron-up"></a>
+            </div>
+
+            <div class="history_box">
+
+                <h3 class="popTitle">
+                    附件信息<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+                </h3>
+                <div class="popContent">
+                    <div class="form-group col-sm-12 has-feedback">
+                        <label class="col-sm-2 control-label">上传附件:</label>
+
+                        <div class="col-sm-10">
+                            <div class="uploadify">
+                                <input type="file" name="txtUploadFile_@(index)" id="txtUploadFile_@(index)" />
+                                <a class="a_upload" onclick="UpLoadFile('#txtUploadFile_@(index)')">上传</a>
+                                <div class="fileQueue"></div>
+                            </div>
+                            <script type="text/javascript">
+                                //上传附件插件初始化代码
+                                InitialUploadify("@item2.InspectionReceiptID", '#txtUploadFile_@(index)', "ThisModel[@(index)].UploadReceipt", '#fileListTable_@(index)');
+                            </script>
+                        </div>
+                    </div>
+                </div>
+
+
+                <h3 class="popTitle">
+                    已上传的附件信息<a class="table_toggle fa fa-2 fa-chevron-up"></a>
+                </h3>
+                <div class="popContent">
+                    <div class="history_box">
+                        <table id="fileListTable_@(index)" class="table table-bordered" style="width:100%;" border="0" cellspacing="0" cellpadding="0">
+                            <thead>
+                                <tr class="t_bg">
+                                    <td width="50%">附件名称</td>
+                                    <td width="20%">上传时间</td>
+                                    <td width="30%">操作</td>
+                                </tr>
+                            </thead>
+
+                            @if (item2.UploadReceipt != null)
+                            {
+                                for (var k = 0; k < item2.UploadReceipt.Count; k++)
+                                {
+                                    <tr>
+                                        <td style="display:none;">
+                                            @Html.TextBoxFor(d => ThisModel[i].UploadReceipt[k].ID)
+                                            @Html.TextBoxFor(d => ThisModel[i].UploadReceipt[k].IsDelete, new { @class = "IsDelete" })
+                                        </td>
+
+                                        <td>@item2.UploadReceipt[k].DisplayFileName</td>
+
+                                        <td>@ERP.Tools.Utils.DateTimeToStr2(item2.UploadReceipt[k].DT_CREATEDATE)</td>
+
+                                        <td>
+                                            <button type="button" class="btn btn-primary" onclick="DownLoadFile('@item2.UploadReceipt[k].ServerFileName')">下载</button>
+
+
+                                            <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'@item2.UploadReceipt[k].ServerFileName')">删除</button>
+
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    }
+
+    <div id="dvButton" class="form-group text-right tijiao">
+        <button type="submit" id="bntSaveA" name="SaveDraft" class="btn btn-primary" onclick="SetDataStatus(@((int)InspectionReceiptStatusEnum.Uploaded));">保存</button>
+
+        <button type="button" onclick="OA.CloseMe()" id="bntClose" class="btn btn-default">关闭</button>
+    </div>
+
+}
+
+@section scripts{
+    <script type="text/javascript">
+
+        //不同按钮的验证
+        function SetDataStatus(valueStatus) {
+            var StatusID = valueStatus;
+            $(".StatusID").each(function () {
+                $(this).val(StatusID);
+            });
+
+        }
+
+        function CheckOut() {
+            //var rows = $("#fileListTable_1 tr:not(:first)").length;
+
+            //if (rows == 0) {
+            //    $.messager.alert('提示', "有附件才能保存", 'info'); return false;
+
+            //}
+
+        }
+
+        function OnSuccess(data) {
+            if (data == 0) {
+                $.messager.alert('提示', '提交出错', 'info');
+                return;
+
+            } else {
+                OA.CloseMe(true);
+                parentGridReload();
+            }
+        }
+    </script>
+
+}

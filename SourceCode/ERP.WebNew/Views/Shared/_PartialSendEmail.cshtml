@@ -1,0 +1,152 @@
+﻿@using ERP.Models.Common
+@using ERP.Models.CustomEnums
+
+<!-- ko with: SendEmail -->
+<h3 class="popTitle">
+    发送邮件信息
+    <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+</h3>
+<div class="row popContent" style="overflow: inherit;">
+    <div class="form-group col-sm-6">
+        <label class="col-sm-4 control-label text-danger">发送人：</label>
+        <div class="col-sm-8 control-label">
+            <input type="text" class="form-control" name="FromAddress" data-bind="value:FromAddress()" disabled="disabled" />
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6">
+        <label class="col-sm-4 control-label text-danger">收件人：</label>
+        <div class="col-sm-8 control-label">
+            <input type="text" class="form-control" name="ToAddress" data-bind="value:ToAddress()" />
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6">
+        <label class="col-sm-4 control-label">抄送：</label>
+        <div class="col-sm-8 control-label">
+            <input type="text" class="form-control" name="CcAddress" data-bind="value:CcAddress()" />
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6">
+        <label class="stree col-sm-4 control-label">密送：</label>
+        <div class="col-sm-8 control-label">
+            <input type="text" class="form-control" name="BccAddress" data-bind="value:BccAddress()" />
+        </div>
+    </div>
+
+    <div class="form-group col-sm-12">
+        <label class="col-sm-2 control-label text-danger" style="width: 16.2%;">主题：</label>
+        <div class="col-sm-10 control-label" style="width: 81.1%;">
+            <input type="text" class="form-control" name="Subject" data-bind="value:Subject()" />
+        </div>
+    </div>
+
+    <div class="form-group col-sm-12">
+        <label class="col-sm-2 control-label" style="width: 16.2%;">内容：</label>
+        <div class="col-sm-10 control-label" style="width: 81.1%;">
+            <textarea class="form-control" name="BodyContent" data-bind="value:BodyContent()"></textarea>
+        </div>
+    </div>
+
+    <div class="form-group col-sm-6">
+        <label class="col-sm-4 control-label">附件：</label>
+        <div class="col-sm-8 control-label" style="padding-left: 0;">
+            <div class="col-sm-8">
+                <div class="uploadify">
+                    <input type="file" name="uploadify" id="uploadify" />
+                    <a class="a_upload" onclick="UpLoadFile()">上传</a>
+                    <div class="fileQueue">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->
+
+<h3 class="popTitle">
+    邮件的附件信息
+    <a class="table_toggle fa fa-2 fa-chevron-up"></a>
+</h3>
+<div class="row popContent">
+    <div class="history_box">
+        <table id="fileListTable_Email" class="table table-bordered">
+            <thead>
+                <tr class="t_bg">
+                    <td width="50%">附件名称</td>
+                    <td width="20%">上传时间</td>
+                    <td width="30%">操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="trMakerExcel" style="display:none;">
+                    <td>生成的附件</td>
+                    <td></td>
+                    <td>
+                        <button type="button" class="btn btn-primary" onclick="MakerExcel()">下载</button>
+                        <button type="button" class="btn btn-danger" onclick="DeleteFile(this,'')">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    uploadifyInitial();
+    function uploadifyInitial() {
+        $("#uploadify").uploadify({
+            swf: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify.swf")', //上传的Flash，不用管，路径对就行
+            uploader: '@Url.Content("~/FileUploader/UploadFiles")?type=@(ViewBag.SendEmail_type)&id=@(ViewBag.SendEmail_ID)', //Post文件到指定的处理文件
+            postData: { 'ASPSESSID': '@Session.SessionID', 'AUTHID': '@(Request.Cookies[FormsAuthentication.FormsCookieName] == null ? string.Empty : Request.Cookies[FormsAuthentication.FormsCookieName].Value)' },
+            auto: false,
+            buttonClass: 'JQButton', //浏览按钮的class
+            buttonText: '浏览', //浏览按钮的Text
+            cancelImage: '@Url.Content("~/Content/uploadify-v3.0.0/uploadify-cancel.png")', //取消按钮的图片地址
+            //fileTypeDesc: '*.jpg;*.jpeg;*.gif;*.bmp;*.png;', //需过滤文件类型
+            fileTypeExts: '@(ERP.Tools.CommonCode.GetUploadFileExtensions())', //需过滤文件类型的提示
+            height: 40, //浏览按钮高
+            width: 50, //浏览按钮宽
+            multi: true, //是否允许多文件上传
+            //uploadLimit: 10, //同时上传多小个文件
+            sizeLimit: 100000000, //限制上传大小10M
+            //queueSizeLimit: 10, //队列允许的文件总数
+            removeCompleted: true, //当上传成功后是否将该Item删除
+            onSelect: function (file) { }, //选择文件时触发事件
+            onSelectError: function (file, errorCode, errorMsg) { }, //选择文件有误触发事件
+            onUploadComplete: function (file) { }, //上传成功触发事件
+            onUploadError: function (file, errorCode, errorMsg) { }, //上传失败触发事件
+            onUploadProgress: function (file, fileBytesLoaded, fileTotalBytes) { }, //上传中触发事件
+            onUploadStart: function (file) { }, //上传开始触发事件
+            onUploadSuccess: function (event, response, status) {
+                var count = $("#fileListTable_Email tr:not(:first)").length;
+                var serverFileName = $.parseJSON(response).data.NewFilePath;
+                var displayFileName = $.parseJSON(response).data.OldFileName;
+                var fileListStr = '<tr>';
+                fileListStr += '<td class="hide"><input class="DisplayFileName" name="list_EmailFile[' + count + '].DisplayFileName" type="hidden" value="' + displayFileName + '" /><input class="ServerFileName" name="list_EmailFile[' + count + '].ServerFileName" type="hidden" value="' + serverFileName + '" /><input name="list_EmailFile[' + count + '].DT_CREATEDATE" type="hidden" value="' + formateDate2(new Date()) + '" /><input class="IsDelete" name="list_EmailFile[' + count + '].IsDelete" type="hidden" /></td>';
+                fileListStr += '<td>' + displayFileName + '</td>';
+                fileListStr += '<td>' + formateDate2(new Date()) + '</td>';
+                fileListStr += '<td><button type="button" class="btn btn-primary" onclick="DownLoadFile(\'' + serverFileName + '\')" style="margin-right: 7px;">下载</button><button type="button" class="btn btn-danger" onclick="DeleteFile(this,\'' + serverFileName + '\')">删除</button></td>';
+                fileListStr += '</tr>';
+                $("#fileListTable_Email").prepend(fileListStr);
+            }  //当单个文件上传成功后激发的事件
+        });
+    }
+
+    //上传
+    function UpLoadFile() {
+        $('#uploadify').uploadifyUpload('*');
+    }
+
+    //下载
+    function DownLoadFile(path) {
+        window.open(path);
+    }
+
+    //删除
+    function DeleteFile(e, path) {
+        $(e).closest("tr").find(".IsDelete").val(true);
+        $(e).closest("tr").hide();
+    }
+</script>

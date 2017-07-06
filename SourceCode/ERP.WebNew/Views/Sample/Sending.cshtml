@@ -1,0 +1,51 @@
+﻿@model ERP.Models.Sample.VMFilterSample
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+
+@{
+    ViewBag.Title = "待寄样列表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Html.Partial("_PartialListSample", Model)
+
+@section scripts{
+    <script type="text/javascript">
+        var ManufacturingDataList = "#tblManufacturingDataList";
+        var IsReadOnly = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.ReadOnly);
+        var IsSampleSend = @(Model.PageElementPrivileges & (int)SampleElementPrivileges.SampleSend);
+
+        function operationFormatter(val, row, index) {
+
+            var createWay = row.CreateWay;//创建方式
+            var status = row.SampleStatusID;
+            var url = "href='@(Url.Content("~/Sample/SendSample"))?SSID=" + val + "&CreateWay=" + createWay + "&DataStatus=" + status;
+            var ops = "";
+
+            if(IsReadOnly>0){
+                ops = "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + " &PageType=1' style='margin: 0 5px;'>查看</a>";
+            }
+            if(IsSampleSend>0){
+                if (status == 6 || status == 7) {
+                    ops += "<a wintype='idialog' winsize='1200,800,yes' class='btn btn-default btn-xs w_auto' onclick='return OA.i(this)' " + url + " &PageType=3' style='margin: 0 5px;'>样品寄出</a>";
+                }
+            }
+
+            return ops;
+        }
+
+        //当某个条件满足时，设置数据行的表现样式
+        function SetRowStyler(index,row){
+            if(row.IsDelayFinsh==1){
+                return 'color:red;';
+            }
+
+        }
+
+        //列表数据加载成功时，使单元格鼠标移动呈现title
+        function LoadDataSuccess(){
+            InitPopover();
+
+            jav.initGridCellTooltips(["SSID"]);
+        }
+    </script>
+}

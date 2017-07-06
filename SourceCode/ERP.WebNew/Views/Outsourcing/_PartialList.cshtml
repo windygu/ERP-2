@@ -1,0 +1,115 @@
+﻿@using ERP.Models.CustomEnums
+@using ERP.Models.CustomEnums.PageElementsPrivileges
+@model ERP.Models.OutSourcing.VMFilterOC
+
+<div class="content-wrapper">
+    <div align="right">
+        <form class="form-inline frmFind" role="form" method="get">
+            <input type="hidden" name="r" id="r" value="@(new Random().Next(1,999999))" />
+            <div class="search_Condition box_1k">
+                <ul>
+                    <li>
+                        <label class="col-xs-2">采购合同编号：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(u => u.PurchaseNumber, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">采购合同日期：</label>
+                        <div class="col-sm-10">
+                            <div style="padding:0;" class="col-xs-5">@Html.TextBoxFor(u => u.PurchaseDateStart, new { @class = "form-control Wdate" })</div>
+                            <span class="col-xs-1" style="padding:0;">-</span>
+
+                            <div style="padding:0;" class="col-xs-5">@Html.TextBoxFor(u => u.PurchaseDateEnd, new { @class = "form-control Wdate" })</div>
+                        </div>
+                    </li>
+
+                    <li>
+                        <label class="col-xs-2">客户：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(u => u.CustomerCode, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li>
+                        <label class="col-xs-2">代购公司：</label>
+                        <div class="col-sm-10">
+                            @Html.TextBoxFor(d => d.OutCompany, new { @class = "form-control" })
+                        </div>
+                    </li>
+
+                    <li>
+                        <label class="col-xs-2">工厂：</label><div class="col-sm-10">
+                            @Html.TextBoxFor(u => u.FactoryAbbreviation, new { @class = "form-control" })
+                        </div>
+                    </li>
+                    <li style="display:none;">
+                        <label class="col-xs-2">要求交货期：</label>
+                        <div class="col-sm-10">
+                            <div class="col-xs-5" style="padding:0;">
+                                @Html.TextBoxFor(d => d.DeliveryDateStart, new { @class = "form-control Wdate" })
+                            </div>
+                            <div class="col-xs-1" style="padding:0;">-</div>
+                            <div class="col-xs-5" style="padding:0;">
+                                @Html.TextBoxFor(d => d.DeliveryDateEnd, new { @class = "form-control Wdate" })
+                            </div>
+                        </div>
+                    </li>
+
+                    <li>
+                        <label class="col-xs-2">代购合同状态：</label>
+                        <div class="col-sm-10">
+                            @Html.DropDownListFor(d => d.OutContractStatusID, ViewData["OutContractStatus"] as SelectList, new { @class = "form-control" })
+                        </div>
+                    </li>
+
+                    <li class="search">
+                        <button id="bntFind" type="submit" onclick="return OA.s(this)" class="btn btn-info">查询</button>
+                        <button id="bntClearAll" type="button" class="btn btn-info" onclick="clearAll(this)">清空所有</button>
+                    </li>
+                </ul>
+            </div>
+        </form>
+    </div>
+    @if (Model.PageType == PageTypeEnum.PendingCheckList)
+    {
+        <div class="Control">
+            @if ((Model.PageElementPrivileges & (int)OutSourcingElementPrivileges.OutAdd) > 0)
+            {
+                <button type="button" class="btn btn-danger" wintype="idialog" winsize="1200,800,yes" onclick="return OA.i(this);" href="@Url.Content("~/Outsourcing/SelectContract")">新建代购合同</button>
+            }
+            @if ((Model.PageElementPrivileges & (int)OutSourcingElementPrivileges.OutDelete) > 0)
+            {
+                <button type="button" class="btn btn-default" onclick="DeleteSelected()">删除代购合同</button>
+
+            }
+        </div>
+    }
+
+    <div class="box_1k" style="width:100%;overflow:auto">
+        <table id="MyGrid" class="easyui-datagrid" data-options="width:'auto',singleSelect:false,pageList: [10,50,200,500,1000], pageSize:50,remoteSort:true,multiSort:true,pagination:true,url:'@Url.Content("~/Outsourcing/GetAll")?PageType=@((int)Model.PageType)&@Request.QueryString',method:'get',onLoadSuccess:LoadDataSuccess,@(ERP.Tools.Keys.EasyUiDataGridSetting)">
+            <thead>
+                <tr>
+                    <th data-options="field:'ck',checkbox:true"></th>
+
+                    <th data-options="field:'PurchaseNumber',sortable:true,align:'center',width:120">采购合同编号</th>
+                    <th data-options="field:'FactoryAbbreviation',sortable:true,align:'center',width:100">工厂</th>
+                    <th data-options="field:'PurchaseDate',sortable:true,align:'center',width:100">采购合同日期</th>
+                    <th data-options="field:'PurchaseAmount',sortable:true,align:'center',width:100">采购合同金额</th>
+                    <th data-options="field:'CustomerCode',sortable:true,align:'center',width:100">客户</th>
+                    <th data-options="field:'OutContracNo',sortable:true,align:'center',width:120">代购合同编号</th>
+                    <th data-options="field:'OutCompany',sortable:true,align:'center',width:100">代购公司</th>
+                    <th data-options="field:'OutContractSum',sortable:true,align:'center',width:100">代购合同金额</th>
+                    <th data-options="field:'OutContractStatusID',sortable:true,align:'center',hidden:true">代购合同状态ID</th>
+                    <th data-options="field:'OutContractStatus',sortable:true,align:'center',width:80">代购合同状态</th>
+                    <th data-options="field:'IsCanAudit',hidden:true">能否审批</th>
+                    @if (Model.PageType == PageTypeEnum.PendingCheckList)
+                    {
+                        <th data-options="field:'NextApproverDisplayNames',align:'center',width:100">待审批人</th>
+                    }
+                    <th data-options="field:'DT_MODIFYDATEFormatter',width:130,sortable:true,align:'center'">最后修改时间</th>
+                    <th data-options="field:'ID',align:'center',formatter:operationFormatter">操作</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
